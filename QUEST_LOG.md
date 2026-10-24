@@ -94,6 +94,24 @@
 - [ ] 서버에서 암호화해 고객별로 저장하고 마스킹·교체·삭제를 제공한다
 - [ ] 자동화 서버가 요청 고객의 키만 불러오는지 권한을 검증한다
 
+
+### Q2-5 고객용 API 연결 가이드 센터
+- [ ] 기능을 시작하기 전에 필요한 외부 서비스와 비용 부담 주체를 안내한다
+- [ ] 서비스별 공식 가입/개발자 콘솔 이동 링크를 제공하고, 계정 생성부터 API 활성화·키 발급·복사·등록까지 화면 단계로 설명한다
+- [ ] 고객이 키를 붙여넣기 전에 키 종류, 권한 범위, 유료 과금/무료 쿼터, 필요한 키 개수를 분명히 표시한다
+- [ ] 키 입력칸은 비밀번호형으로 마스킹하고, 연결 테스트·오류 안내·키 교체·삭제·권한 철회까지 제공한다
+- [ ] 관리자나 고객센터도 키 원문을 볼 수 없게 하고, 키를 채팅/문의로 보내지 말라고 안내한다
+- [ ] 도움말의 콘솔 경로와 이미지/화면 안내를 주기적으로 재확인할 담당·수정 절차를 둔다
+
+#### 베타에서 안내할 제공자별 연결 방식
+- **네이버 브랜드 검색량:** 네이버 검색광고 API 라이선스/비밀키와 네이버 검색어 트렌드 API용 인증정보가 각각 필요하다. 검색광고 센터는 [광고주센터](https://searchad.naver.com/) → [광고 관리 시스템](https://manage.searchad.naver.com/) → 도구 → API 관리에서 발급한다. 검색어 트렌드는 기존 네이버 개발자센터 API 이관 대상이므로 새 고객 안내는 [NAVER API HUB](https://api.ncloud-docs.com/docs/ai-naver-searchtrend) 가입·신청 경로를 기준으로 작성하고, 실제 발급 절차를 구현 전 확인한다. 기존 개발자센터 신규 신청은 2026-07-31 중단되었고 기존 키는 2027-06-30까지 유예되는 일정이 공지되어 있어 오래된 튜토리얼을 그대로 안내하지 않는다. 공식 [이관 공지](https://developers.naver.com/notice/article/32530), [검색광고 API 시작 안내](https://naver.github.io/searchad-apidoc/).
+- **YouTube:** 공개 영상·채널 데이터는 [Google Cloud Console](https://console.cloud.google.com/)에서 프로젝트 생성 → YouTube Data API v3 사용 설정 → API 키 생성 순으로 안내한다. 비공개 계정 데이터나 사용자 대신 수행하는 작업은 키 대신 OAuth 동의/권한 승인이 필요하다. 쿼터를 제공자 콘솔에서 확인하게 한다. [공식 시작 안내](https://developers.google.com/youtube/v3/getting-started), [인증정보 안내](https://developers.google.com/youtube/registering_an_application).
+- **OpenAI API:** ChatGPT 구독과 API 사용/결제는 별도임을 안내하고, [OpenAI Platform](https://platform.openai.com/) 계정·프로젝트와 API 결제 설정에서 키를 만든 뒤 연결하도록 한다. 키는 비밀정보이며 브라우저에 노출하지 않는다. [공식 인증 안내](https://platform.openai.com/docs/api-reference/authentication).
+- **Higgsfield:** 웹사이트의 크리에이터 구독 크레딧과 API 잔액/과금은 별개임을 먼저 알린다. 고객은 [Higgsfield API 콘솔](https://open.higgsfield.ai/api-keys)에서 API 키를 만들고 연결한다. API 호출 비용은 API 계정 잔액에서 발생한다. [빠른 시작](https://open.higgsfield.ai/quick-start).
+- **GitHub:** 기능이 특정 저장소를 읽거나 배포하는지에 따라 필요한 권한을 최소화해 명시한다. 사용자에게 PAT를 무조건 복사하게 하지 않고, 가능한 경우 오토웍스 GitHub App 설치/저장소 선택 및 OAuth 승인으로 연결한다. [GitHub App과 OAuth App 안내](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/differences-between-github-apps-and-oauth-apps). GitHub 로그인만 필요한 경우에는 저장소 접근 권한과 분리한다.
+
+> 제공자 콘솔 UI와 인증 절차는 바뀔 수 있다. 이 항목들은 공식 문서 기준의 안내 설계이며, 실제 화면 캡처와 발급 절차는 해당 연동 퀘스트 구현 시 다시 검증한다.
+
 ## 챕터 3. 고객 화면과 어드민 — 대기
 ### Q3-1 고객 대시보드와 내 데이터
 - [ ] 로그인한 고객이 자신의 프로젝트, 설정, 실행 내역, 결과만 본다
@@ -167,3 +185,4 @@
 - 2026-10-24: 현재 웹 시안과 정책 페이지 초안을 GitHub에 저장하고, 단계별 개발 퀘스트를 시작했다.
 - 2026-10-24: 고객별 데이터 격리, 계정 생애주기, 고객 대시보드, 운영자 어드민, 사용량 기반 월 구독, 토스페이먼츠 퀘스트를 추가했다.
 - 2026-10-24: Q1-2 첫 베타 기능을 사용자 선택에 따라 브랜드 데일리 검색량으로 변경하고, 추정치 고지 및 고객별 API 키 격리 요구를 기록했다.
+- 2026-10-24: 네이버 검색광고·NAVER API HUB, YouTube, OpenAI, Higgsfield, GitHub의 고객별 연결 안내와 키 발급·비용·권한·테스트·교체 절차를 Q2-5로 추가했다.
