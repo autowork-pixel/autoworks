@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f7f7fa">
+<title>오토웍스 | 마케팅 통합 분석</title>
+<style>
+:root{font-family:Inter,"Pretendard","Noto Sans KR",system-ui,-apple-system,sans-serif;color:#20212a;background:#f7f7fa;font-synthesis:none;text-rendering:optimizeLegibility}*{box-sizing:border-box}body{margin:0;background:#f7f7fa}button,input{font:inherit}button{cursor:pointer}.promo{height:34px;background:linear-gradient(100deg,#643dec,#7243ed 55%,#8750ef);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;position:relative}.promo b{background:#ffffff30;border-radius:99px;padding:2px 6px;margin-right:7px;font-size:9px}.promo button{position:absolute;right:max(calc((100vw - 1120px)/2),14px);border:0;background:transparent;color:#ffffffc9;font-size:17px}.header{height:64px;background:#fff;border-bottom:1px solid #ececf1;display:flex;align-items:center;justify-content:space-between;padding:0 max(calc((100vw - 1120px)/2),24px);position:sticky;top:0;z-index:2}.brandline{display:flex;align-items:center;gap:13px}.menu{border:0;background:transparent;color:#555765;font-size:20px;padding:6px}.brand{display:flex;align-items:center;gap:9px;color:#292a34;text-decoration:none;font-weight:750;font-size:14px;letter-spacing:-.04em}.logo{width:29px;height:29px;border-radius:9px;background:#6548e9;color:#fff;display:grid;place-items:center;font-size:15px;font-weight:800;position:relative}.logo:after{content:"";position:absolute;width:12px;height:12px;border-radius:5px;background:#a994ff;border:2px solid white;right:-4px;bottom:-4px}.switcher{border:0;border-left:1px solid #eeeef2;background:white;color:#4a4b57;font-size:12px;font-weight:650;padding:8px 0 8px 15px}.switcher span{font-size:10px;color:#858592;margin-left:5px}.header-right{display:flex;align-items:center;gap:10px}.header-link{font-size:11px;font-weight:650;color:#5b5c6a;text-decoration:none;padding:9px 11px}.login{border:0;border-radius:8px;background:#6246eb;color:white;font-size:11px;font-weight:700;padding:10px 17px}.wrap{max-width:940px;margin:0 auto;padding:46px 22px 72px}.intro{text-align:center;margin-bottom:24px}.kicker{font-size:10px;font-weight:750;letter-spacing:.1em;color:#7561d4;margin:0 0 11px}.intro h1{font-size:26px;line-height:1.35;letter-spacing:-.055em;margin:0;color:#262732}.intro p{font-size:12px;line-height:1.7;color:#858593;margin:9px 0 0}.composer{max-width:780px;margin:0 auto;background:#fff;border:1px solid #e8e8ef;border-radius:17px;box-shadow:0 3px 14px #27244108;overflow:hidden}.topic{min-height:85px;padding:21px 22px 10px}.topic input{width:100%;border:0;outline:0;font-size:14px;color:#282935;background:transparent}.topic input::placeholder{color:#a3a3ae}.compare{height:39px;padding:0 22px;display:flex;align-items:center;gap:8px;color:#90909c;font-size:11px}.compare button{border:0;background:transparent;color:#797987;padding:4px 0;font-size:11px}.compare input{width:130px;border:0;border-bottom:1px solid #e2e2ea;background:transparent;outline:0;font-size:11px;padding:5px}.toolshelf{border-top:1px solid #f0f0f4;padding:11px 18px 15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.modes{display:flex;background:#f5f4fa;border-radius:99px;padding:3px;margin-right:5px}.modes button{border:0;background:transparent;color:#777684;border-radius:99px;padding:7px 13px;font-size:10px}.modes button.active{background:#fff;color:#4a37ca;box-shadow:0 1px 4px #22212b18;font-weight:700}.filter{height:32px;border:1px solid #e8e8ef;border-radius:99px;background:#fff;color:#626370;font-size:10px;padding:0 11px}.filter span{color:#a0a0aa;margin-left:4px}.channels{display:flex;gap:6px;margin-left:auto}.channel{border:1px solid #e8e8ef;background:white;color:#777783;border-radius:99px;padding:7px 10px;font-size:10px}.channel.selected{color:#5946d4;border-color:#d8d1ff;background:#f6f4ff}.submitrow{border-top:1px solid #f0f0f4;padding:12px 17px;display:flex;align-items:center;justify-content:space-between}.hint{font-size:10px;color:#9a9aa5}.analyze{border:0;border-radius:9px;background:#6246eb;color:#fff;font-size:11px;font-weight:700;padding:11px 19px;box-shadow:0 2px 5px #6146eb24}.analyze:hover,.login:hover{background:#5137dc}.section{max-width:780px;margin:30px auto 0}.section-heading{display:flex;justify-content:space-between;align-items:end;margin-bottom:12px}.section-heading h2{font-size:13px;letter-spacing:-.025em;margin:0;color:#3c3d48}.section-heading p{font-size:10px;color:#9696a1;margin:5px 0 0}.more{border:0;background:transparent;color:#7771a3;font-size:10px}.suggestions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.suggestion{background:#fff;border:1px solid #e9e9ef;border-radius:12px;padding:15px;cursor:pointer;text-align:left;transition:border-color .15s,transform .15s}.suggestion:hover{border-color:#c6baff;transform:translateY(-1px)}.suggestion .mini{font-size:9px;color:#8d7ae0;font-weight:700}.suggestion b{display:block;font-size:11px;color:#454651;margin:8px 0 4px}.suggestion span:last-child{font-size:10px;color:#92929d}.section.tools-section{margin-top:30px}.tool-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.tool{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1px solid #e9e9ef;border-radius:11px;cursor:pointer}.tool:hover{border-color:#c6baff}.tool-ico{width:31px;height:31px;flex:none;background:#f3f1fc;color:#6953ce;border-radius:9px;display:grid;place-items:center;font-size:14px}.tool b{display:block;font-size:11px;color:#42434e;margin-bottom:4px}.tool small{font-size:9px;color:#9999a3}.tool .state{margin-left:auto;border-radius:99px;background:#f5f5f7;color:#93939e;padding:5px 8px;font-size:9px;white-space:nowrap}.tool .state.ready{background:#f0efff;color:#6954d1}.notice{max-width:780px;margin:16px auto 0;color:#9999a3;font-size:9px;line-height:1.6;text-align:center}.toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,12px);opacity:0;pointer-events:none;background:#34323e;color:#fff;border-radius:9px;padding:11px 16px;font-size:11px;transition:.18s;box-shadow:0 4px 18px #25233322}.toast.show{opacity:1;transform:translate(-50%,0)}.drawer{display:none;position:fixed;inset:0;background:#17162055;z-index:4}.drawer.open{display:block}.drawer-panel{width:min(290px,84vw);height:100%;background:white;padding:25px 17px}.drawer-top{font-size:14px;font-weight:750;margin:4px 0 22px}.drawer button{width:100%;border:0;background:white;text-align:left;padding:13px 8px;color:#555662;font-size:12px;border-bottom:1px solid #f2f2f5}
+@media(max-width:620px){.promo{height:31px;font-size:10px}.header{height:56px;padding:0 15px}.brand{font-size:13px}.switcher{font-size:11px;padding-left:11px}.header-link{display:none}.wrap{padding:35px 14px 44px}.intro{margin-bottom:19px}.intro h1{font-size:21px}.intro p{font-size:11px;max-width:310px;margin:8px auto 0}.composer{border-radius:14px}.topic{padding:19px 16px 9px;min-height:73px}.topic input{font-size:13px}.compare{padding:0 16px}.toolshelf{padding:10px 12px 12px;gap:6px}.modes button{padding:7px 10px}.filter{padding:0 9px;font-size:9px}.channels{width:100%;margin:2px 0 0}.channel{flex:1}.submitrow{padding:10px 12px}.hint{max-width:56%;line-height:1.4}.analyze{padding:10px 14px}.section{margin-top:25px}.suggestions{grid-template-columns:1fr;gap:7px}.suggestion{padding:12px 13px;display:grid;grid-template-columns:75px 1fr;align-items:center}.suggestion .mini{grid-row:span 2}.suggestion b{margin:0 0 3px}.suggestion span:last-child{grid-column:2}.tool-grid{grid-template-columns:1fr}.section.tools-section{margin-top:25px}.tool{padding:11px 12px}.notice{text-align:left;padding:0 3px}.login{padding:9px 13px}}
+@media(min-width:1000px){.wrap{padding-top:52px}.intro h1{font-size:29px}.composer{max-width:800px}.section,.notice{max-width:800px}}
+.site-footer{background:#fff;border-top:1px solid #ececf1;padding:28px max(calc((100vw - 940px)/2),22px) 24px}.site-footer strong{font-size:12px}.site-footer p{font-size:10px;color:#92929c;margin:4px 0 14px}.site-footer nav{display:flex;flex-wrap:wrap;gap:8px 16px;border-bottom:1px solid #eeeef2;padding-bottom:14px;margin-bottom:13px}.site-footer a{font-size:10px;color:#666773;text-decoration:none}.site-footer a:hover{color:#6047e0}.site-footer small{font-size:10px;color:#a0a0aa}@media(max-width:620px){.site-footer{padding:24px 15px}}</style>
+</head>
+<body>
+<div class="promo" id="promo"><span><b>오토웍스</b> 매주 반복하는 마케팅 분석, 한 화면에서 시작하세요.</span><button id="closePromo" aria-label="닫기">×</button></div>
+<header class="header">
+ <div class="brandline"><button class="menu" id="menu" aria-label="메뉴 열기">☰</button><a class="brand" href="#"><span class="logo">오</span>오토웍스</a><button class="switcher" id="switcher">통합 분석 <span>⌄</span></button></div>
+ <div class="header-right"><button class="header-link" data-toast>요금제</button><button class="login" data-toast>로그인</button></div>
+</header>
+<main class="wrap">
+ <section class="intro"><p class="kicker">MARKETING ANALYSIS</p><h1>오늘은 어떤 분석을 도와드릴까요?</h1><p>브랜드와 키워드, 관심 채널을 고르면<br class="mobile-break"> 분석 조건을 한 번에 정리할 수 있어요.</p></section>
+ <section class="composer" aria-label="분석 조건 만들기">
+  <div class="topic"><input id="topic" type="text" placeholder="분석할 브랜드나 주제어를 입력하세요" autocomplete="off"></div>
+  <div class="compare"><button id="addCompare">＋ 비교 단어 추가</button><span id="compareCount">0 / 1</span><input id="compare" placeholder="비교할 브랜드나 키워드" hidden></div>
+  <div class="toolshelf">
+   <div class="modes"><button class="active" data-mode="keyword">키워드</button><button data-mode="ai">✦ AI 제안</button></div>
+   <button class="filter" id="period">기간 <span>최근 7일 ⌄</span></button>
+   <div class="channels" id="channels"><button class="channel selected">블로그</button><button class="channel selected">뉴스</button><button class="channel">YouTube</button><button class="channel">Instagram</button></div>
+  </div>
+  <div class="submitrow"><span class="hint" id="hint">주제어와 채널을 선택하면 분석 조건을 만들 수 있어요.</span><button class="analyze" id="analyze">분석 조건 만들기 <span>↑</span></button></div>
+ </section>
+ <section class="section">
+  <div class="section-heading"><div><h2>이런 분석부터 시작해 보세요</h2><p>원하는 분석 주제를 선택하면 입력란에 넣어드려요.</p></div><button class="more" data-tools>전체 도구 보기 →</button></div>
+  <div class="suggestions">
+   <button class="suggestion" data-topic="브랜드 언급 변화"><span class="mini">브랜드 모니터링</span><b>브랜드 언급 변화</b><span>채널별 반응과 언급 흐름 살펴보기</span></button>
+   <button class="suggestion" data-topic="경쟁 브랜드 비교"><span class="mini">브랜드 비교</span><b>경쟁 브랜드 비교</b><span>두 브랜드의 콘텐츠 반응 비교하기</span></button>
+   <button class="suggestion" data-topic="이번 주 화제 콘텐츠"><span class="mini">콘텐츠 리서치</span><b>이번 주 화제 콘텐츠</b><span>주제어와 관련된 콘텐츠 찾아보기</span></button>
+  </div>
+ </section>
+ <section class="section tools-section" id="toolSection">
+  <div class="section-heading"><div><h2>오토웍스 분석 도구</h2><p>현재 기능의 웹 연결 단계를 확인하세요.</p></div></div>
+  <div class="tool-grid" id="toolGrid"></div>
+ </section>
+ <p class="notice">현재는 서비스 화면 미리보기입니다. 로그인, 구독 결제, API 키 저장, 실제 분석 실행은 아직 연결되지 않았습니다.</p>
+</main>
+<footer class="site-footer"><strong>오토웍스</strong><p>워크스위치가 만들고 운영합니다.</p><nav><a href="./guide.html">이용 안내</a><a href="./terms.html">이용약관</a><a href="./privacy.html">개인정보처리방침</a><a href="./refund.html">결제·취소 및 환불</a><a href="./help.html">고객센터</a><a href="./business.html">사업자 정보</a></nav><small>© 워크스위치 · 오토웍스</small></footer><div class="drawer" id="drawer"><nav class="drawer-panel"><div class="drawer-top">오토웍스 메뉴</div><button data-tools>통합 분석</button><button data-tools>자동화 도구</button><button data-toast>API 연결 설정</button><button data-toast>요금제</button></nav></div>
+<div class="toast" id="toast"></div>
+<script>
+const tools=[
+ ["⌕","인플루언서 후보 찾기","YouTube·Instagram 공개 프로필 후보","로컬 코드 있음"],
+ ["◉","화제 콘텐츠 레퍼런스","공개 게시물 수집과 콘텐츠 분석","로컬 코드 있음"],
+ ["▤","협업 게시물 성과 조회","브랜드 협업 게시물 성과 추적","로컬 코드 있음"],
+ ["↗","브랜드 검색량 추이","브랜드 일별 검색 데이터 확인","로컬 코드 있음"],
+ ["▥","주간 광고 분석","Excel·Google Sheets 주간 리포트","로컬 코드 있음"],
+ ["✦","AI 블로그 스튜디오","SEO·GEO 원고 작성과 다듬기","별도 웹앱 있음"],
+ ["⌖","네이버 SEO 점유 현황","통합검색 노출 위치와 순위 분석","웹 개발 필요"],
+ ["▧","콘텐츠 자동 제작","콘텐츠 제작 워크플로","기능 확인 필요"]
+];
+document.getElementById("toolGrid").innerHTML=tools.map(t=>'<article class="tool" data-toast><span class="tool-ico">'+t[0]+'</span><span><b>'+t[1]+'</b><small>'+t[2]+'</small></span><span class="state">'+t[3]+'</span></article>').join("");
+const toast=document.getElementById("toast");let timer;
+function showToast(msg){toast.textContent=msg;toast.classList.add("show");clearTimeout(timer);timer=setTimeout(()=>toast.classList.remove("show"),2400)}
+document.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("[data-mode]").forEach(x=>x.classList.toggle("active",x===b));showToast(b.dataset.mode==="ai"?"AI 제안은 API 연결 후 사용할 수 있어요.":"키워드 입력 방식으로 바뀌었어요.")}));
+document.querySelectorAll(".channel").forEach(b=>b.addEventListener("click",()=>b.classList.toggle("selected")));
+document.getElementById("addCompare").addEventListener("click",()=>{const f=document.getElementById("compare");if(f.hidden){f.hidden=false;f.focus();document.getElementById("addCompare").textContent="비교 단어";document.getElementById("compareCount").textContent="1 / 1"}});
+document.querySelectorAll("[data-topic]").forEach(b=>b.addEventListener("click",()=>{document.getElementById("topic").value=b.dataset.topic;document.getElementById("topic").focus();window.scrollTo({top:0,behavior:"smooth"})}));
+document.getElementById("period").addEventListener("click",()=>showToast("기간 선택은 분석 기능 연결 후 활성화됩니다."));
+document.getElementById("analyze").addEventListener("click",()=>{const topic=document.getElementById("topic").value.trim();if(!topic){document.getElementById("topic").focus();showToast("분석할 브랜드나 주제어를 입력해 주세요.");return}showToast("실제 분석은 API와 회원 계정 연결 후 이용할 수 있어요.")});
+document.getElementById("menu").addEventListener("click",()=>document.getElementById("drawer").classList.add("open"));
+document.getElementById("drawer").addEventListener("click",e=>{if(e.target.id==="drawer")e.currentTarget.classList.remove("open")});
+document.querySelectorAll("[data-tools]").forEach(b=>b.addEventListener("click",()=>{document.getElementById("toolSection").scrollIntoView({behavior:"smooth"});document.getElementById("drawer").classList.remove("open")}));
+document.querySelectorAll("[data-toast]").forEach(b=>b.addEventListener("click",()=>showToast("로그인과 도구 연결을 준비 중입니다.")));
+document.getElementById("closePromo").addEventListener("click",()=>document.getElementById("promo").remove());
+</script>
+</body>
+</html>
+
+
+
+
