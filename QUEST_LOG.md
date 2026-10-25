@@ -58,8 +58,8 @@
 - **가치 검증:** 주간 또는 월간 브랜드 검색 관심도 변화를 한 화면에서 비교하고 보고서로 공유/보관할 수 있는지 소규모 브랜드 고객에게 검증한다. 원본 데이터는 일별 절대량이 아니므로 추세 모니터링 도구로 포지셔닝한다.
 - **가격/한도 상태:** 아직 출시 가격이나 실행 한도를 확정하지 않는다. 기존 `config/products.json`의 199,000/359,000/599,000원은 기능 매핑과 원가 근거가 부족한 초안이다. 브랜드 검색량만 제공하는 베타에 그대로 적용하지 않는다.
 - **시장 참고:** 썸트렌드 공식 요금 페이지는 Basic 월 29,700원, Premium 월 149,000원(각 30일 정기 구독, VAT 포함)을 표시한다. 소셜·온라인 언급 분석 등 범위가 더 넓어 직접 비교 가격으로 쓰지 않고 상한 참고점으로만 둔다. [공식 요금](https://some.co.kr/pricing)
-- **API 한도 참고:** NAVER API HUB와 검색광고 API는 제공자별 호출 제한/쿼터 오류가 있을 수 있으나, 이번에 확인한 공개 문서만으로 모든 계정에 적용되는 고정 숫자를 확정할 수 없다. 숫자를 임의로 상품 한도로 복사하지 않는다. [NAVER API HUB 개요](https://api.ncloud-docs.com/docs/naver-api-hub-overview), [검색광고 API 문서](https://naver.github.io/searchad-apidoc/)
-- **베타에서 기록할 값:** 계정별 월간 활성일, 실행 횟수, 실행당 키워드 수, 광고 API/DataLab 호출량과 쿼터 오류, 성공·실패율, 반복 실행 여부, 결과 공유/다운로드 여부, 문의·지원 시간. API 키 원문은 로그에 기록하지 않는다. 고객 제공자 계정의 호출 제한과 오토웍스 구독 한도는 별도로 관리한다.
+- **API 비용/한도 참고:** 검색광고 API를 신청할 수 있는 회원 조건은 공식 FAQ에서 확인했으나, 공개 FAQ는 API 자체의 별도 사용료를 명시하지 않는다. 광고를 집행할 때의 클릭 광고비는 별도이며 실제 광고 클릭 발생 시 과금된다. 호출 제한과 이용조건은 고객 계정별 콘솔/약관에서 연동 전에 확인한다. [검색광고 API 신청 FAQ](https://ads.naver.com/help/faq/991), [광고비 안내](https://ads.naver.com/help/faq/747), [공식 API 문서](https://naver.github.io/searchad-apidoc/)
+- **베타에서 기록할 값:** 계정별 월간 활성일, 실행 횟수, 실행당 키워드 수, 검색광고 키워드도구 호출량과 조회 오류, 성공·실패율, 반복 실행 여부, 결과 공유/다운로드 여부, 문의·지원 시간. API 키 원문은 로그에 기록하지 않는다. 고객 제공자 계정의 호출 제한과 오토웍스 구독 한도는 별도로 관리한다.
 - **가격 검증안(가설):** 베타 참여자에게 기능 사용 후 월 지불 의향과 대체 수작업 시간/빈도를 인터뷰한다. 초기 가격 후보를 월 9,900원과 19,900원으로 비교 제시하되, 이는 시장 사실이나 확정 요금이 아닌 테스트 가격이다. 반복 사용·응답 자료가 쌓이기 전에는 정식 가격 및 실행 상한을 확정하지 않는다.
 
 완료 조건:
@@ -111,7 +111,7 @@
 - [ ] 도움말의 콘솔 경로와 이미지/화면 안내를 주기적으로 재확인할 담당·수정 절차를 둔다
 
 #### 베타에서 안내할 제공자별 연결 방식
-- **네이버 브랜드 검색량:** 네이버 검색광고 API 라이선스/비밀키와 네이버 검색어 트렌드 API용 인증정보가 각각 필요하다. 검색광고 센터는 [광고주센터](https://searchad.naver.com/) → [광고 관리 시스템](https://manage.searchad.naver.com/) → 도구 → API 관리에서 발급한다.  [검색광고 API 시작 안내](https://naver.github.io/searchad-apidoc/).
+- **네이버 브랜드 검색량 베타:** 검색광고 키워드도구만 연결한다. 네이버 검색광고 회원 계정에서 Customer ID, API License, Secret Key를 확인해 등록하도록 안내한다. 키워드도구 응답은 월간 PC·모바일 검색량이며, 일·주·월 그래프는 저장한 월간 수치 스냅샷의 시계열이다. DataLab 검색어 트렌드는 이 기능 범위에 포함하지 않는다. [광고주센터](https://searchad.naver.com/) → [광고 관리 시스템](https://manage.searchad.naver.com/) → 도구 → API 관리. [API 신청 FAQ](https://ads.naver.com/help/faq/991), [API 문서](https://naver.github.io/searchad-apidoc/).
 - **YouTube:** 공개 영상·채널 데이터는 [Google Cloud Console](https://console.cloud.google.com/)에서 프로젝트 생성 → YouTube Data API v3 사용 설정 → API 키 생성 순으로 안내한다. 비공개 계정 데이터나 사용자 대신 수행하는 작업은 키 대신 OAuth 동의/권한 승인이 필요하다. 쿼터를 제공자 콘솔에서 확인하게 한다. [공식 시작 안내](https://developers.google.com/youtube/v3/getting-started), [인증정보 안내](https://developers.google.com/youtube/registering_an_application).
 - **OpenAI API:** ChatGPT 구독과 API 사용/결제는 별도임을 안내하고, [OpenAI Platform](https://platform.openai.com/) 계정·프로젝트와 API 결제 설정에서 키를 만든 뒤 연결하도록 한다. 키는 비밀정보이며 브라우저에 노출하지 않는다. [공식 인증 안내](https://platform.openai.com/docs/api-reference/authentication).
 - **Higgsfield:** 웹사이트의 크리에이터 구독 크레딧과 API 잔액/과금은 별개임을 먼저 알린다. 고객은 [Higgsfield API 콘솔](https://open.higgsfield.ai/api-keys)에서 API 키를 만들고 연결한다. API 호출 비용은 API 계정 잔액에서 발생한다. [빠른 시작](https://open.higgsfield.ai/quick-start).
