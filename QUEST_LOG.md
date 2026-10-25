@@ -96,7 +96,9 @@
 - [Firebase Authentication OIDC 및 Identity Platform 조건](https://firebase.google.com/docs/auth/web/openid-connect)
 
 예산·프로비저닝 원칙:
-- 월간 비용 상한은 아직 정하지 않았다. 실제 Cloud Billing 연결이나 Cloud Run 배포 전에 사용자가 월 상한과 알림 기준을 정한다.
+- 사용자의 기본 선택에 따라 Firebase 프로젝트는 무료 Spark 요금제로 유지한다. 현재 Cloud Billing은 연결하지 않았고, Firebase 화면에서 최근 청구 가능한 서비스 사용도 확인되지 않았다.
+- Firebase Hosting 정적 배포는 무료 범위에서 가능하지만 Cloud Run과 관리형 Firestore 백업 등 유료 서비스로 확장하기 전에는 비용 예산을 먼저 정한다.
+- 월간 비용 알림 예산은 아직 생성하지 않았다. Spark 상태에서는 해당 예산을 연결할 청구 계정이 없으므로, 유료 기능을 켜기 전에 청구 계정·월 예산·알림을 함께 확인한다.
 - 예산 알림은 지출 차단 기능이 아니다. Google Cloud의 청구 데이터 반영 지연으로 상한을 넘을 수 있으므로, Cloud Run에서 지원되는 지출 한도도 가능하면 함께 검토하되 절대적인 상한으로 약속하지 않는다.
 - [Cloud Billing 예산 알림의 동작과 한계](https://docs.cloud.google.com/billing/docs/how-to/budgets), [Cloud Run 지출 한도](https://docs.cloud.google.com/billing/docs/how-to/budgets-spend-caps)
 
@@ -105,9 +107,12 @@
 - [x] 고객/워크스페이스/프로젝트/API 키/실행/스냅샷/결과/구독 관계를 설계
 - [x] 환경 분리, 서버 키 보관, 데이터 격리, 백업·복구, 오류 모니터링 기준을 제안
 - [x] Firebase 조합을 사용자 승인으로 확정
-- [ ] 월별 비용 상한·알림 기준을 정한 뒤 Cloud Billing을 연결한다
+- [x] 사용자 기본 선택에 따라 Spark 무료 요금제를 유지하고 유료 전환을 보류
+- [ ] Cloud Run 등 유료 서비스 시작 전 월 예산·알림을 정하고 Cloud Billing을 연결한다
 - [ ] 네이버·카카오·Google 로그인 구성과 callback 조건을 Q2-2에서 검증
-- [ ] Firebase 개발 프로젝트 생성과 도메인·운영 프로젝트 계획을 확정한다
+- [x] 개발 Firebase 프로젝트 `autoworks-c9a6a`와 웹 앱 `Autoworks 웹`을 생성하고 기본 Firebase SDK 설정값을 확인했다
+- [x] Cloud Firestore 기본 데이터베이스를 서울(`asia-northeast3`), 프로덕션 모드(기본 읽기/쓰기 거부)로 생성했다
+- [ ] SDK 설정을 코드에 연결하고, 서비스 도메인·운영 프로젝트 계획을 확정한다
 
 ### Q2-2 회원가입·로그인·계정 생애주기
 - [ ] 네이버·카카오·구글 로그인과 필요한 이메일 가입/로그인 방식을 구현한다
@@ -227,5 +232,5 @@
 - 2026-10-24: Q1-2 첫 베타 기능을 사용자 선택에 따라 브랜드 데일리 검색량으로 변경하고, 추정치 고지 및 고객별 API 키 격리 요구를 기록했다.
 - 2026-10-24: 네이버 검색광고·NAVER API HUB, YouTube, OpenAI, Higgsfield, GitHub의 고객별 연결 안내와 키 발급·비용·권한·테스트·교체 절차를 Q2-5로 추가했다.
 - 2026-10-24: 도매매 마켓 계정 설정 화면의 서비스별 입력·발급 안내 구조를 참고해 오토웍스 외부 서비스 연결 화면을 만들고, 확대 가능한 단계 안내와 미리보기 저장 제한을 기록했다.
-- 2026-10-25: Q2-1 Firebase 기반 아키텍처를 사용자 승인으로 확정했다. Cloud Billing 연결 및 프로젝트 생성은 월간 비용 상한과 알림 기준 확정 후 진행한다.
+- 2026-10-25: 사용자가 기본 비용 설정을 선택해 Firebase Spark 무료 요금제를 유지했다. 개발 프로젝트 `autoworks-c9a6a`에 `Autoworks 웹` 앱과 서울 리전 Firestore를 프로덕션 모드로 만들었다. Cloud Billing은 연결하지 않았으며 월 예산 알림, SDK 코드 연결, 도메인, 운영 프로젝트는 후속 조건으로 남겼다.
 - 2026-10-25: Q1-2의 데이터 원천을 NAVER DataLab이 아닌 검색광고 키워드도구로 명확히 정정했다. API 요금과 광고 집행비를 구분하고, 일·주·월 화면은 실제 일별 검색량이 아니라 저장된 월간 검색량 스냅샷의 추이로 설계한다.
