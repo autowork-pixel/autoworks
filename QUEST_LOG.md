@@ -73,9 +73,9 @@
 - [ ] 제공자 쿼터와 서비스 원가를 확인한 뒤 구독 가격·실행 상한을 확정한다
 
 ## 챕터 2. 고객별 계정·데이터 기반 — 진행 중
-### Q2-1 서비스 구조와 데이터 모델 확정 — 권고안 작성
+### Q2-1 서비스 구조와 데이터 모델 확정 — 아키텍처 승인
 
-#### 권고 구조 (사용자 확정 전)
+#### 확정 구조 (사용자 승인: 2026-10-25)
 - **웹 호스팅:** 현재 저장소는 정적 HTML이므로 Firebase Hosting으로 화면을 제공하고, 실제 키 처리·API·배치 작업은 Cloud Run 서버로 분리한다. 정적 사이트와 Cloud Run 연동은 Firebase Hosting에서 지원한다.
 - **로그인:** Firebase Authentication을 기본 사용자 식별자로 둔다. Google은 기본 제공자를 쓸 수 있고, 네이버·카카오는 OAuth/OIDC 연결 조건을 Q2-2에서 확인한다. Firebase의 임의 OIDC 제공자는 Identity Platform 업그레이드가 필요하므로 인증 제공자 선택과 추가 비용을 사전 확인한다.
 - **데이터베이스:** Firestore를 사용해 계정별 데이터를 분리한다. Supabase(Postgres/RLS)는 관계형 조회와 정책 작성이 강점인 비교 대안이지만, 현재 Firebase 사용 경험 및 단일 개발자의 운영 단순성을 고려해 Firebase 조합을 우선 권고한다. 팀 계정은 아직 만들지 않고 `workspaceId`를 경계로 하는 단일 소유자 구조부터 시작한다.
@@ -95,13 +95,19 @@
 - [Firestore export / import와 결제 요구](https://firebase.google.com/docs/firestore/manage-data/export-import)
 - [Firebase Authentication OIDC 및 Identity Platform 조건](https://firebase.google.com/docs/auth/web/openid-connect)
 
+예산·프로비저닝 원칙:
+- 월간 비용 상한은 아직 정하지 않았다. 실제 Cloud Billing 연결이나 Cloud Run 배포 전에 사용자가 월 상한과 알림 기준을 정한다.
+- 예산 알림은 지출 차단 기능이 아니다. Google Cloud의 청구 데이터 반영 지연으로 상한을 넘을 수 있으므로, Cloud Run에서 지원되는 지출 한도도 가능하면 함께 검토하되 절대적인 상한으로 약속하지 않는다.
+- [Cloud Billing 예산 알림의 동작과 한계](https://docs.cloud.google.com/billing/docs/how-to/budgets), [Cloud Run 지출 한도](https://docs.cloud.google.com/billing/docs/how-to/budgets-spend-caps)
+
 완료 조건:
 - [x] Firebase, Supabase 대안을 현재 정적 웹과 1인 운영 조건으로 비교
 - [x] 고객/워크스페이스/프로젝트/API 키/실행/스냅샷/결과/구독 관계를 설계
 - [x] 환경 분리, 서버 키 보관, 데이터 격리, 백업·복구, 오류 모니터링 기준을 제안
-- [ ] Firebase 조합과 월별 예상 사용량·비용 한도를 사용자와 확정
+- [x] Firebase 조합을 사용자 승인으로 확정
+- [ ] 월별 비용 상한·알림 기준을 정한 뒤 Cloud Billing을 연결한다
 - [ ] 네이버·카카오·Google 로그인 구성과 callback 조건을 Q2-2에서 검증
-- [ ] Firebase 개발 프로젝트 생성, 도메인·운영 프로젝트 계획을 확정한다
+- [ ] Firebase 개발 프로젝트 생성과 도메인·운영 프로젝트 계획을 확정한다
 
 ### Q2-2 회원가입·로그인·계정 생애주기
 - [ ] 네이버·카카오·구글 로그인과 필요한 이메일 가입/로그인 방식을 구현한다
@@ -221,4 +227,5 @@
 - 2026-10-24: Q1-2 첫 베타 기능을 사용자 선택에 따라 브랜드 데일리 검색량으로 변경하고, 추정치 고지 및 고객별 API 키 격리 요구를 기록했다.
 - 2026-10-24: 네이버 검색광고·NAVER API HUB, YouTube, OpenAI, Higgsfield, GitHub의 고객별 연결 안내와 키 발급·비용·권한·테스트·교체 절차를 Q2-5로 추가했다.
 - 2026-10-24: 도매매 마켓 계정 설정 화면의 서비스별 입력·발급 안내 구조를 참고해 오토웍스 외부 서비스 연결 화면을 만들고, 확대 가능한 단계 안내와 미리보기 저장 제한을 기록했다.
+- 2026-10-25: Q2-1 Firebase 기반 아키텍처를 사용자 승인으로 확정했다. Cloud Billing 연결 및 프로젝트 생성은 월간 비용 상한과 알림 기준 확정 후 진행한다.
 - 2026-10-25: Q1-2의 데이터 원천을 NAVER DataLab이 아닌 검색광고 키워드도구로 명확히 정정했다. API 요금과 광고 집행비를 구분하고, 일·주·월 화면은 실제 일별 검색량이 아니라 저장된 월간 검색량 스냅샷의 추이로 설계한다.
