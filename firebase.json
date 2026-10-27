@@ -1,11 +1,22 @@
 {
+  "firestore": {
+    "rules": "firestore.rules"
+  },
   "hosting": {
     "public": ".",
     "ignore": [
       "firebase.json",
       ".firebaserc",
+      ".gitignore",
       "README.md",
       "QUEST_LOG.md",
+      "firestore.rules",
+      "package.json",
+      "package-lock.json",
+      "firebase-debug.log",
+      "firestore-debug.log",
+      "ui-debug.log",
+      "tests/**",
       "**/.*",
       "**/node_modules/**"
     ]
