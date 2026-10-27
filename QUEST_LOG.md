@@ -1,7 +1,7 @@
 ## 현재 위치
 - 현재 챕터: 2. 고객별 계정·데이터 기반
 - 현재 퀘스트: Q2-2 회원가입·로그인·계정 생애주기
-- 다음 한 가지: Firebase Authentication 로그인 흐름과 Google·네이버·카카오 제공자별 연결 조건을 확인한다.
+- 다음 한 가지: Google 로그인을 Firebase에서 켜고 OAuth 클라이언트 생성을 승인받는다. 네이버·카카오는 Identity Platform 요금 조건 확인 후 별도 진행한다.
 - 보류 항목: Q1-2의 가격·사용 한도는 실제 베타 데이터가 필요하므로 미완료로 보존하고, 베타 운영 전에 다시 검증한다.
 - 진행 방식: 퀘스트를 하나씩 진행하되 실제 고객 데이터가 필요한 검증은 준비된 기반 작업 뒤로 미룰 수 있으며, 미완료 조건을 로그에 남긴다.
 ---
@@ -113,13 +113,20 @@
 - [x] 개발·운영 프로젝트 및 도메인 계획을 기록했다: 현재 프로젝트는 개발용, 운영 프로젝트·서비스 도메인은 초대 베타 전에 준비한다.
 - [ ] Firebase Hosting 배포 후 SDK 초기화가 실제 브라우저에서 동작하는지 확인한다.
 
-### Q2-2 회원가입·로그인·계정 생애주기
-- [ ] 네이버·카카오·구글 로그인과 필요한 이메일 가입/로그인 방식을 구현한다
-- [ ] 로그인 제공자 연결·중복 계정 처리와 복구 기준을 정한다
-- [ ] OAuth callback 주소, 허용 도메인, 요청 권한 범위를 환경별로 맞춘다
-- [ ] 이메일 확인, 비밀번호 재설정, 로그아웃 흐름을 검증한다
-- [ ] 탈퇴 요청과 고객 데이터 삭제 절차를 구현한다
-- [ ] 사용자 식별 정보와 고객 데이터 소유 관계를 검증한다
+### Q2-2 회원가입·로그인·계정 생애주기 — 진행 중
+- [x] 기존 사용자 요구에 따라 Google·네이버·카카오 소셜 가입/로그인으로 범위를 정한다. 이메일·비밀번호 방식은 이번 범위에서 제외한다.
+- [x] index.html에 세 제공자 로그인 선택 화면, Firebase Auth 팝업 로그인/로그아웃 코드, 미설정 제공자 및 중복 이메일 오류 안내를 추가한다.
+- [ ] Firebase Authentication에서 Google 제공자를 켜고 OAuth 클라이언트를 생성한다. 제공자 활성화와 자격증명 생성은 아직 하지 않았다.
+- [ ] 네이버·카카오 OIDC 연결을 위해 Identity Platform 업그레이드 조건·요금을 확인하고, 제공자별 client ID/secret 및 issuer를 등록한다.
+- [ ] Firebase 허용 도메인과 OAuth callback 주소를 개발·운영 환경별로 확인한다.
+- [ ] 제공자 간 중복 이메일의 계정 연결·복구 흐름을 구현하고 검증한다.
+- [ ] 계정 탈퇴 시 하위 고객 데이터 삭제/보존 기준을 정하고 구현한다. 데이터 소유 관계는 Q2-3과 함께 검증한다.
+
+#### 현재 설정 확인 (2026-10-27)
+- Firebase Authentication은 시작 화면을 열어 제공자 설정을 확인했다. Google은 꺼져 있고 저장하지 않았다. 이메일/비밀번호나 소셜 제공자는 아직 활성화되지 않았다.
+- 현재 기본 Firebase Auth에는 OpenID Connect 제공자 항목이 제한되어 있으며 콘솔에서 Identity Platform으로 업그레이드하라고 안내한다. 업그레이드는 별도 가격 체계이므로 사용량·비용을 검토하기 전에는 적용하지 않는다.
+- 코드의 OIDC provider ID는 oidc.naver, oidc.kakao로 맞춰 두었다. 콘솔에서 실제 provider ID를 동일하게 만들고 자격증명을 등록한 뒤에만 동작한다.
+- [Firebase Google 로그인 설정](https://firebase.google.com/docs/auth/web/google-signin), [Firebase OIDC 요구사항](https://firebase.google.com/docs/auth/web/openid-connect), [Identity Platform 가격/한도](https://firebase.google.com/docs/auth?hl=en#identity-platform)
 
 톡거리 참고: [계정 설정 화면](https://github.com/autowork-pixel/talkgeori/blob/main/web-prototype/app/settings/page.tsx)에는 네이버·카카오·Google 로그인 선택이 있고, 네이버/카카오는 서버 시작 경로, Google은 별도 로그인 함수로 연결한다. 오토웍스에서는 현재 서비스의 인증 구조와 등록된 callback을 확인해 적용한다.
 
@@ -232,5 +239,6 @@
 - 2026-10-24: 네이버 검색광고·NAVER API HUB, YouTube, OpenAI, Higgsfield, GitHub의 고객별 연결 안내와 키 발급·비용·권한·테스트·교체 절차를 Q2-5로 추가했다.
 - 2026-10-24: 도매매 마켓 계정 설정 화면의 서비스별 입력·발급 안내 구조를 참고해 오토웍스 외부 서비스 연결 화면을 만들고, 확대 가능한 단계 안내와 미리보기 저장 제한을 기록했다.
 - 2026-10-25: 사용자가 기본 비용 설정을 선택해 Firebase Spark 무료 요금제를 유지했다. 개발 프로젝트 `autoworks-c9a6a`에 `Autoworks 웹` 앱과 서울 리전 Firestore를 프로덕션 모드로 만들었다. Cloud Billing은 연결하지 않았으며 월 예산 알림은 유료 서비스 시작 전에 정하기로 했다.
-- 2026-10-27: 정적 웹에 Firebase Web SDK 초기화 코드를 추가하고, 로컬 `file://` 미리보기에서는 초기화하지 않도록 제한했다. 로그인, Firestore 읽기·쓰기, 실제 Hosting 배포는 아직 연결하거나 검증하지 않았다. 개발 프로젝트와 베타 전 운영 프로젝트·도메인 계획을 기록하고 다음 퀘스트를 Q2-2로 이동했다.
+- 2026-10-27: 정적 웹에 Firebase Web SDK 초기화 코드를 추가하고, 로컬 `file://` 미리보기에서는 초기화하지 않도록 제한했다. Hosting 배포 후 런타임 검증은 남아 있다.
+- 2026-10-27: Q2-2에서 Google·네이버·카카오 소셜 로그인을 위한 UI 및 Firebase Auth 클라이언트 흐름을 추가했다. Firebase Auth 제공자는 아직 활성화하지 않았다. 콘솔에서 네이버·카카오 OIDC에는 Identity Platform 업그레이드가 필요하다고 확인해 요금 검토 후 진행하도록 기록했다.
 - 2026-10-25: Q1-2의 데이터 원천을 NAVER DataLab이 아닌 검색광고 키워드도구로 명확히 정정했다. API 요금과 광고 집행비를 구분하고, 일·주·월 화면은 실제 일별 검색량이 아니라 저장된 월간 검색량 스냅샷의 추이로 설계한다.
