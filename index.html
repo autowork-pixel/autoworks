@@ -98,7 +98,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
         projectId: "autoworks-c9a6a",
         appId: "1:823085494995:web:3be4bdd40fe0519bc59a26"
       });
-      const { getAuth, GoogleAuthProvider, OAuthProvider, signInWithPopup, onAuthStateChanged, signOut } =
+      const { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } =
         await import("https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js");
       const auth = getAuth(window.autoworksFirebaseApp);
       onAuthStateChanged(auth, user => {
@@ -113,10 +113,12 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
       });
       document.querySelectorAll("[data-auth-provider]").forEach(button => {
         button.addEventListener("click", async () => {
+          if (button.dataset.authProvider !== "google") {
+            authMessage.textContent = "네이버·카카오 디벨로퍼 OAuth 서버 연결을 준비 중입니다.";
+            return;
+          }
           authMessage.textContent = "로그인 연결을 확인하고 있습니다.";
-          const provider = button.dataset.authProvider === "google"
-            ? new GoogleAuthProvider()
-            : new OAuthProvider("oidc." + button.dataset.authProvider);
+          const provider = new GoogleAuthProvider();
           try {
             await signInWithPopup(auth, provider);
             hideAuth();
