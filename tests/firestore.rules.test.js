@@ -7,10 +7,15 @@ import {
   initializeTestEnvironment,
 } from "@firebase/rules-unit-testing";
 import {
+  collection,
   doc,
+  getDocs,
+  limit,
+  query,
   getDoc,
   serverTimestamp,
   setDoc,
+  where,
 } from "firebase/firestore";
 
 const rules = await readFile(new URL("../firestore.rules", import.meta.url), "utf8");
@@ -34,6 +39,12 @@ test("워크스페이스 소유자만 고객 데이터를 읽고 쓸 수 있다"
     updatedAt: serverTimestamp(),
   }));
   await assertSucceeds(getDoc(workspace));
+  await assertSucceeds(getDocs(query(
+    collection(owner, "workspaces"),
+    where("ownerUid", "==", "user-a"),
+    limit(1)
+  )));
+  await assertFails(getDocs(collection(owner, "workspaces")));
   await assertFails(getDoc(doc(otherUser, "workspaces/workspace-a")));
   await assertFails(setDoc(doc(otherUser, "workspaces/workspace-b"), {
     ownerUid: "user-a",
