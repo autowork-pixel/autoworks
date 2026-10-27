@@ -41,7 +41,7 @@
   <div class="section-heading"><div><h2>오토웍스 분석 도구</h2><p>현재 기능의 웹 연결 단계를 확인하세요.</p></div></div>
   <div class="tool-grid" id="toolGrid"></div>
  </section>
- <p class="notice">현재는 서비스 화면 미리보기입니다. 로그인, 구독 결제, API 키 저장, 실제 분석 실행은 아직 연결되지 않았습니다.</p>
+ <p class="notice">로그인한 계정의 개인 작업 공간을 준비합니다. 구독 결제, API 키 저장, 실제 분석 실행은 아직 연결되지 않았습니다.</p>
 </main>
 <footer class="site-footer"><strong>오토웍스</strong><p>워크스위치가 만들고 운영합니다.</p><nav><a href="./guide.html">이용 안내</a><a href="./terms.html">이용약관</a><a href="./privacy.html">개인정보처리방침</a><a href="./refund.html">결제·취소 및 환불</a><a href="./help.html">고객센터</a><a href="./business.html">사업자 정보</a></nav><small>© 워크스위치 · 오토웍스</small></footer><div class="drawer" id="drawer"><nav class="drawer-panel"><div class="drawer-top">오토웍스 메뉴</div><button data-tools>통합 분석</button><button data-tools>자동화 도구</button><button id="apiGuide">API 연결 가이드</button><button data-toast>요금제</button></nav></div>
 <div class="trend-modal" id="trendModal" role="dialog" aria-modal="true" aria-labelledby="trendTitle"><section class="trend-panel"><div class="trend-top"><div><div class="trend-title" id="trendTitle">브랜드 검색량 추이</div><div class="trend-sub" id="trendPeriod">최근 7일 · 키워드도구 월간 검색량 기록</div></div><button class="trend-close" id="trendClose" aria-label="닫기">×</button></div><div class="trend-controls"><div class="trend-tabs" id="trendUnits"><button class="active" data-unit="day">일별</button><button data-unit="week">주별</button><button data-unit="month">월별</button></div><div class="trend-tabs"><button class="active">월간 검색량</button><button disabled title="추이 지수는 제공하지 않음">비교 지수</button></div></div><div class="trend-content"><aside class="trend-side"><h3>키워드 도구</h3><div class="trend-source"><span class="trend-dot"></span><span id="trendKeyword">브랜드 · PC+모바일 월간 평균</span></div></aside><div class="trend-main"><p class="trend-summary"><b id="trendMetric">월간 검색량 기록</b> · PC+모바일 검색량 · 단위: 건</p><svg class="trend-chart" id="trendChart" viewBox="0 0 760 220" role="img" aria-label="키워드도구 월간 검색량 기록 예시 그래프"></svg><div class="trend-labels" id="trendLabels"></div></div></div><div class="trend-note"><b>데이터 안내</b> · 그래프는 화면 예시입니다. 실제 연결 시 네이버 검색광고 키워드도구의 월간 PC·모바일 검색량을 조회해 날짜별 스냅샷으로 저장합니다. 일·주·월 탭은 이 월간 검색량 값의 기록 시점을 묶어 보여주며, 날짜별 실제 검색 건수를 뜻하지 않습니다. 서비스 연결 전에 쌓인 과거 일별 값은 복원할 수 없습니다.</div></section></div><div class="toast" id="toast"></div><div class="auth-modal" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle"><section class="auth-panel"><div class="auth-head"><div><h2 id="authTitle">오토웍스 로그인</h2><p>가입과 로그인을 같은 방식으로 진행합니다.</p></div><button class="auth-close" id="authClose" aria-label="닫기">×</button></div><div id="authProviders"><button class="auth-provider" data-auth-provider="google">Google로 계속하기</button><button class="auth-provider" data-auth-provider="naver">네이버로 계속하기</button><button class="auth-provider" data-auth-provider="kakao">카카오로 계속하기</button></div><p class="auth-message" id="authMessage" role="status">로그인 제공자를 선택해 주세요.</p><div class="auth-account" id="authAccount" hidden><span id="authUser"></span><button id="authSignOut">로그아웃</button></div></section></div>
@@ -100,16 +100,57 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
       });
       const { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } =
         await import("https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js");
+      const { getFirestore, collection, query, where, limit, getDocs, addDoc, serverTimestamp } =
+        await import("https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js");
       const auth = getAuth(window.autoworksFirebaseApp);
-      onAuthStateChanged(auth, user => {
+      const db = getFirestore(window.autoworksFirebaseApp);
+      const workspaceSetups = new Map();
+      async function ensureWorkspace(user) {
+        if (!workspaceSetups.has(user.uid)) {
+          workspaceSetups.set(user.uid, (async () => {
+            const owned = query(
+              collection(db, "workspaces"),
+              where("ownerUid", "==", user.uid),
+              limit(1)
+            );
+            const existing = await getDocs(owned);
+            if (!existing.empty) return existing.docs[0].id;
+            const created = await addDoc(collection(db, "workspaces"), {
+              ownerUid: user.uid,
+              name: "내 워크스페이스",
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp()
+            });
+            return created.id;
+          })());
+        }
+        try {
+          return await workspaceSetups.get(user.uid);
+        } catch (error) {
+          workspaceSetups.delete(user.uid);
+          throw error;
+        }
+      }
+      onAuthStateChanged(auth, async user => {
         const signedIn = Boolean(user);
         document.getElementById("authProviders").hidden = signedIn;
         document.getElementById("authAccount").hidden = !signedIn;
         document.getElementById("authUser").textContent = signedIn
           ? (user.displayName || user.email || "로그인 사용자")
           : "";
-        authMessage.textContent = signedIn ? "로그인되었습니다." : "로그인 제공자를 선택해 주세요.";
+        authMessage.textContent = signedIn ? "로그인 계정의 작업 공간을 확인하고 있습니다." : "로그인 제공자를 선택해 주세요.";
         document.getElementById("loginButton").textContent = signedIn ? "내 계정" : "로그인";
+        if (!signedIn) window.autoworksWorkspaceId = null;
+        if (signedIn) {
+          try {
+            window.autoworksWorkspaceId = await ensureWorkspace(user);
+            authMessage.textContent = "로그인 및 개인 작업 공간이 준비되었습니다.";
+            if (authModal.classList.contains("open")) setTimeout(hideAuth, 700);
+          } catch (error) {
+            authMessage.textContent = "로그인했지만 개인 작업 공간을 준비하지 못했습니다. 다시 시도해 주세요.";
+            console.error("워크스페이스 준비 실패", error.code);
+          }
+        }
       });
       document.querySelectorAll("[data-auth-provider]").forEach(button => {
         button.addEventListener("click", async () => {
@@ -121,7 +162,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
           const provider = new GoogleAuthProvider();
           try {
             await signInWithPopup(auth, provider);
-            hideAuth();
+            authMessage.textContent = "로그인되었습니다. 개인 작업 공간을 확인하고 있습니다.";
           } catch (error) {
             const messages = {
               "auth/operation-not-allowed": "이 로그인 제공자는 Firebase에서 아직 설정되지 않았습니다.",
