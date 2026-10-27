@@ -79,6 +79,22 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")trendModal.classList
 document.querySelectorAll("[data-toast]").forEach(b=>b.addEventListener("click",()=>showToast("로그인과 도구 연결을 준비 중입니다.")));
 document.getElementById("closePromo").addEventListener("click",()=>document.getElementById("promo").remove());
 </script>
+ <script type="module">
+  const firebaseHosts = new Set(["localhost", "127.0.0.1", "autoworks-c9a6a.web.app", "autoworks-c9a6a.firebaseapp.com"]);
+  if (firebaseHosts.has(location.hostname)) {
+    try {
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js");
+      window.autoworksFirebaseApp = initializeApp({
+        apiKey: "AIzaSyC4j2aelRB3uEyGmZJbvW0OGNL5-Oi2uvA",
+        authDomain: "autoworks-c9a6a.firebaseapp.com",
+        projectId: "autoworks-c9a6a",
+        appId: "1:823085494995:web:3be4bdd40fe0519bc59a26"
+      });
+    } catch (error) {
+      console.error("Firebase 초기화 실패", error);
+    }
+  }
+ </script>
 </body>
 </html>
 
