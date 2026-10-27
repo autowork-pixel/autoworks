@@ -1,0 +1,65 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function ownsWorkspace(workspaceId) {
+      return signedIn()
+        && get(/databases/$(database)/documents/workspaces/$(workspaceId)).data.ownerUid == request.auth.uid;
+    }
+
+    match /workspaces/{workspaceId} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['ownerUid', 'name', 'createdAt', 'updatedAt'])
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+      allow get, list: if signedIn() && resource.data.ownerUid == request.auth.uid;
+      allow update: if signedIn() && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['ownerUid', 'name', 'createdAt', 'updatedAt'])
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.name is string
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+
+      match /projects/{projectId} {
+        allow get, list: if ownsWorkspace(workspaceId);
+        allow create: if ownsWorkspace(workspaceId)
+          && request.resource.data.keys().hasOnly(['name', 'createdAt', 'updatedAt'])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time;
+        allow update: if ownsWorkspace(workspaceId)
+          && request.resource.data.keys().hasOnly(['name', 'createdAt', 'updatedAt'])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if false;
+      }
+
+      match /{collection}/{documentId} {
+        allow get, list: if ownsWorkspace(workspaceId)
+          && collection in ['runs', 'searchSnapshots', 'reports', 'usage'];
+        allow create, update, delete: if false;
+      }
+
+      match /providerCredentials/{credentialId} {
+        allow read, write: if false;
+      }
+
+      match /subscriptions/{subscriptionId} {
+        allow read, write: if false;
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
