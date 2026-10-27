@@ -1,7 +1,7 @@
 ## 현재 위치
 - 현재 챕터: 2. 고객별 계정·데이터 기반
 - 현재 퀘스트: Q2-2 회원가입·로그인·계정 생애주기
-- 다음 한 가지: Firebase Hosting 배포 후 Google 로그인 런타임을 검증하고, 네이버·카카오 OIDC의 Identity Platform 비용을 확인한다.
+- 다음 한 가지: Firebase Hosting에서 Google 로그인을 검증한 뒤, 네이버·카카오 디벨로퍼 OAuth를 서버 callback + Firebase custom token으로 연결한다. Cloud Run 진행 전 Billing 예산을 정한다.
 - 보류 항목: Q1-2의 가격·사용 한도는 실제 베타 데이터가 필요하므로 미완료로 보존하고, 베타 운영 전에 다시 검증한다.
 - 진행 방식: 퀘스트를 하나씩 진행하되 실제 고객 데이터가 필요한 검증은 준비된 기반 작업 뒤로 미룰 수 있으며, 미완료 조건을 로그에 남긴다.
 ---
@@ -118,16 +118,19 @@
 - [x] index.html에 세 제공자 로그인 선택 화면, Firebase Auth 팝업 로그인/로그아웃 코드, 미설정 제공자 및 중복 이메일 오류 안내를 추가한다.
 - [x] Firebase Authentication에서 Google 제공자를 활성화했다. OAuth 설정 저장 시 공개용 앱 이름을 ‘오토웍스’로 지정하고, 사용자가 선택한 지원 이메일을 저장했다.
 - [ ] Firebase Hosting 배포 후 Google 로그인 팝업·세션 유지·로그아웃을 실제 브라우저에서 검증한다.
-- [ ] 네이버·카카오 OIDC 연결을 위해 Identity Platform 업그레이드 조건·요금을 확인하고, 제공자별 client ID/secret 및 issuer를 등록한다.
+- [x] 네이버·카카오는 Firebase OIDC 직접 연결 대신 각 디벨로퍼 OAuth와 서버 callback을 사용하고, Firebase custom token으로 로그인시키는 방향을 정한다.
+- [ ] 네이버·카카오 디벨로퍼 앱을 만들고 서비스 도메인·callback URL을 등록한다. client secret은 서버에만 저장한다.
+- [ ] Cloud Run callback에서 인가 코드를 교환하고 Firebase custom token을 발급한다. Cloud Billing/월 예산 결정 전에는 배포하지 않는다.
 - [ ] Firebase 허용 도메인과 OAuth callback 주소를 개발·운영 환경별로 확인한다.
 - [ ] 제공자 간 중복 이메일의 계정 연결·복구 흐름을 구현하고 검증한다.
 - [ ] 계정 탈퇴 시 하위 고객 데이터 삭제/보존 기준을 정하고 구현한다. 데이터 소유 관계는 Q2-3과 함께 검증한다.
 
 #### 현재 설정 확인 (2026-10-27)
 - Firebase Authentication에서 Google 제공자가 사용 설정된 것을 확인했다. 사용자가 승인한 Gmail은 지원 이메일 필드에 저장했다. 이메일/비밀번호 제공자는 비활성 상태다.
-- 현재 기본 Firebase Auth에는 OpenID Connect 제공자 항목이 제한되어 있으며 콘솔에서 Identity Platform으로 업그레이드하라고 안내한다. 업그레이드는 별도 가격 체계이므로 사용량·비용을 검토하기 전에는 적용하지 않는다.
-- 코드의 OIDC provider ID는 oidc.naver, oidc.kakao로 맞춰 두었다. 콘솔에서 실제 provider ID를 동일하게 만들고 자격증명을 등록한 뒤에만 동작한다.
-- [Firebase Google 로그인 설정](https://firebase.google.com/docs/auth/web/google-signin), [Firebase OIDC 요구사항](https://firebase.google.com/docs/auth/web/openid-connect), [Identity Platform 가격/한도](https://firebase.google.com/docs/auth?hl=en#identity-platform)
+- 현재 기본 Firebase Auth에서 네이버·카카오 OIDC를 직접 추가하면 Identity Platform 업그레이드가 요구된다. 이를 피하기 위해 각 디벨로퍼 OAuth 인가 코드를 서버에서 검증·교환하고 Firebase custom token으로 로그인하는 구조를 선택했다.
+- 네이버·카카오 client secret은 브라우저에 두지 않는다. Cloud Run callback 구현에는 Cloud Billing이 필요하므로 월 예산을 정하기 전에는 유료 전환하지 않는다.
+- 참고: [네이버 로그인 API](https://developers.naver.com/docs/login/api/api.md), [카카오 로그인 REST API](https://developers.kakao.com/docs/ko/kakaologin/rest-api), [Firebase custom token](https://firebase.google.com/docs/auth/admin/create-custom-tokens), [Cloud Run/Firebase Hosting 결제 조건](https://firebase.google.com/docs/hosting/cloud-run).
+- [Firebase Google 로그인 설정](https://firebase.google.com/docs/auth/web/google-signin)
 
 톡거리 참고: [계정 설정 화면](https://github.com/autowork-pixel/talkgeori/blob/main/web-prototype/app/settings/page.tsx)에는 네이버·카카오·Google 로그인 선택이 있고, 네이버/카카오는 서버 시작 경로, Google은 별도 로그인 함수로 연결한다. 오토웍스에서는 현재 서비스의 인증 구조와 등록된 callback을 확인해 적용한다.
 
