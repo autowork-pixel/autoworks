@@ -140,6 +140,8 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
         }
       });
     } catch (error) {
+      const message = document.getElementById("authMessage");
+      if (message) message.textContent = "Firebase 인증 연결을 준비하지 못했습니다. 잠시 후 다시 시도해 주세요.";
       console.error("Firebase 초기화 실패", error);
     }
   }
