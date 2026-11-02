@@ -10,6 +10,9 @@
 @media(max-width:620px){.promo{height:31px;font-size:10px}.header{height:56px;padding:0 15px}.brand{font-size:13px}.switcher{font-size:11px;padding-left:11px}.header-link{display:none}.wrap{padding:35px 14px 44px}.intro{margin-bottom:19px}.intro h1{font-size:21px}.intro p{font-size:11px;max-width:310px;margin:8px auto 0}.composer{border-radius:14px}.topic{padding:19px 16px 9px;min-height:73px}.topic input{font-size:13px}.compare{padding:0 16px}.toolshelf{padding:10px 12px 12px;gap:6px}.modes button{padding:7px 10px}.filter{padding:0 9px;font-size:9px}.channels{width:100%;margin:2px 0 0}.channel{flex:1}.submitrow{padding:10px 12px}.hint{max-width:56%;line-height:1.4}.analyze{padding:10px 14px}.section{margin-top:25px}.suggestions{grid-template-columns:1fr;gap:7px}.suggestion{padding:12px 13px;display:grid;grid-template-columns:75px 1fr;align-items:center}.suggestion .mini{grid-row:span 2}.suggestion b{margin:0 0 3px}.suggestion span:last-child{grid-column:2}.tool-grid{grid-template-columns:1fr}.section.tools-section{margin-top:25px}.tool{padding:11px 12px}.notice{text-align:left;padding:0 3px}.login{padding:9px 13px}}
 @media(min-width:1000px){.wrap{padding-top:52px}.intro h1{font-size:29px}.composer{max-width:800px}.section,.notice{max-width:800px}}
 .site-footer{background:#fff;border-top:1px solid #ececf1;padding:28px max(calc((100vw - 940px)/2),22px) 24px}.site-footer strong{font-size:12px}.site-footer p{font-size:10px;color:#92929c;margin:4px 0 14px}.site-footer nav{display:flex;flex-wrap:wrap;gap:8px 16px;border-bottom:1px solid #eeeef2;padding-bottom:14px;margin-bottom:13px}.site-footer a{font-size:10px;color:#666773;text-decoration:none}.site-footer a:hover{color:#6047e0}.site-footer small{font-size:10px;color:#a0a0aa}@media(max-width:620px){.site-footer{padding:24px 15px}}.auth-modal{display:none;position:fixed;inset:0;background:#16151d77;z-index:10;align-items:center;justify-content:center;padding:16px}.auth-modal.open{display:flex}.auth-panel{width:min(390px,100%);background:#fff;border:1px solid #ececf1;border-radius:14px;padding:22px;box-shadow:0 16px 60px #17152126}.auth-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}.auth-head h2{font-size:16px;margin:0;color:#292a34}.auth-head p{font-size:11px;color:#858591;margin:6px 0 0}.auth-close{border:0;background:#f5f4f8;border-radius:50%;width:30px;height:30px;font-size:17px;color:#777}.auth-provider{width:100%;height:42px;border:1px solid #e7e7ed;border-radius:8px;background:#fff;color:#343540;font-size:12px;font-weight:650;margin:5px 0}.auth-provider:hover{border-color:#bdb5ec;background:#fbfaff}.auth-message{font-size:10px;line-height:1.6;color:#81818e;min-height:18px;margin:12px 0 0}.auth-account{border-top:1px solid #eeeef2;padding-top:14px;margin-top:14px;font-size:11px;color:#555}.auth-account button{display:block;margin-top:10px;border:1px solid #e6e6ec;border-radius:7px;background:#fff;padding:8px 12px;font-size:10px;color:#555}</style>
+<style>
+.workspace{display:none;max-width:800px;margin:26px auto 0;background:#fff;border:1px solid #e7e7ed;border-radius:10px;overflow:hidden}.workspace.visible{display:block}.workspace-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid #ececf1}.workspace-head h2{font-size:13px;margin:0;color:#33343e}.workspace-head p{font-size:10px;color:#858591;margin:5px 0 0}.workspace-add{border:1px solid #dedee6;border-radius:6px;background:#fff;color:#444650;padding:8px 11px;font-size:10px}.workspace-add:hover{border-color:#9a8ce8;color:#5340c2}.project-form{display:none;grid-template-columns:1fr 1fr 1.5fr auto;gap:7px;padding:12px 18px;border-bottom:1px solid #ececf1;background:#fafafd}.project-form.open{display:grid}.project-form input{min-width:0;border:1px solid #e2e2e9;border-radius:5px;padding:8px 9px;background:#fff;font-size:10px;outline-color:#7866dd}.project-form button{border:0;border-radius:5px;background:#5d49d3;color:white;padding:0 13px;font-size:10px}.project-list{width:100%;border-collapse:collapse;text-align:left}.project-list th{font-size:9px;font-weight:600;color:#858591;background:#fafafd;padding:9px 18px;border-bottom:1px solid #ececf1}.project-list td{font-size:10px;color:#4e4f59;padding:11px 18px;border-bottom:1px solid #f0f0f3;vertical-align:top}.project-list tr:last-child td{border-bottom:0}.project-keywords{color:#858591!important}.workspace-state{padding:18px;color:#858591;font-size:10px}.workspace-note{margin:0;padding:10px 18px;border-top:1px solid #ececf1;color:#8a8a95;font-size:9px;line-height:1.5}@media(max-width:620px){.workspace{margin-top:20px;border-radius:8px}.workspace-head{padding:13px}.project-form.open{grid-template-columns:1fr 1fr;padding:11px 13px}.project-form input:nth-child(3){grid-column:1/-1}.project-form button{min-height:34px}.project-list th,.project-list td{padding:9px 8px}.project-list th:first-child,.project-list td:first-child{padding-left:13px}.project-list th:last-child,.project-list td:last-child{padding-right:13px}}
+</style>
 </head>
 <body>
 <div class="promo" id="promo"><span><b>오토웍스</b> 매주 반복하는 마케팅 분석, 한 화면에서 시작하세요.</span><button id="closePromo" aria-label="닫기">×</button></div>
@@ -19,6 +22,7 @@
 </header>
 <main class="wrap">
  <section class="intro"><p class="kicker">MARKETING ANALYSIS</p><h1>오늘은 어떤 분석을 도와드릴까요?</h1><p>브랜드와 키워드, 관심 채널을 고르면<br class="mobile-break"> 분석 조건을 한 번에 정리할 수 있어요.</p></section>
+ <section class="workspace" id="workspace" aria-label="내 프로젝트"><div class="workspace-head"><div><h2>내 프로젝트</h2><p>브랜드와 키워드를 계정에 저장합니다.</p></div><button class="workspace-add" id="projectAdd">프로젝트 추가</button></div><form class="project-form" id="projectForm"><input id="projectName" maxlength="80" placeholder="프로젝트 이름" aria-label="프로젝트 이름" required><input id="projectBrand" maxlength="80" placeholder="브랜드명" aria-label="브랜드명" required><input id="projectKeywords" maxlength="500" placeholder="키워드 (쉼표로 구분, 최대 20개)" aria-label="키워드"><button type="submit">저장</button></form><div class="workspace-state" id="projectState" role="status">저장된 프로젝트를 불러오는 중입니다.</div><table class="project-list" id="projectTable" hidden><thead><tr><th>프로젝트</th><th>브랜드</th><th>키워드</th><th>수정일</th></tr></thead><tbody id="projectRows"></tbody></table><p class="workspace-note">입력한 프로젝트 정보는 로그인한 계정의 워크스페이스에 저장됩니다. API 키와 실행 결과는 이 화면에서 저장하지 않습니다.</p></section>
  <section class="composer" aria-label="분석 조건 만들기">
   <div class="topic"><input id="topic" type="text" placeholder="분석할 브랜드나 주제어를 입력하세요" autocomplete="off"></div>
   <div class="compare"><button id="addCompare">＋ 비교 단어 추가</button><span id="compareCount">0 / 1</span><input id="compare" placeholder="비교할 브랜드나 키워드" hidden></div>
@@ -41,7 +45,7 @@
   <div class="section-heading"><div><h2>오토웍스 분석 도구</h2><p>현재 기능의 웹 연결 단계를 확인하세요.</p></div></div>
   <div class="tool-grid" id="toolGrid"></div>
  </section>
- <p class="notice">로그인한 계정의 개인 작업 공간을 준비합니다. 구독 결제, API 키 저장, 실제 분석 실행은 아직 연결되지 않았습니다.</p>
+ <p class="notice">로그인과 개인 작업 공간을 준비 중입니다. 구독 결제, API 키 저장, 실제 분석 실행은 아직 연결되지 않았습니다.</p>
 </main>
 <footer class="site-footer"><strong>오토웍스</strong><p>워크스위치가 만들고 운영합니다.</p><nav><a href="./guide.html">이용 안내</a><a href="./terms.html">이용약관</a><a href="./privacy.html">개인정보처리방침</a><a href="./refund.html">결제·취소 및 환불</a><a href="./help.html">고객센터</a><a href="./business.html">사업자 정보</a></nav><small>© 워크스위치 · 오토웍스</small></footer><div class="drawer" id="drawer"><nav class="drawer-panel"><div class="drawer-top">오토웍스 메뉴</div><button data-tools>통합 분석</button><button data-tools>자동화 도구</button><button id="apiGuide">API 연결 가이드</button><button data-toast>요금제</button></nav></div>
 <div class="trend-modal" id="trendModal" role="dialog" aria-modal="true" aria-labelledby="trendTitle"><section class="trend-panel"><div class="trend-top"><div><div class="trend-title" id="trendTitle">브랜드 검색량 추이</div><div class="trend-sub" id="trendPeriod">최근 7일 · 키워드도구 월간 검색량 기록</div></div><button class="trend-close" id="trendClose" aria-label="닫기">×</button></div><div class="trend-controls"><div class="trend-tabs" id="trendUnits"><button class="active" data-unit="day">일별</button><button data-unit="week">주별</button><button data-unit="month">월별</button></div><div class="trend-tabs"><button class="active">월간 검색량</button><button disabled title="추이 지수는 제공하지 않음">비교 지수</button></div></div><div class="trend-content"><aside class="trend-side"><h3>키워드 도구</h3><div class="trend-source"><span class="trend-dot"></span><span id="trendKeyword">브랜드 · PC+모바일 월간 평균</span></div></aside><div class="trend-main"><p class="trend-summary"><b id="trendMetric">월간 검색량 기록</b> · PC+모바일 검색량 · 단위: 건</p><svg class="trend-chart" id="trendChart" viewBox="0 0 760 220" role="img" aria-label="키워드도구 월간 검색량 기록 예시 그래프"></svg><div class="trend-labels" id="trendLabels"></div></div></div><div class="trend-note"><b>데이터 안내</b> · 그래프는 화면 예시입니다. 실제 연결 시 네이버 검색광고 키워드도구의 월간 PC·모바일 검색량을 조회해 날짜별 스냅샷으로 저장합니다. 일·주·월 탭은 이 월간 검색량 값의 기록 시점을 묶어 보여주며, 날짜별 실제 검색 건수를 뜻하지 않습니다. 서비스 연결 전에 쌓인 과거 일별 값은 복원할 수 없습니다.</div></section></div><div class="toast" id="toast"></div><div class="auth-modal" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle"><section class="auth-panel"><div class="auth-head"><div><h2 id="authTitle">오토웍스 로그인</h2><p>가입과 로그인을 같은 방식으로 진행합니다.</p></div><button class="auth-close" id="authClose" aria-label="닫기">×</button></div><div id="authProviders"><button class="auth-provider" data-auth-provider="google">Google로 계속하기</button><button class="auth-provider" data-auth-provider="naver">네이버로 계속하기</button><button class="auth-provider" data-auth-provider="kakao">카카오로 계속하기</button></div><p class="auth-message" id="authMessage" role="status">로그인 제공자를 선택해 주세요.</p><div class="auth-account" id="authAccount" hidden><span id="authUser"></span><button id="authSignOut">로그아웃</button></div></section></div>
@@ -105,6 +109,41 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
       const auth = getAuth(window.autoworksFirebaseApp);
       const db = getFirestore(window.autoworksFirebaseApp);
       const workspaceSetups = new Map();
+      const projectCollection = workspaceId => collection(db, "workspaces", workspaceId, "projects");
+      function renderProjects(snapshot) {
+        const table = document.getElementById("projectTable");
+        const state = document.getElementById("projectState");
+        const rows = document.getElementById("projectRows");
+        rows.replaceChildren();
+        const projects = snapshot.docs.map(item => item.data());
+        projects.sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0));
+        table.hidden = projects.length === 0;
+        state.hidden = projects.length > 0;
+        state.textContent = projects.length ? "" : "저장된 프로젝트가 없습니다. 브랜드 프로젝트를 추가해 시작하세요.";
+        for (const project of projects) {
+          const row = document.createElement("tr");
+          const values = [project.name, project.brandName, (project.keywords || []).join(", "), project.updatedAt?.toDate?.().toLocaleDateString("ko-KR") || "방금 저장"];
+          values.forEach((value, index) => {
+            const cell = document.createElement("td");
+            cell.textContent = value || "-";
+            if (index === 2) cell.className = "project-keywords";
+            row.append(cell);
+          });
+          rows.append(row);
+        }
+      }
+      async function loadProjects(workspaceId) {
+        document.getElementById("workspace").classList.add("visible");
+        document.getElementById("projectState").hidden = false;
+        document.getElementById("projectState").textContent = "저장된 프로젝트를 불러오는 중입니다.";
+        document.getElementById("projectTable").hidden = true;
+        try {
+          renderProjects(await getDocs(projectCollection(workspaceId)));
+        } catch (error) {
+          document.getElementById("projectState").textContent = "프로젝트를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.";
+          console.error("프로젝트 조회 실패", error.code);
+        }
+      }
       async function ensureWorkspace(user) {
         if (!workspaceSetups.has(user.uid)) {
           workspaceSetups.set(user.uid, (async () => {
@@ -140,10 +179,12 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
           : "";
         authMessage.textContent = signedIn ? "로그인 계정의 작업 공간을 확인하고 있습니다." : "로그인 제공자를 선택해 주세요.";
         document.getElementById("loginButton").textContent = signedIn ? "내 계정" : "로그인";
+        document.getElementById("workspace").classList.toggle("visible", signedIn);
         if (!signedIn) window.autoworksWorkspaceId = null;
         if (signedIn) {
           try {
             window.autoworksWorkspaceId = await ensureWorkspace(user);
+            await loadProjects(window.autoworksWorkspaceId);
             authMessage.textContent = "로그인 및 개인 작업 공간이 준비되었습니다.";
             if (authModal.classList.contains("open")) setTimeout(hideAuth, 700);
           } catch (error) {
@@ -182,6 +223,43 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
           console.error("Firebase 로그아웃 실패", error.code);
         }
       });
+      document.getElementById("projectAdd").addEventListener("click", () => {
+        const form = document.getElementById("projectForm");
+        form.classList.toggle("open");
+        if (form.classList.contains("open")) document.getElementById("projectName").focus();
+      });
+      document.getElementById("projectForm").addEventListener("submit", async event => {
+        event.preventDefault();
+        const workspaceId = window.autoworksWorkspaceId;
+        const name = document.getElementById("projectName").value.trim();
+        const brandName = document.getElementById("projectBrand").value.trim();
+        const keywords = [...new Set(document.getElementById("projectKeywords").value.split(",").map(value => value.trim()).filter(Boolean))].slice(0, 20);
+        if (!workspaceId || !name || !brandName) return;
+        const form = event.currentTarget;
+        const submit = form.querySelector("button[type=submit]");
+        submit.disabled = true;
+        submit.textContent = "저장 중";
+        try {
+          await addDoc(projectCollection(workspaceId), {
+            name,
+            brandName,
+            keywords,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+          form.reset();
+          form.classList.remove("open");
+          await loadProjects(workspaceId);
+          showToast("프로젝트를 저장했습니다.");
+        } catch (error) {
+          document.getElementById("projectState").textContent = "저장하지 못했습니다. 로그인 상태와 연결을 확인해 주세요.";
+          document.getElementById("projectState").hidden = false;
+          console.error("프로젝트 저장 실패", error.code);
+        } finally {
+          submit.disabled = false;
+          submit.textContent = "저장";
+        }
+      });
     } catch (error) {
       const message = document.getElementById("authMessage");
       if (message) message.textContent = "Firebase 인증 연결을 준비하지 못했습니다. 잠시 후 다시 시도해 주세요.";
@@ -191,6 +269,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
  </script>
 </body>
 </html>
+
 
 
 
