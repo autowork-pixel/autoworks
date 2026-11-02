@@ -1,7 +1,8 @@
 {
   "type": "module",
   "scripts": {
-    "test:rules": "node --test tests/firestore.rules.test.js"
+    "test:rules": "node --test tests/firestore.rules.test.js",
+    "test:html": "node scripts/check-html.mjs"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^6.0.0",
