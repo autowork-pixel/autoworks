@@ -56,6 +56,8 @@ test("워크스페이스 소유자만 고객 데이터를 읽고 쓸 수 있다"
   const project = doc(owner, "workspaces/workspace-a/projects/project-a");
   await assertSucceeds(setDoc(project, {
     name: "검색량 모니터링",
+    brandName: "브랜드 A",
+    keywords: ["브랜드 A", "브랜드 A 검색량"],
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   }));
@@ -82,3 +84,4 @@ test("실행 데이터는 고객에게 읽기 전용이며 API 자격정보와 �
   await assertFails(getDoc(doc(owner, "workspaces/workspace-a/providerCredentials/naver")));
   await assertFails(getDoc(doc(owner, "workspaces/workspace-a/subscriptions/current")));
 });
+
