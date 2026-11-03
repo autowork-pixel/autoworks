@@ -25,6 +25,7 @@ export function createAdminRepository({ database, serverTimestamp }) {
         if (!workspaceSnapshot.exists || !inquirySnapshot.exists) throw new ApiError("INVALID_INPUT", "문의를 찾을 수 없습니다.", 404);
         const before = inquirySnapshot.data();
         if (before.status === "answered" && before.reply === reply) return { status: "answered", reused: true };
+        if (!["open", "reviewing", "answered"].includes(before.status)) throw new ApiError("INVALID_INPUT", "종료된 문의에는 답변할 수 없습니다.", 409);
         const timestamp = serverTimestamp();
         transaction.set(inquiry, { reply, status: "answered", respondedAt: timestamp, updatedAt: timestamp }, { merge: true });
         transaction.set(audit, {
@@ -32,6 +33,24 @@ export function createAdminRepository({ database, serverTimestamp }) {
           requestId, beforeSummary: { status: before.status || null }, afterSummary: { status: "answered" }, createdAt: timestamp
         });
         return { status: "answered", reused: false };
+      });
+    },
+
+    async updateInquiryStatus({ workspaceId, inquiryId, status, reason, actorUid, requestId }) {
+      const workspace = database.doc(`workspaces/${workspaceId}`), inquiry = workspace.collection("inquiries").doc(inquiryId), audit = workspace.collection("auditLogs").doc();
+      return database.runTransaction(async transaction => {
+        const [workspaceSnapshot, inquirySnapshot] = await Promise.all([transaction.get(workspace), transaction.get(inquiry)]);
+        if (!workspaceSnapshot.exists || !inquirySnapshot.exists) throw new ApiError("INVALID_INPUT", "문의를 찾을 수 없습니다.", 404);
+        const before = inquirySnapshot.data(), transitions = { open: ["reviewing", "closed"], reviewing: ["closed"], answered: ["closed"], closed: [] };
+        if (before.status === status) return { status, reused: true };
+        if (!transitions[before.status]?.includes(status)) throw new ApiError("INVALID_INPUT", "허용되지 않은 문의 상태 전이입니다.", 409);
+        const timestamp = serverTimestamp();
+        transaction.set(inquiry, { status, updatedAt: timestamp }, { merge: true });
+        transaction.set(audit, {
+          action: `inquiry.${status}`, actorUid, actorRole: "admin", targetType: "inquiry", targetId: inquiryId,
+          reason, requestId, beforeSummary: { status: before.status }, afterSummary: { status }, createdAt: timestamp
+        });
+        return { status, reused: false };
       });
     }
   };

@@ -31,3 +31,13 @@ test("문의 답변과 비민감 감사 기록을 같은 트랜잭션에 남긴�
   assert.equal(audit.actorUid,"admin-a");assert.equal(JSON.stringify(audit).includes("원문 문의"),false);assert.equal(JSON.stringify(audit).includes(input.reply),false);
   const writes=fake.writes.length;assert.deepEqual(await repository.answerInquiry(input),{status:"answered",reused:true});assert.equal(fake.writes.length,writes);
 });
+
+test("문의 상태는 허용된 순서로만 바꾸고 사유를 감사 기록에 남긴다", async () => {
+  const fake=fakeDatabase({"workspaces/workspace-a":{ownerUid:"user-a"},"workspaces/workspace-a/inquiries/inquiry-a":{status:"open"}}),repository=createAdminRepository({database:fake.database,serverTimestamp:()=>"server-time"});
+  const common={workspaceId:"workspace-a",inquiryId:"inquiry-a",reason:"담당자가 확인을 시작함",actorUid:"admin-a",requestId:"request-a"};
+  assert.deepEqual(await repository.updateInquiryStatus({...common,status:"reviewing"}),{status:"reviewing",reused:false});
+  assert.equal(fake.values.get("workspaces/workspace-a/inquiries/inquiry-a").status,"reviewing");
+  await assert.rejects(()=>repository.updateInquiryStatus({...common,status:"open"}),error=>error.status===409);
+  assert.deepEqual(await repository.updateInquiryStatus({...common,status:"closed"}),{status:"closed",reused:false});
+  await assert.rejects(()=>repository.answerInquiry({...common,reply:"늦은 답변"}),error=>error.status===409);
+});

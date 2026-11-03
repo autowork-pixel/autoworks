@@ -32,5 +32,6 @@
 - custom claim 실제 부여·회수
 - 고객 차단·해제는 `admin: true` ID token, 5~500자 사유를 확인하고 `serverControls/access`와 `auditLogs`를 한 트랜잭션에서 변경한다. 운영 화면은 API URL이 설정된 경우에만 조치 버튼을 활성화한다. 실제 배포·claim 검증은 보류한다.
 - 문의 답변도 관리자 브라우저의 Firestore 직접 수정을 허용하지 않고, 서버가 문의 상태 변경과 `inquiry.answered` 감사 기록을 한 트랜잭션에서 처리한다.
+- 문의 상태는 `open → reviewing → closed`, `open → closed`, `answered → closed`만 허용하고 종료 뒤 답변·재개는 거부한다.
 - 구독 상태 변경과 그 감사 기록
 - 역할 변경 후 기존 ID token 강제 갱신·세션 회수
