@@ -9,6 +9,7 @@
     "test:admin-controls": "node scripts/check-admin-controls.mjs",
     "test:account-deletion": "node scripts/check-account-deletion.mjs",
     "test:usage-display": "node scripts/check-usage-display.mjs",
+    "test:server-security": "node scripts/check-server-security.mjs",
     "test:server": "node --test server/test/*.test.mjs",
     "verify:hosting": "node scripts/verify-hosting.mjs"
   },

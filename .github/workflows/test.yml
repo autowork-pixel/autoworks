@@ -34,6 +34,7 @@ jobs:
       - run: npm run test:admin-controls
       - run: npm run test:account-deletion
       - run: npm run test:usage-display
+      - run: npm run test:server-security
       - run: npm run test:server
       - name: Test Firestore security rules
         run: npx --yes firebase-tools@latest emulators:exec --project demo-autoworks --only firestore "npm run test:rules"
