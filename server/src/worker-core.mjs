@@ -29,13 +29,15 @@ export async function executeBrandSearchRun({ workspaceId, runId, workerId, inpu
     }
   }
   if (!snapshots.length) {
-    await repository.failRun(workspaceId, runId, {
-      errorCode: failures.some(item => item.retryable) ? "PROVIDER_UNAVAILABLE" : failures[0]?.code || "PROVIDER_UNAVAILABLE",
+    const retryable = failures.some(item => item.retryable);
+    const outcome = await repository.failRun(workspaceId, runId, {
+      errorCode: retryable ? "PROVIDER_UNAVAILABLE" : failures[0]?.code || "PROVIDER_UNAVAILABLE",
       failures,
       keywordLookups: input.keywords.length,
-      workerId
+      workerId,
+      retryable
     });
-    return { status: "failed", snapshots: [], failures };
+    return { status: outcome?.status || "failed", snapshots: [], failures };
   }
   await repository.completeRun(workspaceId, runId, {
     snapshots,

@@ -22,6 +22,10 @@ function usageValues(value = {}) {
   };
 }
 
+function retryDelayMs(attempt) {
+  return Math.min(15 * 60_000, 60_000 * (2 ** Math.max(0, attempt - 1)));
+}
+
 export function createRunRepository({ database, serverTimestamp, now = () => new Date(), leaseMs = 60_000 }) {
   const workspace = workspaceId => database.doc(`workspaces/${workspaceId}`);
 
@@ -74,16 +78,17 @@ export function createRunRepository({ database, serverTimestamp, now = () => new
           projectId: run.projectId, runId, title: `${run.inputSummary?.brand || "브랜드"} 검색량 결과`, status: "ready",
           summary: { succeededKeywords: payload.succeededKeywords, failedKeywords: payload.failedKeywords, failures: payload.failures }, createdAt: timestamp
         });
+        const providerKeywordAttempts = Number(reservation.providerKeywordAttempts || 0) + payload.keywordLookups;
         transaction.set(usageRef, {
           runsReserved: Math.max(0, usage.runsReserved - Number(reservation.runs || 1)),
           keywordLookupsReserved: Math.max(0, usage.keywordLookupsReserved - Number(reservation.keywordLookups || 0)),
-          runs: usage.runs + 1, keywordLookups: usage.keywordLookups + payload.keywordLookups,
+          runs: usage.runs + 1, keywordLookups: usage.keywordLookups + Number(reservation.keywordLookups || payload.keywordLookups),
           succeeded: usage.succeeded + 1, failed: usage.failed, updatedAt: timestamp
         }, { merge: true });
-        transaction.set(reservationRef, { status: "committed", actualRuns: 1, actualKeywordLookups: payload.keywordLookups, updatedAt: timestamp }, { merge: true });
+        transaction.set(reservationRef, { status: "committed", actualRuns: 1, actualKeywordLookups: Number(reservation.keywordLookups || payload.keywordLookups), providerKeywordAttempts, updatedAt: timestamp }, { merge: true });
         transaction.set(runRef, {
           status: "succeeded", resultReportId: reportRef.id, succeededKeywords: payload.succeededKeywords, failedKeywords: payload.failedKeywords,
-          completedAt: timestamp, updatedAt: timestamp, leaseOwner: null, leaseExpiresAt: null
+          completedAt: timestamp, updatedAt: timestamp, providerKeywordAttempts, leaseOwner: null, leaseExpiresAt: null
         }, { merge: true });
         if (run.requestDocumentId) transaction.set(root.collection("runRequests").doc(run.requestDocumentId), { status: "succeeded", updatedAt: timestamp }, { merge: true });
         return { status: "succeeded", reused: false };
@@ -102,20 +107,33 @@ export function createRunRepository({ database, serverTimestamp, now = () => new
         if (terminalStates.has(run.status)) throw new ApiError("INVALID_INPUT", "이미 종료된 실행입니다.", 409);
         assertLease(run, payload.workerId, now());
         const reservation = reservationSnapshot.data();
+        const attempt = Number(run.attempt || 0);
+        const maxAttempts = Number(run.maxAttempts || 3);
+        const providerKeywordAttempts = Number(reservation.providerKeywordAttempts || 0) + payload.keywordLookups;
+        const timestamp = serverTimestamp();
+        if (payload.retryable === true && attempt < maxAttempts) {
+          const nextRetryAt = new Date(now().getTime() + retryDelayMs(attempt));
+          transaction.set(reservationRef, { providerKeywordAttempts, updatedAt: timestamp }, { merge: true });
+          transaction.set(runRef, {
+            status: "retrying", errorCode: payload.errorCode, failureSummary: payload.failures, nextRetryAt,
+            providerKeywordAttempts, updatedAt: timestamp, leaseOwner: null, leaseExpiresAt: null
+          }, { merge: true });
+          if (run.requestDocumentId) transaction.set(root.collection("runRequests").doc(run.requestDocumentId), { status: "retrying", updatedAt: timestamp }, { merge: true });
+          return { status: "retrying", reused: false, nextRetryAt };
+        }
         const usageRef = root.collection("usage").doc(reservation.usagePeriod);
         const usageSnapshot = await transaction.get(usageRef);
         const usage = usageValues(usageSnapshot.data());
-        const timestamp = serverTimestamp();
         transaction.set(usageRef, {
           runsReserved: Math.max(0, usage.runsReserved - Number(reservation.runs || 1)),
           keywordLookupsReserved: Math.max(0, usage.keywordLookupsReserved - Number(reservation.keywordLookups || 0)),
-          runs: usage.runs + 1, keywordLookups: usage.keywordLookups + payload.keywordLookups,
+          runs: usage.runs + 1, keywordLookups: usage.keywordLookups + Number(reservation.keywordLookups || payload.keywordLookups),
           succeeded: usage.succeeded, failed: usage.failed + 1, updatedAt: timestamp
         }, { merge: true });
-        transaction.set(reservationRef, { status: "committed", actualRuns: 1, actualKeywordLookups: payload.keywordLookups, updatedAt: timestamp }, { merge: true });
+        transaction.set(reservationRef, { status: "committed", actualRuns: 1, actualKeywordLookups: Number(reservation.keywordLookups || payload.keywordLookups), providerKeywordAttempts, updatedAt: timestamp }, { merge: true });
         transaction.set(runRef, {
           status: "failed", errorCode: payload.errorCode, failureSummary: payload.failures,
-          completedAt: timestamp, updatedAt: timestamp, leaseOwner: null, leaseExpiresAt: null
+          completedAt: timestamp, updatedAt: timestamp, providerKeywordAttempts, leaseOwner: null, leaseExpiresAt: null
         }, { merge: true });
         if (run.requestDocumentId) transaction.set(root.collection("runRequests").doc(run.requestDocumentId), { status: "failed", updatedAt: timestamp }, { merge: true });
         return { status: "failed", reused: false };

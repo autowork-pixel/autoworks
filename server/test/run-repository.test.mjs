@@ -71,7 +71,7 @@ test("완료는 스냅샷·보고서·사용량·예약·멱등 상태를 한 �
 test("실패 확정은 lease 소유자를 확인하고 예약을 한 번만 정산한다", async () => {
   const now = new Date("2026-11-03T00:00:00Z");
   const fake = fakeDatabase({
-    [runPath]: { status: "running", leaseOwner: "worker-a", leaseExpiresAt: new Date("2026-11-03T00:01:00Z") },
+    [runPath]: { status: "running", leaseOwner: "worker-a", leaseExpiresAt: new Date("2026-11-03T00:01:00Z"), attempt: 1, maxAttempts: 1 },
     [reservationPath]: { status: "reserved", runs: 1, keywordLookups: 2, usagePeriod: "2026-11" },
     [usagePath]: { runsReserved: 1, keywordLookupsReserved: 2 }
   });
@@ -84,4 +84,21 @@ test("실패 확정은 lease 소유자를 확인하고 예약을 한 번만 정�
   const writes = fake.writes.length;
   assert.deepEqual(await repository.failRun("workspace-a", "run-a", { workerId: "worker-a", keywordLookups: 2, errorCode: "PROVIDER_UNAVAILABLE", failures: [] }), { status: "failed", reused: true });
   assert.equal(fake.writes.length, writes);
+});
+
+test("일시 오류는 지수 백오프로 재시도하고 고객 사용량은 아직 확정하지 않는다", async () => {
+  const now = new Date("2026-11-03T00:00:00Z");
+  const fake = fakeDatabase({
+    [runPath]: { status: "running", leaseOwner: "worker-a", leaseExpiresAt: new Date("2026-11-03T00:01:00Z"), attempt: 1, maxAttempts: 3, requestDocumentId: "request-a" },
+    [reservationPath]: { status: "reserved", runs: 1, keywordLookups: 2, usagePeriod: "2026-11" },
+    [usagePath]: { runsReserved: 1, keywordLookupsReserved: 2, runs: 0, keywordLookups: 0 }
+  });
+  const repository = createRunRepository({ database: fake.database, serverTimestamp: () => "server-time", now: () => now });
+  const result = await repository.failRun("workspace-a", "run-a", { workerId: "worker-a", keywordLookups: 2, errorCode: "PROVIDER_UNAVAILABLE", failures: [], retryable: true });
+  assert.equal(result.status, "retrying");
+  assert.equal(result.nextRetryAt.toISOString(), "2026-11-03T00:01:00.000Z");
+  assert.equal(fake.values.get(runPath).status, "retrying");
+  assert.equal(fake.values.get(reservationPath).providerKeywordAttempts, 2);
+  assert.equal(fake.values.get(usagePath).runs, 0);
+  assert.equal(fake.values.get("workspaces/workspace-a/runRequests/request-a").status, "retrying");
 });

@@ -71,3 +71,14 @@ test("전부 실패하면 실행을 실패 처리하고 내부 오류는 일반�
   assert.equal(JSON.stringify(repository.calls).includes("secret internal detail"), false);
   assert.equal(repository.calls.at(-1)[0], "failed");
 });
+
+test("재시도 가능한 전체 실패는 저장소가 반환한 retrying 상태를 전달한다", async () => {
+  const repository = repositorySpy();
+  repository.failRun = async (...args) => { repository.calls.push(["failed", ...args]); return { status: "retrying" }; };
+  const result = await executeBrandSearchRun({
+    workspaceId: "workspace-a", runId: "run-a", workerId: "worker-a", input: { keywords: ["키워드"] }, credentials: {}, repository,
+    provider: { fetchKeywordVolume: async () => { throw new ApiError("PROVIDER_UNAVAILABLE", "일시 장애", 502); } }
+  });
+  assert.equal(result.status, "retrying");
+  assert.equal(repository.calls.at(-1)[3].retryable, true);
+});
