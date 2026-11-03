@@ -69,6 +69,7 @@ test("대기 중 실행 취소는 예약 사용량을 반환하고 비공개 입
   assert.equal(fake.values.get(usagePath).keywordLookupsReserved, 0);
   assert.equal(fake.values.has("workspaces/workspace-a/runInputs/run-a"), false);
   assert.equal(fake.values.get("workspaces/workspace-a/runRequests/request-a").status, "canceled");
+  assert.deepEqual(fake.values.get("workspaces/workspace-a/auditLogs/run-canceled-run-a").afterSummary, { status: "canceled", projectId: null });
   const writes = fake.writes.length;
   assert.deepEqual(await repository.cancelBrandSearchRun({ workspaceId: "workspace-a", runId: "run-a", uid: "user-a" }), { status: "canceled", reused: true });
   assert.equal(fake.writes.length, writes);
@@ -118,6 +119,7 @@ test("완료는 스냅샷·보고서·사용량·예약·멱등 상태를 한 �
   assert.equal(fake.values.get("workspaces/workspace-a/reports/run-a").rows.length, 2);
   assert.equal(fake.values.get(reservationPath).status, "committed");
   assert.equal(fake.values.get("workspaces/workspace-a/runRequests/request-a").status, "succeeded");
+  assert.equal(fake.values.get("workspaces/workspace-a/auditLogs/run-succeeded-run-a").action, "run.succeeded");
   assert.equal([...fake.values.keys()].filter(path => path.includes("/searchSnapshots/")).length, 2);
   const writes = fake.writes.length;
   assert.deepEqual(await repository.completeRun("workspace-a", "run-a", payload), { status: "succeeded", reused: true });
@@ -137,6 +139,7 @@ test("실패 확정은 lease 소유자를 확인하고 예약을 한 번만 정�
   assert.equal(fake.values.get(runPath).status, "failed");
   assert.equal(fake.values.get(usagePath).runs, 1);
   assert.equal(fake.values.get(usagePath).failed, 1);
+  assert.equal(fake.values.get("workspaces/workspace-a/auditLogs/run-failed-run-a").actorRole, "worker");
   const writes = fake.writes.length;
   assert.deepEqual(await repository.failRun("workspace-a", "run-a", { workerId: "worker-a", keywordLookups: 2, errorCode: "PROVIDER_UNAVAILABLE", failures: [] }), { status: "failed", reused: true });
   assert.equal(fake.writes.length, writes);
@@ -157,4 +160,5 @@ test("일시 오류는 지수 백오프로 재시도하고 고객 사용량은 �
   assert.equal(fake.values.get(reservationPath).providerKeywordAttempts, 2);
   assert.equal(fake.values.get(usagePath).runs, 0);
   assert.equal(fake.values.get("workspaces/workspace-a/runRequests/request-a").status, "retrying");
+  assert.equal(fake.values.get("workspaces/workspace-a/auditLogs/run-retrying-run-a-1").action, "run.retrying");
 });

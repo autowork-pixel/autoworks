@@ -26,6 +26,13 @@ function retryDelayMs(attempt) {
   return Math.min(15 * 60_000, 60_000 * (2 ** Math.max(0, attempt - 1)));
 }
 
+function audit(root, transaction, { id, action, actorUid, actorRole, runId, projectId, beforeStatus, afterStatus, timestamp }) {
+  transaction.set(root.collection("auditLogs").doc(id), {
+    action, actorUid, actorRole, targetType: "run", targetId: runId,
+    beforeSummary: { status: beforeStatus }, afterSummary: { status: afterStatus, projectId: projectId || null }, createdAt: timestamp
+  });
+}
+
 export function createRunRepository({ database, serverTimestamp, now = () => new Date(), leaseMs = 60_000 }) {
   const workspace = workspaceId => database.doc(`workspaces/${workspaceId}`);
 
@@ -102,6 +109,10 @@ export function createRunRepository({ database, serverTimestamp, now = () => new
         }, { merge: true });
         if (run.inputId) transaction.delete(root.collection("runInputs").doc(run.inputId));
         if (run.requestDocumentId) transaction.set(root.collection("runRequests").doc(run.requestDocumentId), { status: "canceled", updatedAt: timestamp }, { merge: true });
+        audit(root, transaction, {
+          id: `run-canceled-${runId}`, action: "run.canceled", actorUid: uid, actorRole: "owner", runId,
+          projectId: run.projectId, beforeStatus: run.status, afterStatus: "canceled", timestamp
+        });
         return { status: "canceled", reused: false };
       });
     },
@@ -169,6 +180,10 @@ export function createRunRepository({ database, serverTimestamp, now = () => new
           completedAt: timestamp, updatedAt: timestamp, providerKeywordAttempts, leaseOwner: null, leaseExpiresAt: null
         }, { merge: true });
         if (run.requestDocumentId) transaction.set(root.collection("runRequests").doc(run.requestDocumentId), { status: "succeeded", updatedAt: timestamp }, { merge: true });
+        audit(root, transaction, {
+          id: `run-succeeded-${runId}`, action: "run.succeeded", actorUid: "system", actorRole: "worker", runId,
+          projectId: run.projectId, beforeStatus: run.status, afterStatus: "succeeded", timestamp
+        });
         return { status: "succeeded", reused: false };
       });
     },
@@ -197,6 +212,10 @@ export function createRunRepository({ database, serverTimestamp, now = () => new
             providerKeywordAttempts, updatedAt: timestamp, leaseOwner: null, leaseExpiresAt: null
           }, { merge: true });
           if (run.requestDocumentId) transaction.set(root.collection("runRequests").doc(run.requestDocumentId), { status: "retrying", updatedAt: timestamp }, { merge: true });
+          audit(root, transaction, {
+            id: `run-retrying-${runId}-${attempt}`, action: "run.retrying", actorUid: "system", actorRole: "worker", runId,
+            projectId: run.projectId, beforeStatus: run.status, afterStatus: "retrying", timestamp
+          });
           return { status: "retrying", reused: false, nextRetryAt };
         }
         const usageRef = root.collection("usage").doc(reservation.usagePeriod);
@@ -214,6 +233,10 @@ export function createRunRepository({ database, serverTimestamp, now = () => new
           completedAt: timestamp, updatedAt: timestamp, providerKeywordAttempts, leaseOwner: null, leaseExpiresAt: null
         }, { merge: true });
         if (run.requestDocumentId) transaction.set(root.collection("runRequests").doc(run.requestDocumentId), { status: "failed", updatedAt: timestamp }, { merge: true });
+        audit(root, transaction, {
+          id: `run-failed-${runId}`, action: "run.failed", actorUid: "system", actorRole: "worker", runId,
+          projectId: run.projectId, beforeStatus: run.status, afterStatus: "failed", timestamp
+        });
         return { status: "failed", reused: false };
       });
     }

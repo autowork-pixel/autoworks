@@ -80,6 +80,7 @@
 - `action`, `actorUid`, `actorRole`, `targetType`, `targetId`, `reason`
 - `requestId`, `beforeSummary`, `afterSummary`, `createdAt`
 - 관리자 권한·구독·고객 차단·문의 상태 등 운영 조치를 서버가 변경과 같은 트랜잭션에서 추가한다.
+- 실행 취소·성공·재시도·최종 실패 기록도 사용량·예약·실행 상태와 같은 서버 트랜잭션에서 생성한다. 상태·프로젝트 참조만 넣고 입력 원문·검색량·API 인증정보는 넣지 않는다.
 - 고객과 브라우저는 생성·수정·삭제할 수 없다. 관리자 claim은 읽기만 가능하며, API 키·토큰·문의 원문 같은 민감값은 기록하지 않는다.
 - 상세 기록 기준과 권한 절차는 `OPERATIONS_SECURITY.md`를 따른다.
 
