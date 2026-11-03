@@ -137,6 +137,7 @@ test("관리자 claim은 운영 데이터만 읽고 문의 답변만 수정하�
       updatedAt: new Date()
     });
     await setDoc(doc(admin, "workspaces/workspace-a/usage/2026-11"), { runs: 2 });
+    await setDoc(doc(admin, "workspaces/workspace-a/runs/run-a"), { tool: "brand-search", status: "failed", errorCode: "PROVIDER_RATE_LIMIT" });
     await setDoc(doc(admin, "workspaces/workspace-a/subscriptions/current"), { planId: "beta", planLabel: "베타", status: "trialing", runLimit: 30, keywordLookupLimit: 300 });
     await setDoc(doc(admin, "workspaces/workspace-a/providerCredentials/naver"), { secret: "test" });
     await setDoc(doc(admin, "workspaces/workspace-a/auditLogs/audit-a"), { action: "inquiry.answered", createdAt: new Date() });
@@ -147,6 +148,7 @@ test("관리자 claim은 운영 데이터만 읽고 문의 답변만 수정하�
   const operator = environment.authenticatedContext("operator-a", { admin: true }).firestore();
   await assertSucceeds(getDocs(collection(operator, "workspaces")));
   await assertSucceeds(getDoc(doc(operator, "workspaces/workspace-a/usage/2026-11")));
+  await assertSucceeds(getDoc(doc(operator, "workspaces/workspace-a/runs/run-a")));
   await assertSucceeds(getDoc(doc(operator, "workspaces/workspace-a/subscriptions/current")));
   await assertSucceeds(getDoc(doc(operator, "workspaces/workspace-a/auditLogs/audit-a")));
   await assertSucceeds(getDoc(doc(operator, "workspaces/workspace-a/paymentEvents/event-a")));

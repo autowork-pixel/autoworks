@@ -161,8 +161,8 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
           const run = item.data(), row = document.createElement("li"), title = document.createElement("b"), status = document.createElement("span"), detail = document.createElement("p");
           row.className = "run-item"; title.textContent = run.toolLabel || run.tool || "자동화 실행";
           status.className = "run-status" + (run.status === "failed" ? " failed" : "");
-          status.textContent = ({ queued:"대기", running:"실행 중", succeeded:"완료", failed:"실패" })[run.status] || "상태 확인";
-          detail.textContent = [run.inputSummary || "입력 요약 없음", formatDate(run.createdAt)].join(" · ");
+          status.textContent = ({ queued:"대기", validating:"검증 중", running:"실행 중", retrying:"재시도 중", succeeded:"완료", failed:"실패", canceled:"취소" })[run.status] || "상태 확인";
+          detail.textContent = [run.inputSummary || "입력 요약 없음", run.status === "failed" ? (run.errorMessage || run.errorCode || "실행 오류") : null, formatDate(run.createdAt)].filter(Boolean).join(" · ");
           row.append(title, status, detail); list.append(row);
         }
       }

@@ -15,11 +15,14 @@
 ### `runs/{runId}`
 
 - `projectId`, `tool`, `toolLabel`
-- `status`: `queued | running | succeeded | failed`
+- `status`: `queued | validating | running | retrying | succeeded | failed | canceled`
 - `inputSummary`: 화면 표시용 요약. API 키·원문 인증정보·민감 입력은 넣지 않는다.
-- `resultReportId`, `errorCode`
-- `createdAt`, `startedAt`, `completedAt`
+- `requestId`, `idempotencyKey`, `attempt`, `maxAttempts`, `retryable`
+- `resultReportId`, `errorCode`, `errorMessage`: 고객에게 보여도 되는 코드와 요약만 저장한다.
+- `usageReservationId`, `estimatedCost`, `actualCost`: 사용량·원가 원장 참조와 집계값. 제공자 키나 요청 원문은 넣지 않는다.
+- `createdAt`, `validatedAt`, `startedAt`, `nextRetryAt`, `completedAt`
 - 서버만 생성·변경하고 고객은 자신의 워크스페이스에서 읽기만 한다.
+- 상태 전이·재시도·사용량 예약 기준은 `RUN_EXECUTION_MODEL.md`를 따른다.
 
 ### `searchSnapshots/{snapshotId}`
 
