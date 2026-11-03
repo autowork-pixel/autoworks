@@ -78,6 +78,7 @@ test("실행·스냅샷·결과·사용량은 소유자에게만 읽기 전용�
     await setDoc(doc(admin, "workspaces/workspace-a/paymentSummaries/current"), { status: "paid", amount: 9900, currency: "KRW" });
     await setDoc(doc(admin, "workspaces/workspace-a/paymentEvents/event-a"), { type: "PAYMENT_STATUS_CHANGED", eventId: "event-a" });
     await setDoc(doc(admin, "workspaces/workspace-a/billingCredentials/current"), { billingKey: "secret" });
+    await setDoc(doc(admin, "workspaces/workspace-a/deletionRequests/current"), { status: "pending", requestedBy: "user-a" });
     await setDoc(doc(admin, "workspaces/workspace-a/subscriptions/current"), { planId: "beta", planLabel: "베타", status: "active", runLimit: 30, keywordLookupLimit: 300 });
   });
 
@@ -102,6 +103,8 @@ test("실행·스냅샷·결과·사용량은 소유자에게만 읽기 전용�
   await assertSucceeds(getDoc(doc(owner, "workspaces/workspace-a/paymentSummaries/current")));
   await assertFails(getDoc(doc(owner, "workspaces/workspace-a/paymentEvents/event-a")));
   await assertFails(getDoc(doc(owner, "workspaces/workspace-a/billingCredentials/current")));
+  await assertFails(getDoc(doc(owner, "workspaces/workspace-a/deletionRequests/current")));
+  await assertFails(setDoc(doc(owner, "workspaces/workspace-a/deletionRequests/current"), { status: "completed" }));
   await assertFails(setDoc(doc(owner, "workspaces/workspace-a/paymentSummaries/current"), { status: "paid" }, { merge: true }));
   await assertSucceeds(getDoc(doc(owner, "workspaces/workspace-a/subscriptions/current")));
   await assertFails(setDoc(doc(owner, "workspaces/workspace-a/subscriptions/current"), { status: "active" }, { merge: true }));
@@ -148,6 +151,7 @@ test("관리자 claim은 운영 데이터를 읽지만 문의 답변과 API 키�
     await setDoc(doc(admin, "workspaces/workspace-a/auditLogs/audit-a"), { action: "inquiry.answered", createdAt: new Date() });
     await setDoc(doc(admin, "workspaces/workspace-a/paymentEvents/event-a"), { type: "PAYMENT_STATUS_CHANGED", eventId: "event-a" });
     await setDoc(doc(admin, "workspaces/workspace-a/billingCredentials/current"), { billingKey: "secret" });
+    await setDoc(doc(admin, "workspaces/workspace-a/deletionRequests/current"), { status: "pending", requestedBy: "user-a" });
   });
 
   const operator = environment.authenticatedContext("operator-a", { admin: true }).firestore();
@@ -165,6 +169,8 @@ test("관리자 claim은 운영 데이터를 읽지만 문의 답변과 API 키�
   }, { merge: true }));
   await assertFails(getDoc(doc(operator, "workspaces/workspace-a/providerCredentials/naver")));
   await assertFails(getDoc(doc(operator, "workspaces/workspace-a/billingCredentials/current")));
+  await assertFails(getDoc(doc(operator, "workspaces/workspace-a/deletionRequests/current")));
+  await assertFails(setDoc(doc(operator, "workspaces/workspace-a/deletionRequests/current"), { status: "completed" }, { merge: true }));
   await assertFails(setDoc(doc(operator, "workspaces/workspace-a/subscriptions/current"), { status: "active" }, { merge: true }));
   await assertFails(setDoc(doc(operator, "workspaces/workspace-a/auditLogs/audit-b"), { action: "forged" }));
   const owner = environment.authenticatedContext("user-a").firestore();
