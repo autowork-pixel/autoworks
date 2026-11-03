@@ -69,6 +69,24 @@ test("주간 광고 결과 저장은 인증·입력 검증 뒤 고객별 저장�
   });
 });
 
+test("협업 YouTube 실행은 인증과 URL 검증 뒤에만 호출한다", async () => {
+  let received;
+  await withServer({ verifyIdToken: async () => ({ uid: "user-a" }), repository: {},
+    collabYouTubeService: { run: async value => { received = value; return { runId: "run-a", status: "succeeded", post: { views: 12 } }; } }
+  }, async base => {
+    const url = `${base}/v1/workspaces/workspace-a/collab-youtube-runs`;
+    const body = { projectId: "project-a", idempotencyKey: "random-request-key-0001", url: "https://youtu.be/AbCde123_-0" };
+    assert.equal((await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) })).status, 401);
+    assert.equal((await fetch(url, { method: "POST", headers: { "content-type": "application/json", authorization: "Bearer token" },
+      body: JSON.stringify({ ...body, url: "https://youtube.com.evil.test/watch?v=AbCde123_-0" }) })).status, 400);
+    const response = await fetch(url, { method: "POST", headers: { "content-type": "application/json", authorization: "Bearer token" }, body: JSON.stringify(body) });
+    assert.equal(response.status, 201);
+    assert.equal((await response.json()).post.views, 12);
+    assert.equal(received.uid, "user-a");
+    assert.equal(received.input.videoId, "AbCde123_-0");
+  });
+});
+
 test("프로젝트 생성은 인증과 입력 정규화 뒤 서버 저장소에 전달한다", async () => {
   let received;
   await withServer({

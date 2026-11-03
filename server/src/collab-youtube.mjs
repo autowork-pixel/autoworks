@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { ApiError } from "./domain.mjs";
 
 const videoIdPattern = /^[A-Za-z0-9_-]{11}$/;
@@ -18,6 +19,20 @@ export function parseYouTubeVideoUrl(input) {
   else if (host !== "youtu.be" && segments.length === 2 && ["shorts", "live"].includes(segments[0])) id = segments[1];
   if (!videoIdPattern.test(id)) throw new ApiError("INVALID_INPUT", "YouTube 동영상 ID를 찾을 수 없습니다.");
   return { videoId: id, url: `https://www.youtube.com/watch?v=${id}` };
+}
+
+export function normalizeCollabYouTubeInput(body) {
+  if (!body || typeof body !== "object" || Array.isArray(body) ||
+      !/^[A-Za-z0-9_-]{1,128}$/.test(body.projectId || "") ||
+      !/^[A-Za-z0-9_-]{16,128}$/.test(body.idempotencyKey || "")) {
+    throw new ApiError("INVALID_INPUT", "협업 게시물 요청 정보가 올바르지 않습니다.");
+  }
+  const post = parseYouTubeVideoUrl(body.url);
+  return { projectId: body.projectId, idempotencyKey: body.idempotencyKey, ...post };
+}
+
+export function collabYouTubeDigest(input) {
+  return createHash("sha256").update(JSON.stringify({ projectId: input.projectId, videoId: input.videoId })).digest("hex");
 }
 
 function count(value) {

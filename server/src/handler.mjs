@@ -1,5 +1,6 @@
 import { ApiError, newRequestId, normalizeBrandSearchInput, normalizeProjectInput } from "./domain.mjs";
 import { normalizeWeeklyAdReport } from "./weekly-ad-report.mjs";
+import { normalizeCollabYouTubeInput } from "./collab-youtube.mjs";
 
 const maximumBodyBytes = 64 * 1024;
 
@@ -57,7 +58,7 @@ function bearer(request) {
   return match[1];
 }
 
-export function createHandler({ verifyIdToken, repository, credentialService, taskDispatcher, logger = console }) {
+export function createHandler({ verifyIdToken, repository, credentialService, collabYouTubeService, taskDispatcher, logger = console }) {
   return async function handler(request, response) {
     const requestId = newRequestId();
     try {
@@ -93,6 +94,19 @@ export function createHandler({ verifyIdToken, repository, credentialService, ta
         if (!decoded?.uid) throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401);
         const input = normalizeWeeklyAdReport(await readJson(request));
         const result = await repository.saveWeeklyAdReport({ workspaceId: weeklyMatch[1], uid: decoded.uid, input });
+        return json(response, result.reused ? 200 : 201, { ...result, requestId }, requestId);
+      }
+      const collabMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/collab-youtube-runs$/);
+      if (request.method === "POST" && collabMatch && collabYouTubeService) {
+        if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("application/json")) {
+          throw new ApiError("INVALID_INPUT", "Content-Type은 application/json이어야 합니다.", 415);
+        }
+        let decoded;
+        try { decoded = await verifyIdToken(bearer(request)); }
+        catch { throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401); }
+        if (!decoded?.uid) throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401);
+        const input = normalizeCollabYouTubeInput(await readJson(request));
+        const result = await collabYouTubeService.run({ workspaceId: collabMatch[1], uid: decoded.uid, input });
         return json(response, result.reused ? 200 : 201, { ...result, requestId }, requestId);
       }
       const credentialMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/provider-credentials\/(naver-searchad|youtube|apify)$/);
