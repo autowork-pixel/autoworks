@@ -39,7 +39,7 @@ function bearer(request) {
   return match[1];
 }
 
-export function createHandler({ verifyIdToken, repository, credentialService, logger = console }) {
+export function createHandler({ verifyIdToken, repository, credentialService, taskDispatcher, logger = console }) {
   return async function handler(request, response) {
     const requestId = newRequestId();
     try {
@@ -100,6 +100,7 @@ export function createHandler({ verifyIdToken, repository, credentialService, lo
         input,
         requestId
       });
+      if (taskDispatcher) await taskDispatcher.dispatch({ workspaceId: match[1], runId: result.runId });
       return json(response, result.reused ? 200 : 202, {
         runId: result.runId,
         status: result.status,

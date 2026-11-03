@@ -97,13 +97,29 @@ test("정상 요청은 uid와 정규화된 입력으로 실행을 예약한다",
 });
 
 test("같은 멱등 요청은 기존 실행을 반환한다", async () => {
+  const dispatched = [];
   await withServer({
     verifyIdToken: async () => ({ uid: "user-a" }),
-    repository: { reserveBrandSearchRun: async () => ({ runId: "run-a", status: "queued", reused: true }) }
+    repository: { reserveBrandSearchRun: async () => ({ runId: "run-a", status: "queued", reused: true }) },
+    taskDispatcher: { dispatch: async value => dispatched.push(value) }
   }, async base => {
     const response = await requestRun(base);
     assert.equal(response.status, 200);
     assert.equal((await response.json()).reused, true);
+    assert.deepEqual(dispatched, [{ workspaceId: "workspace-a", runId: "run-a" }]);
+  });
+});
+
+test("큐 등록 실패 후 같은 멱등 요청을 재시도할 수 있게 503을 반환한다", async () => {
+  await withServer({
+    verifyIdToken: async () => ({ uid: "user-a" }),
+    repository: { reserveBrandSearchRun: async () => ({ runId: "run-a", status: "queued", reused: false }) },
+    taskDispatcher: { dispatch: async () => { throw new ApiError("TASK_DISPATCH_FAILED", "같은 요청으로 다시 시도해주세요.", 503); } }
+  }, async base => {
+    const response = await requestRun(base);
+    const body = await response.json();
+    assert.equal(response.status, 503);
+    assert.equal(body.error.code, "TASK_DISPATCH_FAILED");
   });
 });
 
