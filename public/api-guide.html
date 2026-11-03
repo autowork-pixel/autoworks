@@ -13,6 +13,7 @@
 <div class="warning"><b>안전 안내</b> API 키를 채팅이나 문의에 보내지 마세요. 네이버 검색광고 연결은 로그인·보안 API·KMS가 모두 설정된 배포 환경에서만 활성화되며 서버로 암호화 전송됩니다. 관리자와 고객센터에도 키 원문을 표시하지 않습니다. 그 밖의 서비스는 아직 미리보기이며 입력값을 저장하거나 전송하지 않습니다.</div>
 </main><div class="toast" id="toast"></div>
 <div class="modal" id="modal" role="dialog" aria-modal="true"><div class="modal-box"><div class="modal-head"><span id="modalTitle"></span><button class="x" id="close" aria-label="닫기">×</button></div><div class="modal-art" id="modalArt"></div><div class="caption" id="modalCaption"></div></div></div>
+<script src="./runtime-config.js"></script>
 <script>
 const services=[
 {id:"ads",name:"네이버 검색광고",icon:"N",kind:"검색 데이터",desc:"검색광고의 월간 PC·모바일 검색량을 불러옵니다.",url:"https://naver.github.io/searchad-apidoc/",link:"검색광고 API 발급 안내 ↗",fields:[["API 라이선스","검색광고 API 관리에서 발급한 라이선스","마스킹된 라이선스를 입력하세요","필수","apiKey"],["Secret Key","라이선스와 함께 발급한 비밀 키","Secret Key를 입력하세요","필수","secretKey"],["고객 ID","검색광고 API 요청에 사용하는 광고주 고객 ID","예: 1234567","필수","customerId"]],notice:"광고주 계정 권한과 API 관리 접근이 필요합니다. API 키는 광고 계정에 연결되므로 소유 계정을 확인하고 발급하세요.",steps:[["광고주센터 로그인","네이버 검색광고 광고주센터에서 사용할 광고 계정으로 로그인합니다.","도구 → API 관리"],["API 라이선스 발급","API 관리 화면에서 API 라이선스를 만들고 라이선스와 Secret Key를 확인합니다.","API 라이선스 발급"],["고객 ID 확인","검색광고 API 요청에 필요한 고객 ID를 확인해 항목별로 입력합니다.","광고 계정 고객 ID"]]},

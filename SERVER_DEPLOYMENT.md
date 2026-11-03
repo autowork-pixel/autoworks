@@ -43,7 +43,7 @@
 3. `server/Dockerfile` 이미지로 Cloud Run을 배포하고 필수 환경변수를 설정한다.
 4. Cloud Run URL을 `SERVICE_URL`·`WORKER_AUDIENCE`에 고정하고 새 revision을 배포한다.
 5. Scheduler가 OIDC로 복구 엔드포인트를 호출하도록 연결한다.
-6. Hosting 화면의 API 기준 URL을 설정하고 Hosting을 배포한다.
+6. `public/runtime-config.js`의 `AUTOWORKS_API_BASE`를 Cloud Run HTTPS origin으로 설정하고 Hosting을 배포한다. 이 파일에는 URL 외 비밀정보를 넣지 않는다.
 7. `/healthz`, CORS 사전 요청, 로그인 고객 예약, Tasks 작업자, 결과 CSV, 취소, 재시도 복구를 순서대로 검증한다.
 
 ## 중지 조건
