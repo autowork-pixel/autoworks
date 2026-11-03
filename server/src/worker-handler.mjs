@@ -23,6 +23,7 @@ export function createWorkerHandler({ verifyTaskRequest, contextLoader, provider
       const workspaceId = match[1];
       const runId = match[2];
       const context = await contextLoader.load({ workspaceId, runId });
+      if (context.terminalStatus) return json(response, 200, { runId, status: context.terminalStatus, reused: true, requestId }, requestId);
       const result = await executeBrandSearchRun({ workspaceId, runId, workerId: `${taskIdentity.subject}:${requestId}`, input: context.input, credentials: context.credentials, provider, repository });
       return json(response, 200, { runId, status: result.status, requestId }, requestId);
     } catch (error) {

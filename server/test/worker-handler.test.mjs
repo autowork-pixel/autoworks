@@ -62,3 +62,18 @@ test("내부 오류 원문과 인증정보는 응답과 구조화 로그에서 �
     assert.equal(JSON.stringify(logs).includes("secret credential detail"), false);
   });
 });
+
+test("이미 종료된 실행은 자격정보 실행 없이 기존 상태를 반환한다", async () => {
+  let providerCalled = false;
+  await withServer({
+    verifyTaskRequest: async () => ({ subject: "cloud-tasks-service" }),
+    contextLoader: { load: async () => ({ terminalStatus: "succeeded" }) },
+    provider: { fetchKeywordVolume: async () => { providerCalled = true; } }, repository: {}
+  }, async base => {
+    const response = await fetch(`${base}${path}`, { method: "POST" });
+    const body = await response.json();
+    assert.equal(body.status, "succeeded");
+    assert.equal(body.reused, true);
+    assert.equal(providerCalled, false);
+  });
+});
