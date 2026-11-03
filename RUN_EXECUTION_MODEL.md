@@ -57,3 +57,4 @@
 - 구조화 로그에는 `requestId`, `runId`, `workspaceId`의 내부 식별자, 상태, 오류 코드, 지연시간만 둔다.
 - API 키, 토큰, Authorization 헤더, 고객 원문 입력, 결제 자격정보는 로그와 `runs`에 저장하지 않는다.
 - 관리자 화면은 고객에게 공개 가능한 실행 요약과 오류 코드만 읽는다.
+- 내부 실행 엔드포인트는 고객 Firebase ID 토큰이 아니라 전용 Cloud Tasks 서비스 계정의 OIDC 토큰, 고정 audience와 issuer를 검증한다. 큐에는 `workspaceId`와 `runId`만 넣고 입력·제공자 키는 서버가 실행 시점에 소유권 경로에서 불러온다.
