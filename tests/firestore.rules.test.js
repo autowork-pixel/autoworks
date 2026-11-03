@@ -110,6 +110,20 @@ test("실행·스냅샷·결과·사용량은 소유자에게만 읽기 전용�
   await assertFails(setDoc(doc(owner, "workspaces/workspace-a/subscriptions/current"), { status: "active" }, { merge: true }));
 });
 
+test("구독과 결제 요약이 아직 없어도 소유자는 빈 상태를 읽을 수 있다", async () => {
+  await environment.clearFirestore();
+  await environment.withSecurityRulesDisabled(async context => {
+    await setDoc(doc(context.firestore(), "workspaces/workspace-a"), { ownerUid: "user-a" });
+  });
+  const owner = environment.authenticatedContext("user-a").firestore();
+  const otherUser = environment.authenticatedContext("user-b").firestore();
+  for (const path of ["subscriptions/current", "paymentSummaries/current"]) {
+    const ownerResult = await assertSucceeds(getDoc(doc(owner, `workspaces/workspace-a/${path}`)));
+    assert.equal(ownerResult.exists(), false);
+    await assertFails(getDoc(doc(otherUser, `workspaces/workspace-a/${path}`)));
+  }
+});
+
 test("고객 문의는 소유자가 생성·조회하고 상태 변경은 서버만 할 수 있다", async () => {
   await environment.clearFirestore();
   await environment.withSecurityRulesDisabled(async context => {
