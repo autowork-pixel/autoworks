@@ -97,7 +97,8 @@ service cloud.firestore {
       }
 
       match /subscriptions/{subscriptionId} {
-        allow get, list: if isAdmin();
+        allow get, list: if isAdmin() || (ownsWorkspace(workspaceId)
+          && resource.data.keys().hasOnly(['planId', 'planLabel', 'status', 'periodStart', 'periodEnd', 'runLimit', 'keywordLookupLimit', 'updatedAt']));
         allow create, update, delete: if false;
       }
 

@@ -75,7 +75,7 @@ test("실행·스냅샷·결과·사용량은 소유자에게만 읽기 전용�
     await setDoc(doc(admin, "workspaces/workspace-a/reports/report-a"), { title: "브랜드 검색량 결과", status: "ready", summary: "3개 키워드 조회", createdAt: new Date() });
     await setDoc(doc(admin, "workspaces/workspace-a/usage/2026-11"), { runs: 1, keywordLookups: 3, succeeded: 1, failed: 0 });
     await setDoc(doc(admin, "workspaces/workspace-a/providerCredentials/naver"), { secret: "test" });
-    await setDoc(doc(admin, "workspaces/workspace-a/subscriptions/current"), { status: "active" });
+    await setDoc(doc(admin, "workspaces/workspace-a/subscriptions/current"), { planId: "beta", planLabel: "베타", status: "active", runLimit: 30, keywordLookupLimit: 300 });
   });
 
   const owner = environment.authenticatedContext("user-a").firestore();
@@ -91,7 +91,8 @@ test("실행·스냅샷·결과·사용량은 소유자에게만 읽기 전용�
   await assertFails(getDoc(doc(otherUser, "workspaces/workspace-a/runs/run-a")));
   await assertFails(getDoc(doc(otherUser, "workspaces/workspace-a/reports/report-a")));
   await assertFails(getDoc(doc(owner, "workspaces/workspace-a/providerCredentials/naver")));
-  await assertFails(getDoc(doc(owner, "workspaces/workspace-a/subscriptions/current")));
+  await assertSucceeds(getDoc(doc(owner, "workspaces/workspace-a/subscriptions/current")));
+  await assertFails(setDoc(doc(owner, "workspaces/workspace-a/subscriptions/current"), { status: "active" }, { merge: true }));
 });
 
 test("고객 문의는 소유자가 생성·조회하고 상태 변경은 서버만 할 수 있다", async () => {
@@ -129,7 +130,7 @@ test("관리자 claim은 운영 데이터만 읽고 문의 답변만 수정하�
       updatedAt: new Date()
     });
     await setDoc(doc(admin, "workspaces/workspace-a/usage/2026-11"), { runs: 2 });
-    await setDoc(doc(admin, "workspaces/workspace-a/subscriptions/current"), { status: "trial" });
+    await setDoc(doc(admin, "workspaces/workspace-a/subscriptions/current"), { planId: "beta", planLabel: "베타", status: "trialing", runLimit: 30, keywordLookupLimit: 300 });
     await setDoc(doc(admin, "workspaces/workspace-a/providerCredentials/naver"), { secret: "test" });
     await setDoc(doc(admin, "workspaces/workspace-a/auditLogs/audit-a"), { action: "inquiry.answered", createdAt: new Date() });
   });

@@ -53,8 +53,9 @@
 
 ### `subscriptions/{subscriptionId}`
 
-- 브라우저 읽기·쓰기를 전부 거부한다.
-- 결제 이벤트와 서버 검증을 거친 상태만 기록한다.
+- 고객에게 공개하는 `current` 문서에는 `planId`, `planLabel`, `status`, `periodStart`, `periodEnd`, `runLimit`, `keywordLookupLimit`, `updatedAt`만 둔다.
+- 고객은 자신의 공개 요약만 읽고 쓰기는 할 수 없다. 운영자는 읽기만 가능하다.
+- 결제 이벤트와 서버 검증을 거친 상태만 서버가 기록한다. billing key, payment key, 주문 원장과 웹훅 원문은 별도 서버 전용 경로에 보관한다.
 
 ### `auditLogs/{auditId}`
 
