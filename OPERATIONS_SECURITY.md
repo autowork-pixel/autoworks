@@ -30,6 +30,6 @@
 ## 서버 구현 상태와 보류
 
 - custom claim 실제 부여·회수
-- 고객 차단·해제는 `admin: true` ID token, 5~500자 사유를 확인하고 `serverControls/access`와 `auditLogs`를 한 트랜잭션에서 변경하도록 구현했다. 실제 배포·관리 화면 연결은 보류한다.
+- 고객 차단·해제는 `admin: true` ID token, 5~500자 사유를 확인하고 `serverControls/access`와 `auditLogs`를 한 트랜잭션에서 변경한다. 운영 화면은 API URL이 설정된 경우에만 조치 버튼을 활성화한다. 실제 배포·claim 검증은 보류한다.
 - 구독 상태 변경과 그 감사 기록
 - 역할 변경 후 기존 ID token 강제 갱신·세션 회수
