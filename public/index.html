@@ -303,6 +303,25 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
           throw error;
         }
       }
+      async function loadDeletionStatus(user, workspaceId, isCurrent = () => true) {
+        if (!apiBase) return;
+        const submit = document.getElementById("accountDeletionSubmit"), state = document.getElementById("accountDeletionState");
+        try {
+          const token = await user.getIdToken();
+          const response = await fetch(`${apiBase}/v1/account-deletion-requests/${encodeURIComponent(workspaceId)}`, { headers:{ authorization:`Bearer ${token}` } });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(result.error?.message || "request-failed");
+          if (!isCurrent()) return;
+          if (result.status === "pending" || result.status === "completed") {
+            submit.disabled = true; submit.textContent = result.status === "completed" ? "탈퇴 처리됨" : "요청 접수됨";
+            state.textContent = result.status === "completed" ? "탈퇴 처리가 완료되었습니다." : "탈퇴 요청이 접수되어 새 자동화 실행이 중단되었습니다.";
+          }
+        } catch (error) {
+          if (!isCurrent()) return;
+          state.textContent = "탈퇴 요청 상태를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+          console.error("계정 탈퇴 상태 조회 실패", error.message);
+        }
+      }
       onAuthStateChanged(auth, async user => {
         const generation = ++authGeneration;
         const signedIn = Boolean(user);
@@ -325,7 +344,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
             const isCurrent = () => generation === authGeneration && auth.currentUser?.uid === user.uid;
             if (!isCurrent()) return;
             window.autoworksWorkspaceId = workspaceId;
-            await Promise.all([loadProjects(workspaceId, isCurrent), loadWorkspaceData(workspaceId, isCurrent)]);
+            await Promise.all([loadProjects(workspaceId, isCurrent), loadWorkspaceData(workspaceId, isCurrent), loadDeletionStatus(user, workspaceId, isCurrent)]);
             if (!isCurrent()) return;
             authMessage.textContent = "로그인 및 개인 작업 공간이 준비되었습니다.";
             if (authModal.classList.contains("open")) setTimeout(hideAuth, 700);

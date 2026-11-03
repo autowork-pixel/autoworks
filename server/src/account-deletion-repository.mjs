@@ -2,6 +2,18 @@ import { ApiError } from "./domain.mjs";
 
 export function createAccountDeletionRepository({ database, serverTimestamp }) {
   return {
+    async getDeletionStatus({ workspaceId, uid }) {
+      const workspace = database.doc(`workspaces/${workspaceId}`);
+      const request = workspace.collection("deletionRequests").doc("current");
+      return database.runTransaction(async transaction => {
+        const [workspaceSnapshot, requestSnapshot] = await Promise.all([transaction.get(workspace), transaction.get(request)]);
+        if (!workspaceSnapshot.exists || workspaceSnapshot.data().ownerUid !== uid) {
+          throw new ApiError("AUTH_REQUIRED", "워크스페이스 권한을 확인할 수 없습니다.", 403);
+        }
+        const status = requestSnapshot.exists ? requestSnapshot.data().status : "active";
+        return { status: ["pending", "completed"].includes(status) ? status : "active" };
+      });
+    },
     async requestDeletion({ workspaceId, uid, requestId }) {
       const workspace = database.doc(`workspaces/${workspaceId}`);
       const request = workspace.collection("deletionRequests").doc("current");

@@ -15,12 +15,19 @@ export function createAccountDeletionHandler({ verifyIdToken, repository, logger
   return async (request, response) => {
     const requestId = newRequestId();
     try {
-      if (request.method !== "POST" || request.url !== "/v1/account-deletion-requests") throw new ApiError("NOT_FOUND", "요청 경로를 찾을 수 없습니다.", 404);
-      if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("application/json")) throw new ApiError("INVALID_INPUT", "Content-Type은 application/json이어야 합니다.", 415);
+      const statusMatch = request.url?.match(/^\/v1\/account-deletion-requests\/([A-Za-z0-9_-]{1,128})$/);
+      const isCreate = request.method === "POST" && request.url === "/v1/account-deletion-requests";
+      const isStatus = request.method === "GET" && statusMatch;
+      if (!isCreate && !isStatus) throw new ApiError("NOT_FOUND", "요청 경로를 찾을 수 없습니다.", 404);
+      if (isCreate && !String(request.headers["content-type"] || "").toLowerCase().startsWith("application/json")) throw new ApiError("INVALID_INPUT", "Content-Type은 application/json이어야 합니다.", 415);
       const bearer = String(request.headers.authorization || "").match(/^Bearer\s+(.+)$/i);
       if (!bearer) throw new ApiError("AUTH_REQUIRED", "로그인이 필요합니다.", 401);
       let decoded; try { decoded = await verifyIdToken(bearer[1]); } catch { throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401); }
       if (!decoded?.uid) throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401);
+      if (isStatus) {
+        const result = await repository.getDeletionStatus({ workspaceId: statusMatch[1], uid: decoded.uid });
+        return json(response, 200, { workspaceId: statusMatch[1], status: result.status, requestId }, requestId);
+      }
       const input = await body(request);
       const workspaceId = typeof input.workspaceId === "string" ? input.workspaceId.trim() : "";
       if (!/^[A-Za-z0-9_-]{1,128}$/.test(workspaceId) || input.confirmation !== "DELETE") {

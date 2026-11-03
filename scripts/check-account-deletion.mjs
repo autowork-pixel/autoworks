@@ -7,4 +7,6 @@ assert.match(source, /auth\.currentUser, workspaceId = window\.autoworksWorkspac
 assert.match(source, /authorization:`Bearer \$\{token\}`/, "탈퇴 요청은 Firebase ID 토큰으로 인증해야 합니다.");
 assert.match(source, /\/v1\/account-deletion-requests/, "탈퇴 요청은 서버 전용 API로 보내야 합니다.");
 assert.match(source, /accountDeletionSubmit"\)\.disabled = !apiBase/, "서버 미연결 환경에서 탈퇴 요청 버튼을 비활성화해야 합니다.");
+assert.match(source, /v1\/account-deletion-requests\/\$\{encodeURIComponent\(workspaceId\)\}/, "새로고침 후 서버에서 탈퇴 상태를 다시 확인해야 합니다.");
+assert.match(source, /result\.status === "pending" \|\| result\.status === "completed"/, "접수·완료 상태에서는 탈퇴 요청을 다시 활성화하면 안 됩니다.");
 console.log("계정 탈퇴 요청의 확인·인증·서버 연결 경계를 확인");
