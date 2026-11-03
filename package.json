@@ -13,6 +13,7 @@
     "test:api-connection": "node scripts/check-api-connection.mjs",
     "test:runtime-config": "node scripts/check-runtime-config.mjs",
     "test:billing-boundary": "node scripts/check-billing-boundary.mjs",
+    "test:container": "node scripts/check-container.mjs",
     "test:server": "node --test server/test/*.test.mjs",
     "verify:hosting": "node scripts/verify-hosting.mjs"
   },
