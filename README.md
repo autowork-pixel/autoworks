@@ -52,4 +52,5 @@ public/index.html을 브라우저에서 엽니다. 메뉴에서 대시보드, �
 - [RUN_EXECUTION_MODEL.md](./RUN_EXECUTION_MODEL.md)에서 실행 상태·재시도·사용량 원장 규칙을 확인합니다.
 - [AUTH_FLOW.md](./AUTH_FLOW.md)에서 네이버·카카오 OAuth와 Firebase custom token 보안 경계를 확인합니다.
 - [RELEASE_POLICY_CHECKLIST.md](./RELEASE_POLICY_CHECKLIST.md)에서 출시 전 사용자 확인 항목을 확인합니다.
+- [EXTERNAL_GATES.md](./EXTERNAL_GATES.md)에서 Cloud·로그인·결제·정책·베타의 외부 승인 단위와 완료 증빙을 확인합니다.
 
