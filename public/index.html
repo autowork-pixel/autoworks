@@ -115,6 +115,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
       const auth = getAuth(window.autoworksFirebaseApp);
       const db = getFirestore(window.autoworksFirebaseApp);
       const workspaceSetups = new Map();
+      let authGeneration = 0;
       const projectCollection = workspaceId => collection(db, "workspaces", workspaceId, "projects");
       const workspaceCollection = (workspaceId, name) => collection(db, "workspaces", workspaceId, name);
       const formatDate = value => value?.toDate?.().toLocaleString("ko-KR", { dateStyle: "short", timeStyle: "short" }) || "시간 확인 중";
@@ -140,14 +141,15 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
           rows.append(row);
         }
       }
-      async function loadProjects(workspaceId) {
-        document.getElementById("workspace").classList.add("visible");
+      async function loadProjects(workspaceId, isCurrent = () => true) {
         document.getElementById("projectState").hidden = false;
         document.getElementById("projectState").textContent = "저장된 프로젝트를 불러오는 중입니다.";
         document.getElementById("projectTable").hidden = true;
         try {
-          renderProjects(await getDocs(projectCollection(workspaceId)));
+          const snapshot = await getDocs(projectCollection(workspaceId));
+          if (isCurrent()) renderProjects(snapshot);
         } catch (error) {
+          if (!isCurrent()) return;
           document.getElementById("projectState").textContent = "프로젝트를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.";
           console.error("프로젝트 조회 실패", error.code);
         }
@@ -214,8 +216,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
           row.append(title, status, detail); list.append(row);
         }
       }
-      async function loadWorkspaceData(workspaceId) {
-        document.getElementById("accountData").classList.add("visible");
+      async function loadWorkspaceData(workspaceId, isCurrent = () => true) {
         const period = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit" }).format(new Date());
         try {
           const [runs, reports, usage, inquiries, subscription, payment] = await Promise.all([
@@ -226,8 +227,10 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
             getDoc(doc(db, "workspaces", workspaceId, "subscriptions", "current")),
             getDoc(doc(db, "workspaces", workspaceId, "paymentSummaries", "current"))
           ]);
+          if (!isCurrent()) return;
           renderRuns(runs); renderReports(reports); renderUsage(usage, period); renderInquiries(inquiries); renderSubscription(subscription); renderPayment(payment);
         } catch (error) {
+          if (!isCurrent()) return;
           document.getElementById("runState").textContent = "실행 데이터를 불러오지 못했습니다.";
           document.getElementById("reportState").textContent = "결과 데이터를 불러오지 못했습니다.";
           document.getElementById("usageState").textContent = "사용량 데이터를 불러오지 못했습니다.";
@@ -236,6 +239,21 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
           document.getElementById("paymentState").textContent = "결제 내역을 불러오지 못했습니다.";
           console.error("워크스페이스 실행 데이터 조회 실패", error.code);
         }
+      }
+      function resetAccountUi() {
+        window.autoworksWorkspaceId = null;
+        document.getElementById("projectForm").reset();
+        document.getElementById("projectForm").classList.remove("open");
+        document.getElementById("projectRows").replaceChildren();
+        document.getElementById("projectTable").hidden = true;
+        document.getElementById("projectState").hidden = false;
+        document.getElementById("projectState").textContent = "로그인 후 프로젝트를 확인할 수 있습니다.";
+        for (const id of ["runList", "reportList", "inquiryList"]) document.getElementById(id).replaceChildren();
+        for (const id of ["runState", "reportState", "usageState", "inquiryState", "subscriptionState", "paymentState"]) {
+          const node = document.getElementById(id); node.hidden = false; node.textContent = "로그인 후 확인할 수 있습니다.";
+        }
+        document.getElementById("usageGrid").hidden = true;
+        document.getElementById("inquiryForm").reset();
       }
       async function ensureWorkspace(user) {
         if (!workspaceSetups.has(user.uid)) {
@@ -264,6 +282,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
         }
       }
       onAuthStateChanged(auth, async user => {
+        const generation = ++authGeneration;
         const signedIn = Boolean(user);
         document.getElementById("authProviders").hidden = signedIn;
         document.getElementById("authAccount").hidden = !signedIn;
@@ -276,14 +295,19 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
         document.getElementById("accountNav").classList.toggle("visible", signedIn);
         document.getElementById("accountData").classList.toggle("visible", signedIn);
         document.getElementById("inquiries").classList.toggle("visible", signedIn);
-        if (!signedIn) window.autoworksWorkspaceId = null;
+        if (!signedIn) resetAccountUi();
         if (signedIn) {
           try {
-            window.autoworksWorkspaceId = await ensureWorkspace(user);
-            await Promise.all([loadProjects(window.autoworksWorkspaceId), loadWorkspaceData(window.autoworksWorkspaceId)]);
+            const workspaceId = await ensureWorkspace(user);
+            const isCurrent = () => generation === authGeneration && auth.currentUser?.uid === user.uid;
+            if (!isCurrent()) return;
+            window.autoworksWorkspaceId = workspaceId;
+            await Promise.all([loadProjects(workspaceId, isCurrent), loadWorkspaceData(workspaceId, isCurrent)]);
+            if (!isCurrent()) return;
             authMessage.textContent = "로그인 및 개인 작업 공간이 준비되었습니다.";
             if (authModal.classList.contains("open")) setTimeout(hideAuth, 700);
           } catch (error) {
+            if (generation !== authGeneration || auth.currentUser?.uid !== user.uid) return;
             authMessage.textContent = "로그인했지만 개인 작업 공간을 준비하지 못했습니다. 다시 시도해 주세요.";
             console.error("워크스페이스 준비 실패", error.code);
           }

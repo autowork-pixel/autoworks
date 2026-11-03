@@ -120,7 +120,7 @@
 - [x] index.html에 세 제공자 로그인 선택 화면, Firebase Auth 팝업 로그인/로그아웃 코드, 미설정 제공자 및 중복 이메일 오류 안내를 추가한다.
 - [x] Firebase Authentication에서 Google 제공자를 활성화했다. OAuth 설정 저장 시 공개용 앱 이름을 ‘오토웍스’로 지정하고, 사용자가 선택한 지원 이메일을 저장했다.
 - [x] Hosting에서 Google 로그인 세션이 새로고침 뒤에도 복원되고 워크스페이스·프로젝트 목록이 다시 로드되는 것을 확인했다 (2026-11-02).
-- [ ] 로그아웃 후 계정 상태와 워크스페이스 화면이 닫히고, 재로그인할 수 있는지 검증한다.
+- [ ] 로그아웃 시 프로젝트·실행·결과·사용량·문의 DOM과 workspace ID를 즉시 초기화하고, 이전 계정의 비동기 조회 결과가 재로그인한 계정 화면에 섞이지 않도록 세대 검증을 추가했다. 실제 Hosting 계정으로 로그아웃·재로그인은 사용자 확인이 남아 있다.
 - [x] 네이버·카카오는 Firebase OIDC 직접 연결 대신 각 디벨로퍼 OAuth와 서버 callback을 사용하고, Firebase custom token으로 로그인시키는 방향을 정한다.
 - [ ] 네이버·카카오 디벨로퍼 앱을 만들고 서비스 도메인·callback URL을 등록한다. client secret은 서버에만 저장한다.
 - [ ] Cloud Run callback의 서버 코어를 구현했다. 10분짜리 일회성 state, 공식 토큰 교환·프로필 조회, 제공자별 안정 UID, Firebase custom token 발급 경계를 단위 테스트했으며 실제 HTTP 라우트·state 저장소·Cloud Run 배포는 Cloud Billing/월 예산 결정 전까지 보류한다.

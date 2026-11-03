@@ -5,6 +5,7 @@
     "test:html": "node scripts/check-html.mjs",
     "test:links": "node scripts/check-links.mjs",
     "test:security": "node scripts/check-security.mjs",
+    "test:auth-state": "node scripts/check-auth-state.mjs",
     "test:server": "node --test server/test/*.test.mjs",
     "verify:hosting": "node scripts/verify-hosting.mjs"
   },
