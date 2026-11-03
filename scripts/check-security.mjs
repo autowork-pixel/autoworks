@@ -1,11 +1,23 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
-const root = process.cwd();
+const projectRoot = process.cwd();
+const root = resolve(projectRoot, "public");
 const errors = [];
 const htmlFiles = readdirSync(root).filter(file => file.endsWith(".html"));
-const firebase = JSON.parse(readFileSync(resolve(root, "firebase.json"), "utf8"));
+const firebase = JSON.parse(readFileSync(resolve(projectRoot, "firebase.json"), "utf8"));
 const ignore = new Set(firebase.hosting?.ignore || []);
+
+if (firebase.hosting?.public !== "public") {
+  errors.push("firebase.json: Hosting 공개 루트는 public 전용 디렉터리여야 합니다.");
+}
+
+const publicFiles = readdirSync(root, { withFileTypes: true });
+for (const entry of publicFiles) {
+  if (entry.isDirectory() || !/\.(?:html|css|svg|png|jpe?g|webp|ico)$/i.test(entry.name)) {
+    errors.push(`public/${entry.name}: 공개 디렉터리에 허용되지 않은 파일 형식이 있습니다.`);
+  }
+}
 
 for (const required of [
   "**/.*",
@@ -22,7 +34,7 @@ for (const required of [
 
 const headers = new Map(
   (firebase.hosting?.headers || [])
-    .filter(rule => rule.source === "**")
+    .filter(rule => rule.source === "**/*.@(html|css)")
     .flatMap(rule => rule.headers || [])
     .map(header => [header.key.toLowerCase(), header.value])
 );
@@ -64,4 +76,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`${htmlFiles.length}개 공개 HTML의 비밀정보·저장소·원격 스크립트와 Hosting 보안 경계를 확인`);
+console.log(`${htmlFiles.length}개 공개 HTML과 전용 public 디렉터리의 비밀정보·저장소·원격 스크립트·Hosting 보안 경계를 확인`);

@@ -4,7 +4,7 @@
 
 ## 미리보기
 
-index.html을 브라우저에서 엽니다. 메뉴에서 대시보드, 도구 목록, API 연결 준비 상태와 베타 구독 상태를 확인할 수 있습니다. 작은 화면 메뉴도 지원합니다.
+public/index.html을 브라우저에서 엽니다. 메뉴에서 대시보드, 도구 목록, API 연결 준비 상태와 베타 구독 상태를 확인할 수 있습니다. 작은 화면 메뉴도 지원합니다.
 
 ## 현재 범위
 
@@ -28,7 +28,7 @@ index.html을 브라우저에서 엽니다. 메뉴에서 대시보드, 도구 �
 
 ## 정책 안내 페이지
 
-- business.html, guide.html, terms.html, privacy.html, refund.html, help.html과 legal.css를 추가했습니다.
+- public/business.html, guide.html, terms.html, privacy.html, refund.html, help.html과 legal.css를 추가했습니다.
 - 톡거리의 푸터 구조와 공개된 워크스위치 사업자 정보를 참고했습니다.
 - 현재는 미리보기이므로 운영사·저장/인증 업체·국외 이전·보유기간·통신판매업 신고·부가세 표시를 출시 전 확인해야 합니다.
 

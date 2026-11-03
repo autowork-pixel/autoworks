@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
-const root = process.cwd();
+const root = resolve(process.cwd(), "public");
 const htmlFiles = readdirSync(root).filter(file => file.endsWith(".html"));
 const errors = [];
 
