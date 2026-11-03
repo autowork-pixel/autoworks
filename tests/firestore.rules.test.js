@@ -94,6 +94,11 @@ test("실행·스냅샷·결과·사용량은 소유자에게만 읽기 전용�
   await assertFails(getDoc(doc(otherUser, "workspaces/workspace-a/runs/run-a")));
   await assertFails(getDoc(doc(otherUser, "workspaces/workspace-a/reports/report-a")));
   await assertFails(getDoc(doc(owner, "workspaces/workspace-a/providerCredentials/naver")));
+  await assertFails(getDoc(doc(owner, "workspaces/workspace-a/serverControls/access")));
+  await assertFails(getDoc(doc(owner, "workspaces/workspace-a/runInputs/run-a")));
+  await assertFails(getDoc(doc(owner, "workspaces/workspace-a/runRequests/private-hash")));
+  await assertFails(getDoc(doc(owner, "workspaces/workspace-a/usageReservations/run-a")));
+  await assertFails(setDoc(doc(owner, "workspaces/workspace-a/runInputs/run-a"), { keywords: ["secret"] }));
   await assertSucceeds(getDoc(doc(owner, "workspaces/workspace-a/paymentSummaries/current")));
   await assertFails(getDoc(doc(owner, "workspaces/workspace-a/paymentEvents/event-a")));
   await assertFails(getDoc(doc(owner, "workspaces/workspace-a/billingCredentials/current")));

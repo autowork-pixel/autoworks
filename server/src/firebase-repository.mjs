@@ -59,6 +59,7 @@ export const repository = {
         throw new ApiError("USAGE_LIMIT_EXCEEDED", "이번 기간의 키워드 조회 한도를 초과했습니다.", 429);
       }
       const run = workspace.collection("runs").doc();
+      const runInput = workspace.collection("runInputs").doc(run.id);
       const reservation = workspace.collection("usageReservations").doc(run.id);
       const timestamp = FieldValue.serverTimestamp();
       transaction.set(run, {
@@ -71,7 +72,17 @@ export const repository = {
         attempt: 0,
         maxAttempts: 3,
         retryable: true,
+        inputId: runInput.id,
         usageReservationId: reservation.id,
+        createdAt: timestamp
+      });
+      transaction.set(runInput, {
+        projectId: input.projectId,
+        brand: input.brand,
+        competitors: input.competitors,
+        keywords: input.keywords,
+        displayPeriodDays: input.displayPeriodDays,
+        roundingUnit: input.roundingUnit,
         createdAt: timestamp
       });
       transaction.set(reservation, {

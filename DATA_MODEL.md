@@ -45,6 +45,7 @@
 ### 서버 전용 실행 제어 경로
 
 - `serverControls/access`: `blocked`로 서버 실행 차단 여부를 관리한다. 브라우저는 읽거나 쓸 수 없다.
+- `runInputs/{runId}`: 작업자가 읽을 정규화된 브랜드·경쟁사·키워드·표시 기간·반올림 단위를 보관한다. 고객 공개 `runs`에는 요약만 두며 제공자 자격정보는 어느 실행 입력에도 복사하지 않는다.
 - `runRequests/{privateHash}`: 사용자 uid와 멱등키로 만든 비가역 해시를 문서 ID로 사용하고 `runId`, `requestDigest`, `status`만 저장한다. 멱등키 원문은 저장하지 않는다.
 - `usageReservations/{runId}`: 실행 시작 전 예약한 `runs`, `keywordLookups`와 `reserved | committed | released` 상태를 보관한다.
 - 이 경로들은 Firebase Admin SDK를 쓰는 서버만 접근하고, 성공·실패·취소 시 같은 트랜잭션에서 예약을 확정하거나 해제한다.
