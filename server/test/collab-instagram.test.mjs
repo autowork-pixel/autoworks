@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseInstagramPostUrl, fetchInstagramPost } from "../src/collab-instagram.mjs";
+import { collabInstagramDigest, fetchInstagramPost, normalizeCollabInstagramInput, parseInstagramPostUrl } from "../src/collab-instagram.mjs";
 
 test("공식 Instagram 게시물 링크만 정규화한다", () => {
   assert.deepEqual(parseInstagramPostUrl("https://www.instagram.com/reels/ABC_123/?igsh=x"), {
@@ -9,6 +9,13 @@ test("공식 Instagram 게시물 링크만 정규화한다", () => {
   for (const url of ["https://instagram.com.evil.test/p/ABC_123/", "http://instagram.com/p/ABC_123/", "https://www.instagram.com/profile/ABC_123/", "https://www.instagram.com/p/ABC_123/more/"]) {
     assert.throws(() => parseInstagramPostUrl(url), { code: "INVALID_INPUT" });
   }
+});
+
+test("Instagram 실행 입력을 정규화하고 프로젝트·shortcode로 멱등 해시를 만든다", () => {
+  const input = normalizeCollabInstagramInput({ projectId: "project-a", idempotencyKey: "random-request-key-0001", url: "https://instagram.com/p/ABC_123/?utm_source=test" });
+  assert.deepEqual(input, { projectId: "project-a", idempotencyKey: "random-request-key-0001", shortcode: "ABC_123", url: "https://www.instagram.com/p/ABC_123/" });
+  assert.match(collabInstagramDigest(input), /^[a-f0-9]{64}$/);
+  assert.throws(() => normalizeCollabInstagramInput({ projectId: "project-a", idempotencyKey: "short", url: input.url }), { code: "INVALID_INPUT" });
 });
 
 test("Apify 토큰은 인증 헤더에만 넣고 영상 지표를 정규화한다", async () => {

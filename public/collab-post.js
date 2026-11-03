@@ -3,30 +3,44 @@ const hosts = new Set(["localhost", "127.0.0.1", "autoworks-c9a6a.web.app", "aut
 const project = document.getElementById("project"), history = document.getElementById("history");
 const lookup = document.getElementById("lookup"), lookupStatus = document.getElementById("lookupStatus");
 const accountStatus = document.getElementById("accountStatus"), postUrl = document.getElementById("postUrl");
+const platform = document.getElementById("platform"), credentialGuide = document.getElementById("credentialGuide");
 let user = null, workspaceId = null, database, auth, generation = 0, reportById = new Map(), requestKey = null;
 const displayCount = value => value == null ? "미제공" : Number(value).toLocaleString("ko-KR");
 function updateAvailability() { lookup.disabled = !apiBase || !user || !workspaceId || !project.value || !postUrl.value.trim(); }
 function clearResult() { document.getElementById("result").hidden = true; }
 function showResult(post) {
-  if (!post || !/^https:\/\/www\.youtube\.com\/watch\?v=[A-Za-z0-9_-]{11}$/.test(post.url || "")) return;
+  const valid = post?.platform === "YouTube"
+    ? /^https:\/\/www\.youtube\.com\/watch\?v=[A-Za-z0-9_-]{11}$/.test(post.url || "")
+    : post?.platform === "Instagram" && /^https:\/\/www\.instagram\.com\/(p|reel)\/[A-Za-z0-9_-]{4,64}\/$/.test(post.url || "");
+  if (!valid) return;
   document.getElementById("title").textContent = post.title || "제목 미제공";
-  document.getElementById("captured").textContent = `조회 시각 ${new Date(post.capturedAt).toLocaleString("ko-KR")}`;
+  document.getElementById("captured").textContent = `${post.platform} · 조회 시각 ${new Date(post.capturedAt).toLocaleString("ko-KR")}`;
   for (const key of ["views", "likes", "comments"]) document.getElementById(key).textContent = displayCount(post[key]);
-  document.getElementById("videoLink").href = post.url;
+  document.getElementById("postLink").href = post.url;
+  document.getElementById("postLink").textContent = `${post.platform} 게시물 열기 ↗`;
   document.getElementById("result").hidden = false;
 }
 postUrl.addEventListener("input", () => { requestKey = null; updateAvailability(); });
 project.addEventListener("change", () => { requestKey = null; updateAvailability(); });
+platform.addEventListener("change", () => {
+  requestKey = null; postUrl.value = ""; clearResult();
+  const instagram = platform.value === "instagram";
+  document.getElementById("urlLabel").textContent = instagram ? "게시물 또는 릴스 URL" : "영상 또는 Shorts URL";
+  postUrl.placeholder = instagram ? "https://www.instagram.com/reel/.../" : "https://www.youtube.com/watch?v=...";
+  credentialGuide.textContent = instagram ? "Apify API 토큰 연결 방법 →" : "YouTube API 키 연결 방법 →";
+  lookupStatus.textContent = apiBase ? `${instagram ? "Instagram" : "YouTube"} URL을 입력해 주세요.` : "서버 연결 전에는 실제 조회할 수 없습니다.";
+  updateAvailability();
+});
 history.addEventListener("change", () => { const report = reportById.get(history.value); if (report) showResult(report.post); });
 
 async function loadHistory(getDocs, collection, query, orderBy, limit) {
   const currentUser = user, currentWorkspace = workspaceId;
   const snapshot = await getDocs(query(collection(database, "workspaces", currentWorkspace, "reports"), orderBy("createdAt", "desc"), limit(50)));
   if (currentUser !== user || currentWorkspace !== workspaceId) return;
-  reportById = new Map(snapshot.docs.filter(doc => doc.data().tool === "collab-post" && doc.data().post?.platform === "YouTube")
+  reportById = new Map(snapshot.docs.filter(doc => doc.data().tool === "collab-post" && ["YouTube", "Instagram"].includes(doc.data().post?.platform))
     .map(doc => [doc.id, doc.data()]));
   history.replaceChildren(new Option(reportById.size ? "저장된 결과 선택" : "저장된 조회 결과 없음", ""));
-  for (const [id, report] of reportById) history.add(new Option(`${report.post.title || "YouTube 영상"} · ${displayCount(report.post.views)}회`, id));
+  for (const [id, report] of reportById) history.add(new Option(`${report.post.platform} · ${report.post.title || "제목 미제공"} · ${displayCount(report.post.views)}회`, id));
   history.disabled = reportById.size === 0;
 }
 
@@ -70,10 +84,11 @@ async function initialize() {
   lookup.addEventListener("click", async () => {
     if (lookup.disabled) return;
     const currentUser = user, currentWorkspace = workspaceId, selectedProject = project.value;
-    lookup.disabled = true; lookupStatus.textContent = "YouTube 공개 지표를 조회하고 있습니다.";
+    const selectedPlatform = platform.value;
+    lookup.disabled = true; lookupStatus.textContent = `${selectedPlatform === "instagram" ? "Instagram" : "YouTube"} 공개 지표를 조회하고 있습니다.`;
     requestKey ||= crypto.randomUUID().replaceAll("-", "");
     try {
-      const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(currentWorkspace)}/collab-youtube-runs`, {
+      const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(currentWorkspace)}/collab-${selectedPlatform}-runs`, {
         method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${await currentUser.getIdToken()}` },
         body: JSON.stringify({ projectId: selectedProject, url: postUrl.value.trim(), idempotencyKey: requestKey })
       });
@@ -82,7 +97,7 @@ async function initialize() {
         if (body.error?.code && body.error.code !== "INTERNAL_ERROR") requestKey = null;
         throw new Error(body.error?.message || "조회에 실패했습니다.");
       }
-      if (currentUser !== user || currentWorkspace !== workspaceId) return;
+      if (currentUser !== user || currentWorkspace !== workspaceId || selectedPlatform !== platform.value) return;
       if (body.post) { showResult(body.post); lookupStatus.textContent = "조회 결과를 내 계정에 저장했습니다."; }
       else lookupStatus.textContent = body.status === "running" ? "같은 요청이 진행 중입니다. 잠시 후 저장된 결과를 확인해 주세요." : "저장된 결과를 다시 확인해 주세요.";
       if (body.status !== "running") requestKey = null;

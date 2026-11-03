@@ -87,6 +87,24 @@ test("협업 YouTube 실행은 인증과 URL 검증 뒤에만 호출한다", asy
   });
 });
 
+test("협업 Instagram 실행은 인증과 공식 게시물 URL 검증 뒤에만 호출한다", async () => {
+  let received;
+  await withServer({ verifyIdToken: async () => ({ uid: "user-a" }), repository: {},
+    collabInstagramService: { run: async value => { received = value; return { runId: "run-a", status: "succeeded", post: { platform: "Instagram", likes: 12 } }; } }
+  }, async base => {
+    const url = `${base}/v1/workspaces/workspace-a/collab-instagram-runs`;
+    const body = { projectId: "project-a", idempotencyKey: "random-request-key-0001", url: "https://www.instagram.com/reel/ABC_123/" };
+    assert.equal((await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) })).status, 401);
+    assert.equal((await fetch(url, { method: "POST", headers: { "content-type": "application/json", authorization: "Bearer token" },
+      body: JSON.stringify({ ...body, url: "https://instagram.com.evil.test/reel/ABC_123/" }) })).status, 400);
+    const response = await fetch(url, { method: "POST", headers: { "content-type": "application/json", authorization: "Bearer token" }, body: JSON.stringify(body) });
+    assert.equal(response.status, 201);
+    assert.equal((await response.json()).post.likes, 12);
+    assert.equal(received.uid, "user-a");
+    assert.equal(received.input.shortcode, "ABC_123");
+  });
+});
+
 test("프로젝트 생성은 인증과 입력 정규화 뒤 서버 저장소에 전달한다", async () => {
   let received;
   await withServer({

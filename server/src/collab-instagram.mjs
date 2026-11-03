@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { ApiError } from "./domain.mjs";
 
 const shortcodePattern = /^[A-Za-z0-9_-]{4,64}$/;
@@ -16,6 +17,20 @@ export function parseInstagramPostUrl(input) {
   }
   const type = segments[0] === "p" ? "p" : "reel";
   return { shortcode: segments[1], url: `https://www.instagram.com/${type}/${segments[1]}/` };
+}
+
+export function normalizeCollabInstagramInput(body) {
+  if (!body || typeof body !== "object" || Array.isArray(body) ||
+      !/^[A-Za-z0-9_-]{1,128}$/.test(body.projectId || "") ||
+      !/^[A-Za-z0-9_-]{16,128}$/.test(body.idempotencyKey || "")) {
+    throw new ApiError("INVALID_INPUT", "협업 게시물 요청 정보가 올바르지 않습니다.");
+  }
+  const post = parseInstagramPostUrl(body.url);
+  return { projectId: body.projectId, idempotencyKey: body.idempotencyKey, ...post };
+}
+
+export function collabInstagramDigest(input) {
+  return createHash("sha256").update(JSON.stringify({ projectId: input.projectId, shortcode: input.shortcode })).digest("hex");
 }
 
 function count(value) {
