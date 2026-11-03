@@ -4,7 +4,8 @@ import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { ApiError, privateIdempotencyId, requestDigest } from "./domain.mjs";
 import { createRunRepository } from "./run-repository.mjs";
 import { reserveUsageCapacity } from "./usage-policy.mjs";
-import { assertUsableSubscription } from "./subscription-policy.mjs";
+import { resolveBrandSearchPlan } from "./subscription-policy.mjs";
+import { assertAutomationAllowed } from "./automation-control-policy.mjs";
 
 if (!getApps().length) initializeApp();
 export const database = getFirestore();
@@ -28,6 +29,7 @@ export const repository = {
 
   async reserveBrandSearchRun({ workspaceId, uid, input, requestId }) {
     const workspace = database.doc(`workspaces/${workspaceId}`);
+    const automationControl = database.doc("systemControls/automation");
     const project = workspace.collection("projects").doc(input.projectId);
     const access = workspace.collection("serverControls").doc("access");
     const subscription = workspace.collection("subscriptions").doc("current");
@@ -38,8 +40,9 @@ export const repository = {
     const digest = requestDigest(input);
 
     return database.runTransaction(async transaction => {
-      const [workspaceSnapshot, projectSnapshot, accessSnapshot, subscriptionSnapshot, credentialSnapshot, usageSnapshot, requestSnapshot] =
-        await Promise.all([workspace, project, access, subscription, credential, usage, idempotency].map(ref => transaction.get(ref)));
+      const [automationSnapshot, workspaceSnapshot, projectSnapshot, accessSnapshot, subscriptionSnapshot, credentialSnapshot, usageSnapshot, requestSnapshot] =
+        await Promise.all([automationControl, workspace, project, access, subscription, credential, usage, idempotency].map(ref => transaction.get(ref)));
+      assertAutomationAllowed(automationSnapshot.exists ? automationSnapshot.data() : null);
       if (!workspaceSnapshot.exists || workspaceSnapshot.data().ownerUid !== uid) {
         throw new ApiError("AUTH_REQUIRED", "워크스페이스 권한을 확인할 수 없습니다.", 403);
       }
@@ -47,7 +50,7 @@ export const repository = {
       if (accessSnapshot.exists && accessSnapshot.data().blocked === true) {
         throw new ApiError("AUTH_REQUIRED", "현재 실행할 수 없는 계정입니다.", 403);
       }
-      const plan = assertUsableSubscription(subscriptionSnapshot.exists ? subscriptionSnapshot.data() : null);
+      const plan = resolveBrandSearchPlan(subscriptionSnapshot.exists ? subscriptionSnapshot.data() : null);
       if (!credentialSnapshot.exists || credentialSnapshot.data().status !== "active" || !credentialSnapshot.data().ciphertext) {
         throw new ApiError("PROVIDER_CREDENTIAL_REQUIRED", "네이버 검색광고 API 연결이 필요합니다.", 409);
       }

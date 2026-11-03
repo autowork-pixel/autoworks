@@ -1,4 +1,5 @@
 import { ApiError } from "./domain.mjs";
+import { FREE_SEARCH_PLAN, STANDARD_PLAN } from "./plan-catalog.mjs";
 
 function endDate(value){
   try{
@@ -9,12 +10,23 @@ function endDate(value){
 }
 
 export function assertUsableSubscription(plan,{now=new Date()}={}){
-  if(!plan||!["trialing","active"].includes(plan.status)){
+  if(!plan||!["trialing","active","canceled","past_due"].includes(plan.status)){
     throw new ApiError("SUBSCRIPTION_REQUIRED","이용 가능한 구독이 필요합니다.",403);
   }
-  const periodEnd=endDate(plan.periodEnd);
-  if(!(periodEnd instanceof Date)||!Number.isFinite(periodEnd.getTime())||periodEnd.getTime()<=now.getTime()){
+  const accessEnd=endDate(plan.status==="past_due"?plan.graceEnd:plan.periodEnd);
+  if(!(accessEnd instanceof Date)||!Number.isFinite(accessEnd.getTime())||accessEnd.getTime()<=now.getTime()){
     throw new ApiError("SUBSCRIPTION_REQUIRED","구독 이용 기간을 확인할 수 없습니다.",403);
   }
   return plan;
+}
+
+export function resolveBrandSearchPlan(plan,{now=new Date()}={}){
+  if(!plan)return FREE_SEARCH_PLAN;
+  try{
+    const usable=assertUsableSubscription(plan,{now});
+    if(usable.planId==="standard")return {...usable,...STANDARD_PLAN};
+  }catch(error){
+    if(error?.code!=="SUBSCRIPTION_REQUIRED")throw error;
+  }
+  return FREE_SEARCH_PLAN;
 }
