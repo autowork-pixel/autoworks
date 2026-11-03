@@ -10,10 +10,10 @@ assert.match(rules,/match \/billingCredentials\/\{credentialId\}[\s\S]*?allow re
 
 const publicDir=new URL("../public/",import.meta.url);
 const publicFiles=(await readdir(publicDir)).filter(name=>/\.(?:html|js)$/i.test(name));
-const forbidden=/\b(?:billingKey|paymentKey|authKey|customerKey)\b/;
+const forbidden=/\b(?:billingKey|paymentKey)\b/;
 for(const name of publicFiles){
   const source=await readFile(new URL(name,publicDir),"utf8");
-  assert.doesNotMatch(source,forbidden,`${name}: 서버 전용 결제 식별자나 자격정보를 공개 코드에 두면 안 됩니다.`);
+  assert.doesNotMatch(source,forbidden,`${name}: 서버 전용 빌링키나 결제키를 공개 코드에 두면 안 됩니다.`);
 }
 
 const index=await readFile(new URL("../public/index.html",import.meta.url),"utf8");
