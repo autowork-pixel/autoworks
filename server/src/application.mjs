@@ -3,6 +3,8 @@ import { createCredentialRepository } from "./credential-repository.mjs";
 import { createCredentialService } from "./credential-service.mjs";
 import { createHandler } from "./handler.mjs";
 import { createKmsKeyManager } from "./kms-key-manager.mjs";
+import { createOAuthHandler } from "./oauth-handler.mjs";
+import { createOAuthIdentityStore, createOAuthStateStore } from "./oauth-repository.mjs";
 import { fetchKeywordVolume } from "./naver-searchad.mjs";
 import { createFirestoreRecoverySource, createRecoveryScheduler } from "./recovery-scheduler.mjs";
 import { createRecoveryHandler } from "./recovery-handler.mjs";
@@ -12,7 +14,7 @@ import { createTaskIdentityVerifier } from "./task-identity.mjs";
 import { createWorkerContextLoader, createWorkerContextRepository } from "./worker-context.mjs";
 import { createWorkerHandler } from "./worker-handler.mjs";
 
-export function createApplication({ config, database, serverTimestamp, verifyIdToken, repository, runRepository, tasksClient, kmsClient, tokenVerifier, logger = console }) {
+export function createApplication({ config, database, serverTimestamp, verifyIdToken, repository, runRepository, tasksClient, kmsClient, tokenVerifier, tokenIssuer, logger = console }) {
   const keyManager = createKmsKeyManager({ client: kmsClient, keyName: config.keyName });
   const credentialService = createCredentialService({
     keyManager,
@@ -39,5 +41,10 @@ export function createApplication({ config, database, serverTimestamp, verifyIdT
     source: createFirestoreRecoverySource({ database, serverTimestamp }), taskDispatcher
   });
   const recoveryHandler = createRecoveryHandler({ verifyTaskRequest, scheduler, logger });
-  return createRouter({ publicHandler, workerHandler, recoveryHandler });
+  const oauthHandler = createOAuthHandler({
+    configs: config.oauthProviders, stateStore: createOAuthStateStore({ database, serverTimestamp }),
+    identityStore: createOAuthIdentityStore({ database, serverTimestamp }), tokenIssuer,
+    allowedOrigins: config.allowedOrigins, logger
+  });
+  return createRouter({ publicHandler, workerHandler, recoveryHandler, oauthHandler });
 }

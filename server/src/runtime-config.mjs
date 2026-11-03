@@ -17,6 +17,14 @@ function httpsOrigin(value, name) {
   return parsed.origin;
 }
 
+function oauthProvider(env, prefix, provider, serviceUrl) {
+  const clientId = String(env[`${prefix}_OAUTH_CLIENT_ID`] || "").trim();
+  const clientSecret = String(env[`${prefix}_OAUTH_CLIENT_SECRET`] || "").trim();
+  if (!clientId && !clientSecret) return null;
+  if (!clientId || !clientSecret || /[\r\n]/.test(clientId) || /[\r\n]/.test(clientSecret)) throw new Error(`Invalid runtime configuration: ${prefix}_OAUTH`);
+  return { clientId, clientSecret, redirectUri: `${serviceUrl}/v1/auth/${provider}/callback` };
+}
+
 export function readRuntimeConfig(env = process.env) {
   const projectId = String(env.GOOGLE_CLOUD_PROJECT || env.GCLOUD_PROJECT || "").trim();
   if (!projectId) throw new Error("Missing runtime configuration: GOOGLE_CLOUD_PROJECT");
@@ -29,8 +37,13 @@ export function readRuntimeConfig(env = process.env) {
   const keyName = required(env, "KMS_KEY_NAME");
   if (!kmsKeyPattern.test(keyName) || !keyName.startsWith(`projects/${projectId}/`)) throw new Error("Invalid runtime configuration: KMS_KEY_NAME");
   const origins = required(env, "WEB_ORIGINS").split(",").map(value => httpsOrigin(value.trim(), "WEB_ORIGINS"));
+  const oauthProviders = {};
+  for (const [prefix, provider] of [["NAVER", "naver"], ["KAKAO", "kakao"]]) {
+    const value = oauthProvider(env, prefix, provider, serviceUrl);
+    if (value) oauthProviders[provider] = value;
+  }
   return {
     projectId, location, queue, serviceUrl, workerAudience: httpsOrigin(env.WORKER_AUDIENCE || serviceUrl, "WORKER_AUDIENCE"),
-    serviceAccountEmail, keyName, allowedOrigins: [...new Set(origins)]
+    serviceAccountEmail, keyName, allowedOrigins: [...new Set(origins)], oauthProviders
   };
 }

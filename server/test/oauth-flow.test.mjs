@@ -5,12 +5,13 @@ import { authorizationUrl, exchangeAuthorizationCode, fetchProviderIdentity } fr
 
 test("로그인 시작은 10분짜리 state를 저장하고 공식 인가 주소를 만든다", async () => {
   let saved;
-  const url = await beginOAuth({ provider: "kakao", clientId: "rest-key", redirectUri: "https://example.com/auth/kakao/callback", stateStore: { create: async value => { saved = value; } }, now: () => 1000 });
+  const url = await beginOAuth({ provider: "kakao", clientId: "rest-key", redirectUri: "https://example.com/auth/kakao/callback", returnOrigin: "https://app.example", stateStore: { create: async value => { saved = value; } }, now: () => 1000 });
   const parsed = new URL(url);
   assert.equal(parsed.origin, "https://kauth.kakao.com");
   assert.equal(parsed.searchParams.get("client_id"), "rest-key");
   assert.equal(parsed.searchParams.get("state"), saved.state);
   assert.equal(saved.expiresAt, 601000);
+  assert.equal(saved.returnOrigin, "https://app.example");
 });
 
 test("네이버와 카카오 인가 URL에 state와 등록 redirect URI를 유지한다", () => {
@@ -48,11 +49,11 @@ test("콜백은 state를 한 번 소비한 뒤 Firebase custom token을 발급�
   };
   const result = await completeOAuth({
     provider: "naver", code: "code", state: "state", config: { clientId: "client", clientSecret: "secret" }, fetchImpl, now: () => 1000,
-    stateStore: { consume: async value => { events.push(["consume", value]); return { provider: "naver", redirectUri: "https://service.example/callback", expiresAt: 2000 }; } },
+    stateStore: { consume: async value => { events.push(["consume", value]); return { provider: "naver", redirectUri: "https://service.example/callback", returnOrigin: "https://app.example", expiresAt: 2000 }; } },
     identityStore: { upsert: async value => events.push(["identity", value]) },
     tokenIssuer: { createCustomToken: async (uid, claims) => { events.push(["token", uid, claims]); return "firebase-custom"; } }
   });
-  assert.deepEqual(result, { customToken: "firebase-custom", provider: "naver" });
+  assert.deepEqual(result, { customToken: "firebase-custom", provider: "naver", returnOrigin: "https://app.example" });
   assert.equal(events[1][1].uid, "naver:subject-a");
   assert.deepEqual(events[2], ["token", "naver:subject-a", { authProvider: "naver" }]);
   assert.equal(JSON.stringify(events).includes("provider-access"), false);

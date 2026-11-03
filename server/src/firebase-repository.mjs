@@ -8,6 +8,7 @@ if (!getApps().length) initializeApp();
 export const database = getFirestore();
 export const serverTimestamp = () => FieldValue.serverTimestamp();
 export const runLifecycleRepository = createRunRepository({ database, serverTimestamp });
+export const tokenIssuer = getAuth();
 
 function usagePeriod(now = new Date()) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit" })
@@ -15,7 +16,7 @@ function usagePeriod(now = new Date()) {
     .slice(0, 7);
 }
 
-export const verifyIdToken = token => getAuth().verifyIdToken(token, true);
+export const verifyIdToken = token => tokenIssuer.verifyIdToken(token, true);
 
 export const repository = {
   listBrandSearchRuns: input => runLifecycleRepository.listBrandSearchRuns(input),

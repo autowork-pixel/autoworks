@@ -24,8 +24,10 @@
 | `TASK_SERVICE_ACCOUNT_EMAIL` | 전용 서비스 계정 | Tasks/Scheduler OIDC 신원 |
 | `KMS_KEY_NAME` | `projects/.../cryptoKeys/...` | 자격정보 데이터 키를 감싸는 키 |
 | `WEB_ORIGINS` | Hosting 도메인 2개 | 브라우저 CORS 허용 목록 |
+| `NAVER_OAUTH_CLIENT_ID`, `NAVER_OAUTH_CLIENT_SECRET` | 네이버 앱 값 | 네이버 앱이 준비된 경우에만 둘 다 설정 |
+| `KAKAO_OAUTH_CLIENT_ID`, `KAKAO_OAUTH_CLIENT_SECRET` | 카카오 앱 값 | 카카오 앱이 준비된 경우에만 둘 다 설정 |
 
-서버는 누락·HTTP URL·다른 프로젝트의 KMS 키·경로가 붙은 웹 출처를 시작 전에 거부한다. 비밀키는 환경변수에 넣지 않으며 고객 자격정보는 인증된 API로만 저장한다.
+서버는 누락·HTTP URL·다른 프로젝트의 KMS 키·경로가 붙은 웹 출처를 시작 전에 거부한다. OAuth callback은 `SERVICE_URL/v1/auth/{provider}/callback`으로 고정하고 디벨로퍼 콘솔 등록값과 정확히 일치시킨다. OAuth client secret은 Secret Manager에서 런타임 환경으로 주입하고 Hosting 파일·브라우저·일반 로그에 넣지 않는다. 고객 자격정보는 인증된 API로만 저장한다.
 
 ## 최소 권한 원칙
 

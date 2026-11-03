@@ -123,7 +123,7 @@
 - [ ] 로그아웃 시 프로젝트·실행·결과·사용량·문의 DOM과 workspace ID를 즉시 초기화하고, 이전 계정의 비동기 조회 결과가 재로그인한 계정 화면에 섞이지 않도록 세대 검증을 추가했다. 실제 Hosting 계정으로 로그아웃·재로그인은 사용자 확인이 남아 있다.
 - [x] 네이버·카카오는 Firebase OIDC 직접 연결 대신 각 디벨로퍼 OAuth와 서버 callback을 사용하고, Firebase custom token으로 로그인시키는 방향을 정한다.
 - [ ] 네이버·카카오 디벨로퍼 앱을 만들고 서비스 도메인·callback URL을 등록한다. client secret은 서버에만 저장한다.
-- [ ] Cloud Run callback의 서버 코어를 구현했다. 10분짜리 일회성 state, 공식 토큰 교환·프로필 조회, 제공자별 안정 UID, Firebase custom token 발급 경계를 단위 테스트했으며 실제 HTTP 라우트·state 저장소·Cloud Run 배포는 Cloud Billing/월 예산 결정 전까지 보류한다.
+- [ ] Cloud Run callback 서버 코어와 HTTP 라우트, 해시 ID의 일회성 Firestore state 저장소, 허용 출처 팝업 전달을 구현했다. 10분 state·공식 토큰 교환·프로필 조회·Firebase custom token 경계를 테스트했으며 실제 앱 자격정보 설정과 Cloud Run 배포는 Cloud Billing/월 예산 결정 전까지 보류한다.
 - [x] Firebase 승인 도메인에 `localhost`, `autoworks-c9a6a.firebaseapp.com`, `autoworks-c9a6a.web.app`이 등록된 것을 확인했다 (2026-11-03).
 - [ ] 네이버·카카오 서버 callback 주소를 개발·운영 환경별로 확정하고 디벨로퍼 콘솔 등록값과 일치시킨다 (Cloud Run·운영 도메인 결정 후).
 - [x] Firebase의 사용자 계정 연결 설정이 ‘동일한 이메일을 사용하는 계정 연결’로 선택된 것을 확인했다 (2026-11-03).

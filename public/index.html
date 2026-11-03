@@ -99,6 +99,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
 </script>
  <script type="module">
   const firebaseHosts = new Set(["localhost", "127.0.0.1", "autoworks-c9a6a.web.app", "autoworks-c9a6a.firebaseapp.com"]);
+  const apiBase = String(window.AUTOWORKS_API_BASE || "").replace(/\/$/, "");
   if (firebaseHosts.has(location.hostname)) {
     try {
       const { initializeApp } = await import("https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js");
@@ -108,7 +109,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
         projectId: "autoworks-c9a6a",
         appId: "1:823085494995:web:3be4bdd40fe0519bc59a26"
       });
-      const { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } =
+      const { getAuth, GoogleAuthProvider, signInWithPopup, signInWithCustomToken, onAuthStateChanged, signOut } =
         await import("https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js");
       const { getFirestore, collection, query, where, orderBy, limit, getDocs, getDoc, doc, addDoc, serverTimestamp } =
         await import("https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js");
@@ -119,6 +120,15 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
       const projectCollection = workspaceId => collection(db, "workspaces", workspaceId, "projects");
       const workspaceCollection = (workspaceId, name) => collection(db, "workspaces", workspaceId, name);
       const formatDate = value => value?.toDate?.().toLocaleString("ko-KR", { dateStyle: "short", timeStyle: "short" }) || "시간 확인 중";
+      window.addEventListener("message", async event => {
+        if (!apiBase || event.origin !== new URL(apiBase).origin || event.data?.type !== "autoworks-oauth" || typeof event.data.customToken !== "string") return;
+        try {
+          await signInWithCustomToken(auth, event.data.customToken);
+        } catch (error) {
+          authMessage.textContent = "외부 로그인 정보를 Firebase 계정으로 연결하지 못했습니다.";
+          console.error("Firebase custom token 로그인 실패", error.code);
+        }
+      });
       function renderProjects(snapshot) {
         const table = document.getElementById("projectTable");
         const state = document.getElementById("projectState");
@@ -316,7 +326,13 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
       document.querySelectorAll("[data-auth-provider]").forEach(button => {
         button.addEventListener("click", async () => {
           if (button.dataset.authProvider !== "google") {
-            authMessage.textContent = "네이버·카카오 디벨로퍼 OAuth 서버 연결을 준비 중입니다.";
+            if (!apiBase) {
+              authMessage.textContent = "네이버·카카오 로그인 서버 배포 전이라 아직 사용할 수 없습니다.";
+              return;
+            }
+            const providerName = button.dataset.authProvider;
+            const popup = window.open(`${apiBase}/v1/auth/${encodeURIComponent(providerName)}/start?returnOrigin=${encodeURIComponent(location.origin)}`, "autoworks-oauth", "popup,width=520,height=720");
+            authMessage.textContent = popup ? "로그인 제공자 화면에서 계속해 주세요." : "로그인 팝업이 차단되었습니다. 팝업을 허용해 주세요.";
             return;
           }
           authMessage.textContent = "로그인 연결을 확인하고 있습니다.";

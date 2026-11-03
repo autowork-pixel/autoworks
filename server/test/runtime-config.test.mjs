@@ -15,7 +15,7 @@ test("배포 런타임 설정을 정규화하고 작업 audience를 서비스 UR
     serviceUrl: "https://api-example.run.app", workerAudience: "https://api-example.run.app",
     serviceAccountEmail: "autoworks-task@autoworks-c9a6a.iam.gserviceaccount.com",
     keyName: env.KMS_KEY_NAME,
-    allowedOrigins: ["https://autoworks-c9a6a.web.app", "https://autoworks-c9a6a.firebaseapp.com"]
+    allowedOrigins: ["https://autoworks-c9a6a.web.app", "https://autoworks-c9a6a.firebaseapp.com"], oauthProviders: {}
   });
 });
 
@@ -23,4 +23,10 @@ test("필수 설정 누락과 다른 프로젝트 KMS 키를 시작 전에 거�
   assert.throws(() => readRuntimeConfig({ ...env, TASKS_QUEUE: "" }), /TASKS_QUEUE/);
   assert.throws(() => readRuntimeConfig({ ...env, KMS_KEY_NAME: env.KMS_KEY_NAME.replace("autoworks-c9a6a", "other-project") }), /KMS_KEY_NAME/);
   assert.throws(() => readRuntimeConfig({ ...env, WEB_ORIGINS: "https://example.com/path" }), /WEB_ORIGINS/);
+  assert.throws(() => readRuntimeConfig({ ...env, NAVER_OAUTH_CLIENT_ID: "client" }), /NAVER_OAUTH/);
+});
+
+test("OAuth 자격정보가 모두 있을 때만 고정 callback 주소를 만든다", () => {
+  const config = readRuntimeConfig({ ...env, NAVER_OAUTH_CLIENT_ID: "client", NAVER_OAUTH_CLIENT_SECRET: "secret" });
+  assert.deepEqual(config.oauthProviders.naver, { clientId: "client", clientSecret: "secret", redirectUri: "https://api-example.run.app/v1/auth/naver/callback" });
 });

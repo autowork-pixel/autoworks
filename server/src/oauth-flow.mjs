@@ -2,9 +2,9 @@ import { randomBytes } from "node:crypto";
 import { ApiError } from "./domain.mjs";
 import { authorizationUrl, exchangeAuthorizationCode, fetchProviderIdentity } from "./oauth-providers.mjs";
 
-export async function beginOAuth({ provider, clientId, redirectUri, stateStore, now = () => Date.now() }) {
+export async function beginOAuth({ provider, clientId, redirectUri, returnOrigin, stateStore, now = () => Date.now() }) {
   const state = randomBytes(32).toString("base64url");
-  await stateStore.create({ state, provider, redirectUri, expiresAt: now() + 10 * 60 * 1000 });
+  await stateStore.create({ state, provider, redirectUri, returnOrigin, expiresAt: now() + 10 * 60 * 1000 });
   return authorizationUrl({ provider, clientId, redirectUri, state });
 }
 
@@ -20,5 +20,5 @@ export async function completeOAuth({ provider, code, state, config, stateStore,
   if (uid.length > 128) throw new ApiError("AUTH_REQUIRED", "로그인 사용자 식별값이 올바르지 않습니다.", 401);
   await identityStore.upsert({ uid, ...identity });
   const customToken = await tokenIssuer.createCustomToken(uid, { authProvider: provider });
-  return { customToken, provider };
+  return { customToken, provider, returnOrigin: pending.returnOrigin };
 }
