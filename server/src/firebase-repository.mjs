@@ -3,6 +3,7 @@ import { getAuth } from "firebase-admin/auth";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { ApiError, privateIdempotencyId, requestDigest } from "./domain.mjs";
 import { createRunRepository } from "./run-repository.mjs";
+import { reserveUsageCapacity } from "./usage-policy.mjs";
 
 if (!getApps().length) initializeApp();
 export const database = getFirestore();
@@ -58,16 +59,7 @@ export const repository = {
         return { runId: existing.runId, status: existing.status || "queued", reused: true };
       }
       const currentUsage = usageSnapshot.data() || {};
-      const reservedRuns = Number(currentUsage.runsReserved || 0);
-      const completedRuns = Number(currentUsage.runs || 0);
-      const reservedKeywords = Number(currentUsage.keywordLookupsReserved || 0);
-      const completedKeywords = Number(currentUsage.keywordLookups || 0);
-      if (Number.isFinite(plan.runLimit) && completedRuns + reservedRuns + 1 > plan.runLimit) {
-        throw new ApiError("USAGE_LIMIT_EXCEEDED", "이번 기간의 실행 한도를 초과했습니다.", 429);
-      }
-      if (Number.isFinite(plan.keywordLookupLimit) && completedKeywords + reservedKeywords + input.keywords.length > plan.keywordLookupLimit) {
-        throw new ApiError("USAGE_LIMIT_EXCEEDED", "이번 기간의 키워드 조회 한도를 초과했습니다.", 429);
-      }
+      const capacity = reserveUsageCapacity({ plan, usage: currentUsage, requestedKeywords: input.keywords.length });
       const run = workspace.collection("runs").doc();
       const runInput = workspace.collection("runInputs").doc(run.id);
       const reservation = workspace.collection("usageReservations").doc(run.id);
@@ -107,12 +99,12 @@ export const repository = {
         updatedAt: timestamp
       });
       transaction.set(usage, {
-        runsReserved: reservedRuns + 1,
-        keywordLookupsReserved: reservedKeywords + input.keywords.length,
-        runs: completedRuns,
-        keywordLookups: completedKeywords,
-        succeeded: Number(currentUsage.succeeded || 0),
-        failed: Number(currentUsage.failed || 0),
+        runsReserved: capacity.nextRunsReserved,
+        keywordLookupsReserved: capacity.nextKeywordLookupsReserved,
+        runs: capacity.runs,
+        keywordLookups: capacity.keywordLookups,
+        succeeded: capacity.succeeded,
+        failed: capacity.failed,
         updatedAt: timestamp
       }, { merge: true });
       transaction.set(idempotency, { runId: run.id, status: "queued", requestDigest: digest, createdAt: timestamp });
