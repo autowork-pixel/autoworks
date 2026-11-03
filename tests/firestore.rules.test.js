@@ -94,3 +94,25 @@ test("실행·스냅샷·결과·사용량은 소유자에게만 읽기 전용�
   await assertFails(getDoc(doc(owner, "workspaces/workspace-a/subscriptions/current")));
 });
 
+test("고객 문의는 소유자가 생성·조회하고 상태 변경은 서버만 할 수 있다", async () => {
+  await environment.clearFirestore();
+  await environment.withSecurityRulesDisabled(async context => {
+    await setDoc(doc(context.firestore(), "workspaces/workspace-a"), { ownerUid: "user-a" });
+  });
+
+  const owner = environment.authenticatedContext("user-a").firestore();
+  const otherUser = environment.authenticatedContext("user-b").firestore();
+  const inquiry = doc(owner, "workspaces/workspace-a/inquiries/inquiry-a");
+  await assertSucceeds(setDoc(inquiry, {
+    subject: "결과 파일 문의",
+    message: "결과 파일을 다시 확인하고 싶습니다.",
+    status: "open",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  }));
+  await assertSucceeds(getDoc(inquiry));
+  await assertSucceeds(getDocs(collection(owner, "workspaces/workspace-a/inquiries")));
+  await assertFails(getDoc(doc(otherUser, "workspaces/workspace-a/inquiries/inquiry-a")));
+  await assertFails(setDoc(inquiry, { status: "answered" }, { merge: true }));
+});
+

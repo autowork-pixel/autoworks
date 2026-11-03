@@ -55,6 +55,22 @@ service cloud.firestore {
         allow delete: if false;
       }
 
+      match /inquiries/{inquiryId} {
+        allow get, list: if ownsWorkspace(workspaceId);
+        allow create: if ownsWorkspace(workspaceId)
+          && request.resource.data.keys().hasOnly(['subject', 'message', 'status', 'createdAt', 'updatedAt'])
+          && request.resource.data.subject is string
+          && request.resource.data.subject.size() > 0
+          && request.resource.data.subject.size() <= 100
+          && request.resource.data.message is string
+          && request.resource.data.message.size() > 0
+          && request.resource.data.message.size() <= 2000
+          && request.resource.data.status == 'open'
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time;
+        allow update, delete: if false;
+      }
+
       match /{collection}/{documentId} {
         allow get, list: if ownsWorkspace(workspaceId)
           && collection in ['runs', 'searchSnapshots', 'reports', 'usage'];

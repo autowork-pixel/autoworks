@@ -39,6 +39,13 @@
 - 결제용 확정 원장과 화면용 집계를 분리한다. 현재는 실행 현황 표시용이며 구독 차감 기준은 Q4에서 확정한다.
 - 서버만 생성·변경하고 고객은 읽기만 한다.
 
+### `inquiries/{inquiryId}`
+
+- `subject`, `message`, `status`, `createdAt`, `updatedAt`
+- 서버 답변이 생기면 `reply`, `respondedAt`을 추가한다.
+- 상태는 `open | reviewing | answered | closed`로 두며 고객은 자신의 문의를 생성·조회만 하고, 상태와 답변은 서버·운영자만 변경한다.
+- 제목은 100자, 내용은 2,000자로 제한하며 API 키·비밀번호·결제정보를 문의에 넣지 않도록 화면에서 안내한다.
+
 ### `providerCredentials/{provider}`
 
 - 브라우저 읽기·쓰기를 전부 거부한다.
