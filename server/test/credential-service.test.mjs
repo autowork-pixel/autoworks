@@ -46,3 +46,22 @@ test("연결 해제와 상태 조회도 uid를 저장소 권한 검증에 전달
   assert.equal(calls[0][1].uid, "user-a");
   assert.equal(calls[1][1].uid, "user-a");
 });
+
+test("YouTube와 Apify 연결도 평문 없이 제공자별 KMS 봉투로 저장한다", async () => {
+  for (const [provider, credentials] of [["youtube", { apiKey: "youtube-key" }], ["apify", { token: "apify-token" }]]) {
+    let saved;
+    const plaintextDataKey = Buffer.alloc(32, 3);
+    const service = createCredentialService({
+      keyManager: { generateDataKey: async ids => {
+        assert.equal(ids.provider, provider);
+        return { plaintextDataKey, encryptedDataKey: "wrapped", keyVersion: "kms-v1" };
+      } },
+      repository: { saveCredential: async value => { saved = value; } }
+    });
+    const result = await service.save({ workspaceId: "workspace-a", uid: "user-a", provider, credentials });
+    assert.equal(result.provider, provider);
+    assert.equal(saved.provider, provider);
+    assert.equal(JSON.stringify(saved).includes(Object.values(credentials)[0]), false);
+    assert.equal(plaintextDataKey.every(byte => byte === 0), true);
+  }
+});

@@ -95,7 +95,7 @@ export function createHandler({ verifyIdToken, repository, credentialService, ta
         const result = await repository.saveWeeklyAdReport({ workspaceId: weeklyMatch[1], uid: decoded.uid, input });
         return json(response, result.reused ? 200 : 201, { ...result, requestId }, requestId);
       }
-      const credentialMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/provider-credentials\/(naver-searchad)$/);
+      const credentialMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/provider-credentials\/(naver-searchad|youtube|apify)$/);
       if (credentialMatch && credentialService) {
         const token = bearer(request);
         let decoded;

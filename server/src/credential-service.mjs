@@ -1,7 +1,7 @@
 import { ApiError } from "./domain.mjs";
 import { encryptCredentialPayload } from "./credential-crypto.mjs";
 
-const supportedProviders = new Set(["naver-searchad"]);
+const supportedProviders = new Set(["naver-searchad", "youtube", "apify"]);
 
 function providerName(value) {
   if (!supportedProviders.has(value)) throw new ApiError("INVALID_INPUT", "지원하지 않는 API 연결입니다.");
@@ -21,7 +21,7 @@ export function createCredentialService({ keyManager, repository, now = () => ne
       if (!Buffer.isBuffer(generated?.plaintextDataKey)) throw new Error("Key manager did not return a plaintext data key");
       try {
         const envelope = encryptCredentialPayload({
-          credentials,
+          credentials, provider: selectedProvider,
           plaintextDataKey: generated.plaintextDataKey,
           encryptedDataKey: generated.encryptedDataKey,
           keyVersion: generated.keyVersion
@@ -30,9 +30,9 @@ export function createCredentialService({ keyManager, repository, now = () => ne
           workspaceId,
           uid,
           provider: selectedProvider,
-          document: { ...envelope, apiKeyHint: keyHint(credentials.apiKey), status: "active", updatedAt: now() }
+          document: { ...envelope, apiKeyHint: keyHint(credentials.apiKey || credentials.token), status: "active", updatedAt: now() }
         });
-        return { provider: selectedProvider, status: "active", apiKeyHint: keyHint(credentials.apiKey) };
+        return { provider: selectedProvider, status: "active", apiKeyHint: keyHint(credentials.apiKey || credentials.token) };
       } finally {
         generated.plaintextDataKey.fill(0);
       }
