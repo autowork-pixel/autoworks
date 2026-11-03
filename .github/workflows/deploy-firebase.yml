@@ -5,6 +5,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 concurrency:
   group: firebase-production
@@ -28,6 +29,8 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_AUTOWORKS_C9A6A }}
+          workload_identity_provider: projects/823085494995/locations/global/workloadIdentityPools/github-actions/providers/github
+          service_account: autoworks-github-deploy@autoworks-c9a6a.iam.gserviceaccount.com
       - name: Deploy Hosting and Firestore rules
         run: npx --yes firebase-tools@15.34.2 deploy --project autoworks-c9a6a --only hosting,firestore:rules --non-interactive
+
