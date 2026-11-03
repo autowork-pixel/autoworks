@@ -56,6 +56,14 @@
 - 브라우저 읽기·쓰기를 전부 거부한다.
 - 결제 이벤트와 서버 검증을 거친 상태만 기록한다.
 
+### `auditLogs/{auditId}`
+
+- `action`, `actorUid`, `actorRole`, `targetType`, `targetId`, `reason`
+- `requestId`, `beforeSummary`, `afterSummary`, `createdAt`
+- 관리자 권한·구독·고객 차단·문의 상태 등 운영 조치를 서버가 변경과 같은 트랜잭션에서 추가한다.
+- 고객과 브라우저는 생성·수정·삭제할 수 없다. 관리자 claim은 읽기만 가능하며, API 키·토큰·문의 원문 같은 민감값은 기록하지 않는다.
+- 상세 기록 기준과 권한 절차는 `OPERATIONS_SECURITY.md`를 따른다.
+
 ## 보류된 실제 검증
 
 - 실제 Google 계정에서 브랜드 프로젝트 저장·재조회
