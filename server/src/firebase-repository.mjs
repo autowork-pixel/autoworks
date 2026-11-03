@@ -5,8 +5,9 @@ import { ApiError, privateIdempotencyId, requestDigest } from "./domain.mjs";
 import { createRunRepository } from "./run-repository.mjs";
 
 if (!getApps().length) initializeApp();
-const database = getFirestore();
-const runLifecycleRepository = createRunRepository({ database, serverTimestamp: () => FieldValue.serverTimestamp() });
+export const database = getFirestore();
+export const serverTimestamp = () => FieldValue.serverTimestamp();
+export const runLifecycleRepository = createRunRepository({ database, serverTimestamp });
 
 function usagePeriod(now = new Date()) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit" })

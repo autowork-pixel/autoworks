@@ -36,7 +36,12 @@ export function createWorkerContextLoader({ repository, keyManager }) {
     async load(ids) {
       const stored = await repository.load(ids);
       if (stored.terminalStatus) return stored;
-      const plaintextDataKey = await keyManager.decryptDataKey({ encryptedDataKey: stored.envelope.encryptedDataKey, keyVersion: stored.envelope.keyVersion });
+      const plaintextDataKey = await keyManager.decryptDataKey({
+        encryptedDataKey: stored.envelope.encryptedDataKey,
+        keyVersion: stored.envelope.keyVersion,
+        workspaceId: ids.workspaceId,
+        provider: "naver-searchad"
+      });
       if (!Buffer.isBuffer(plaintextDataKey)) throw new Error("Key manager did not return a plaintext data key");
       try {
         return { input: stored.input, credentials: decryptCredentialPayload({ envelope: stored.envelope, plaintextDataKey }) };

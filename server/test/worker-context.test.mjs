@@ -55,7 +55,9 @@ test("같은 워크스페이스의 봉투만 복호화하고 평문 데이터 �
   });
   const loader = createWorkerContextLoader({
     repository: createWorkerContextRepository({ database }),
-    keyManager: { decryptDataKey: async value => { assert.deepEqual(value, { encryptedDataKey: "wrapped-key", keyVersion: "kms-v1" }); return decryptKey; } }
+    keyManager: { decryptDataKey: async value => { assert.deepEqual(value, {
+      encryptedDataKey: "wrapped-key", keyVersion: "kms-v1", workspaceId: "workspace-a", provider: "naver-searchad"
+    }); return decryptKey; } }
   });
   const result = await loader.load({ workspaceId: "workspace-a", runId: "run-a" });
   assert.deepEqual(result.input, { projectId: "project-a", keywords: ["키워드"] });
