@@ -37,14 +37,14 @@ test("일부 실패는 성공·실패 목록을 분리해 완료한다", async (
     input: { keywords: ["성공", "실패"] },
     credentials: {},
     provider: { fetchKeywordVolume: async ({ keyword }) => {
-      if (keyword === "실패") throw new ApiError("PROVIDER_RATE_LIMITED", "원문", 429);
+      if (keyword === "실패") throw new ApiError("PROVIDER_RATE_LIMIT", "원문", 429);
       return { keyword, pc: 1, mobile: 2, total: 3 };
     } },
     repository
   });
   assert.equal(result.status, "succeeded");
   assert.equal(result.snapshots.length, 1);
-  assert.deepEqual(result.failures, [{ keyword: "실패", code: "PROVIDER_RATE_LIMITED", retryable: true }]);
+  assert.deepEqual(result.failures, [{ keyword: "실패", code: "PROVIDER_RATE_LIMIT", retryable: true }]);
   assert.equal(repository.calls.at(-1)[0], "complete");
 });
 

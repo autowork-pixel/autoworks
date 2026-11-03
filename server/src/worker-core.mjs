@@ -1,6 +1,6 @@
 const publicProviderCodes = new Set([
   "PROVIDER_AUTH_FAILED",
-  "PROVIDER_RATE_LIMITED",
+  "PROVIDER_RATE_LIMIT",
   "PROVIDER_UNAVAILABLE",
   "PROVIDER_INVALID_RESPONSE",
   "PROVIDER_NO_DATA"
@@ -10,7 +10,7 @@ function failureFor(keyword, error) {
   return {
     keyword,
     code: publicProviderCodes.has(error?.code) ? error.code : "PROVIDER_UNAVAILABLE",
-    retryable: error?.code === "PROVIDER_RATE_LIMITED" || error?.code === "PROVIDER_UNAVAILABLE"
+    retryable: error?.code === "PROVIDER_RATE_LIMIT" || error?.code === "PROVIDER_UNAVAILABLE"
   };
 }
 

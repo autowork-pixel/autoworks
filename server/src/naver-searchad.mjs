@@ -58,7 +58,7 @@ export async function fetchKeywordVolume({ credentials, keyword, fetchImpl = fet
   }
   if (!response.ok) {
     const status = response.status === 401 || response.status === 403 ? 409 : response.status === 429 ? 429 : 502;
-    const code = status === 409 ? "PROVIDER_AUTH_FAILED" : status === 429 ? "PROVIDER_RATE_LIMITED" : "PROVIDER_UNAVAILABLE";
+    const code = status === 409 ? "PROVIDER_AUTH_FAILED" : status === 429 ? "PROVIDER_RATE_LIMIT" : "PROVIDER_UNAVAILABLE";
     throw new ApiError(code, "검색광고 제공자 요청에 실패했습니다.", status);
   }
   return mapKeywordToolResponse(payload, keyword);
