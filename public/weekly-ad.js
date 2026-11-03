@@ -9,6 +9,21 @@ const number = value => Number(String(value ?? "").replaceAll(",", "").replaceAl
 const integer = value => Math.round(value).toLocaleString("ko-KR");
 const money = value => `${integer(value)}원`;
 const percent = value => `${value.toFixed(1)}%`;
+const apiBase = String(window.AUTOWORKS_API_BASE || "").replace(/\/$/, "");
+const accountState = { user: null, workspaceId: null };
+const account = document.createElement("div"), loginButton = document.createElement("button"), projectSelect = document.createElement("select"), historySelect = document.createElement("select"), saveButton = document.createElement("button"), saveStatus = document.createElement("p");
+account.className = "card";
+account.innerHTML = "<h2>내 계정에 결과 저장</h2>";
+loginButton.type = "button"; loginButton.textContent = "Google로 로그인";
+projectSelect.setAttribute("aria-label", "저장할 프로젝트"); projectSelect.add(new Option("로그인 후 프로젝트 선택", "")); projectSelect.disabled = true;
+historySelect.setAttribute("aria-label", "저장된 주간 광고 결과"); historySelect.add(new Option("로그인 후 결과 조회", "")); historySelect.disabled = true;
+saveButton.type = "button"; saveButton.textContent = "내 계정에 저장"; saveButton.disabled = true;
+saveStatus.className = "state";
+saveStatus.textContent = apiBase ? "로그인하고 프로젝트를 선택해 주세요." : "서버 연결 전에는 결과를 계정에 저장할 수 없습니다.";
+account.append(loginButton, projectSelect, saveButton, saveStatus, historySelect);
+document.getElementById("results").after(account);
+let viewedStored = false;
+function enableSave() { saveButton.disabled = !latest || viewedStored || !apiBase || !accountState.user || !accountState.workspaceId || !projectSelect.value; }
 
 async function unzip(buffer) {
   const bytes = new Uint8Array(buffer), view = new DataView(buffer), decoder = new TextDecoder();
@@ -164,7 +179,7 @@ function render(source, sheet, result) {
 let latest;
 document.getElementById("analyze").addEventListener("click", async () => {
   const file = document.getElementById("file").files[0], status = document.getElementById("status"), button = document.getElementById("analyze");
-  latest = null; document.getElementById("results").hidden = true; document.getElementById("download").disabled = true;
+  latest = null; viewedStored = false; document.getElementById("results").hidden = true; document.getElementById("download").disabled = true; enableSave();
   if (!file || !/\.xlsx$/i.test(file.name) || file.size > 5 * 1024 * 1024) { status.textContent = "5MB 이하의 .xlsx 파일을 선택해 주세요."; return; }
   button.disabled = true; status.textContent = "Excel 파일을 분석하고 있습니다.";
   try {
@@ -174,6 +189,7 @@ document.getElementById("analyze").addEventListener("click", async () => {
     render(file.name, sheet, analysis);
     status.textContent = `${integer(analysis.rowCount)}행 분석을 마쳤습니다. 결과는 이 브라우저에서만 볼 수 있습니다.`;
     document.getElementById("download").disabled = false;
+    enableSave();
   } catch (error) { status.textContent = error.message || "Excel 파일을 분석하지 못했습니다."; }
   finally { button.disabled = false; }
 });
@@ -183,3 +199,89 @@ document.getElementById("download").addEventListener("click", () => {
   const link = document.createElement("a"); link.href = url; link.download = "weekly-ad-analysis.json"; link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
+projectSelect.addEventListener("change", enableSave);
+historySelect.addEventListener("change", () => {
+  const report = accountState.reports?.get(historySelect.value);
+  if (!report) return;
+  viewedStored = true;
+  latest = { generatedAt: new Date().toISOString(), source: report.sourceName, sheet: report.sheet, analysis: report.analysis, analysisMode: report.analysisMode };
+  render(report.sourceName, report.sheet, report.analysis);
+  document.getElementById("download").disabled = false;
+  document.getElementById("status").textContent = "내 계정에 저장된 결과를 불러왔습니다.";
+  enableSave();
+});
+saveButton.addEventListener("click", async () => {
+  if (saveButton.disabled || !latest) return;
+  const user = accountState.user, workspaceId = accountState.workspaceId;
+  saveButton.disabled = true; saveStatus.textContent = "결과를 계정에 저장하고 있습니다.";
+  try {
+    const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(workspaceId)}/weekly-ad-reports`, {
+      method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${await user.getIdToken()}` },
+      body: JSON.stringify({ projectId: projectSelect.value, sourceName: latest.source, sheet: latest.sheet,
+        analysis: latest.analysis, idempotencyKey: crypto.randomUUID().replaceAll("-", "") })
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.error?.code || "REQUEST_FAILED");
+    }
+    if (user !== accountState.user || workspaceId !== accountState.workspaceId) return;
+    viewedStored = true;
+    saveStatus.textContent = "내 계정에 결과를 저장했습니다.";
+    try { await accountState.loadReports?.(); }
+    catch { saveStatus.textContent = "결과를 저장했습니다. 목록은 새로고침 후 확인해 주세요."; }
+  } catch (error) { if (user === accountState.user && workspaceId === accountState.workspaceId) saveStatus.textContent = `저장하지 못했습니다. (${error.message})`; }
+  finally { enableSave(); }
+});
+
+async function initAccount() {
+  if (!new Set(["localhost", "127.0.0.1", "autoworks-c9a6a.web.app", "autoworks-c9a6a.firebaseapp.com"]).has(location.hostname)) return;
+  const [{ initializeApp }, { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged },
+    { getFirestore, collection, query, where, orderBy, limit, getDocs }] = await Promise.all([
+      import("https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js"),
+      import("https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js"),
+      import("https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js")
+    ]);
+  const app = initializeApp({ apiKey: "AIzaSyBHcgYeZM8-n_PPSLbsazSfGx32BMDnB2M", authDomain: "autoworks-c9a6a.firebaseapp.com",
+    projectId: "autoworks-c9a6a", appId: "1:576193408775:web:fae402ea7b94045d21ba1f" });
+  const auth = getAuth(app), database = getFirestore(app);
+  accountState.loadReports = async () => {
+    if (!accountState.workspaceId) return;
+    const workspaceId = accountState.workspaceId, user = accountState.user;
+    const snapshot = await getDocs(query(collection(database, "workspaces", workspaceId, "reports"), orderBy("createdAt", "desc"), limit(20)));
+    if (workspaceId !== accountState.workspaceId || user !== accountState.user) return;
+    accountState.reports = new Map(snapshot.docs.filter(item => item.data().tool === "weekly-ad").map(item => [item.id, item.data()]));
+    historySelect.replaceChildren(new Option(accountState.reports.size ? "저장된 결과 선택" : "저장된 주간 광고 결과 없음", ""));
+    for (const [id, report] of accountState.reports) historySelect.add(new Option(`${report.sourceName} · ${report.summary}`, id));
+    historySelect.disabled = accountState.reports.size === 0;
+  };
+  loginButton.addEventListener("click", async () => {
+    try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+    catch { saveStatus.textContent = "Google 로그인에 실패했습니다."; }
+  });
+  let generation = 0;
+  onAuthStateChanged(auth, async user => {
+    const current = ++generation;
+    accountState.user = user; accountState.workspaceId = null;
+    latest = null; viewedStored = false; document.getElementById("results").hidden = true;
+    document.getElementById("download").disabled = true;
+    saveStatus.textContent = user ? "프로젝트를 확인하고 있습니다." : (apiBase ? "로그인하고 프로젝트를 선택해 주세요." : "서버 연결 전에는 결과를 계정에 저장할 수 없습니다.");
+    loginButton.hidden = Boolean(user); projectSelect.disabled = true; historySelect.disabled = true; accountState.reports = new Map();
+    projectSelect.replaceChildren(new Option(user ? "프로젝트 불러오는 중" : "로그인 후 프로젝트 선택", "")); enableSave();
+    historySelect.replaceChildren(new Option(user ? "저장된 결과 불러오는 중" : "로그인 후 결과 조회", ""));
+    if (!user) return;
+    try {
+      const workspaces = await getDocs(query(collection(database, "workspaces"), where("ownerUid", "==", user.uid), limit(1)));
+      if (current !== generation) return;
+      if (workspaces.empty) { saveStatus.textContent = "먼저 홈에서 프로젝트를 만들어 주세요."; return; }
+      accountState.workspaceId = workspaces.docs[0].id;
+      const projects = await getDocs(collection(database, "workspaces", accountState.workspaceId, "projects"));
+      if (current !== generation) return;
+      projectSelect.replaceChildren(new Option("저장할 프로젝트 선택", ""));
+      for (const project of projects.docs) projectSelect.add(new Option(project.data().name || "프로젝트", project.id));
+      projectSelect.disabled = false; enableSave();
+      await accountState.loadReports();
+      saveStatus.textContent = apiBase ? "분석 결과를 프로젝트에 저장할 수 있습니다." : "서버 연결 전에는 결과를 계정에 저장할 수 없습니다.";
+    } catch { if (current === generation) saveStatus.textContent = "프로젝트를 불러오지 못했습니다."; }
+  });
+}
+initAccount().catch(() => { saveStatus.textContent = "계정 연결 화면을 준비하지 못했습니다."; });

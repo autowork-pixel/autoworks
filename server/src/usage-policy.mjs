@@ -16,11 +16,11 @@ function planLimit(value, name) {
   return number;
 }
 
-export function reserveUsageCapacity({ plan, usage = {}, requestedKeywords }) {
+export function reserveUsageCapacity({ plan, usage = {}, requestedKeywords, allowZeroKeywords = false }) {
   const runLimit = planLimit(plan?.runLimit, "실행 한도");
   const keywordLookupLimit = planLimit(plan?.keywordLookupLimit, "키워드 조회 한도");
   const requested = nonNegativeInteger(requestedKeywords, "요청 키워드 수");
-  if (requested < 1) throw new ApiError("INVALID_INPUT", "한 개 이상의 키워드가 필요합니다.");
+  if (requested < 1 && !allowZeroKeywords) throw new ApiError("INVALID_INPUT", "한 개 이상의 키워드가 필요합니다.");
 
   const current = {
     runsReserved: nonNegativeInteger(usage.runsReserved, "예약 실행량"),

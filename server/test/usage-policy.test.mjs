@@ -12,6 +12,14 @@ test("완료량과 동시 요청 예약량을 모두 포함해 다음 사용량�
   assert.equal(result.nextKeywordLookupsReserved, 13);
 });
 
+test("광고 결과 저장은 실행 한도만 쓰고 키워드 조회량은 늘리지 않는다", () => {
+  const plan = { runLimit: 2, keywordLookupLimit: 0 };
+  const capacity = reserveUsageCapacity({ plan, usage: { runs: 1 }, requestedKeywords: 0, allowZeroKeywords: true });
+  assert.equal(capacity.nextRunsReserved, 1);
+  assert.equal(capacity.nextKeywordLookupsReserved, 0);
+  assert.throws(() => reserveUsageCapacity({ plan, requestedKeywords: 0 }), error => error.code === "INVALID_INPUT");
+});
+
 test("실행 또는 키워드 예약이 한도를 한 건이라도 넘으면 거부한다", () => {
   assert.throws(
     () => reserveUsageCapacity({ plan: { runLimit: 4, keywordLookupLimit: 100 }, usage: { runs: 2, runsReserved: 2 }, requestedKeywords: 1 }),

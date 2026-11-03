@@ -4,8 +4,10 @@ import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { ApiError, privateIdempotencyId, requestDigest } from "./domain.mjs";
 import { createRunRepository } from "./run-repository.mjs";
 import { reserveUsageCapacity } from "./usage-policy.mjs";
-import { resolveBrandSearchPlan } from "./subscription-policy.mjs";
+import { assertUsableSubscription, resolveBrandSearchPlan } from "./subscription-policy.mjs";
 import { assertAutomationAllowed } from "./automation-control-policy.mjs";
+import { PAID_PLANS } from "./plan-catalog.mjs";
+import { weeklyAdReportDigest } from "./weekly-ad-report.mjs";
 
 if (!getApps().length) initializeApp();
 export const database = getFirestore();
@@ -47,6 +49,60 @@ export const repository = {
       const timestamp = FieldValue.serverTimestamp();
       transaction.create(project, { ...input, createdAt: timestamp, updatedAt: timestamp });
       return { projectId: project.id, projectLimit: plan.projectLimit };
+    });
+  },
+
+  async saveWeeklyAdReport({ workspaceId, uid, input }) {
+    const workspace = database.doc(`workspaces/${workspaceId}`);
+    const project = workspace.collection("projects").doc(input.projectId);
+    const subscription = workspace.collection("subscriptions").doc("current");
+    const access = workspace.collection("serverControls").doc("access");
+    const control = database.doc("systemControls/automation");
+    const usage = workspace.collection("usage").doc(usagePeriod());
+    const idempotency = workspace.collection("runRequests").doc(privateIdempotencyId(uid, input.idempotencyKey));
+    const digest = weeklyAdReportDigest(input);
+    return database.runTransaction(async transaction => {
+      const [workspaceSnapshot, projectSnapshot, subscriptionSnapshot, accessSnapshot, controlSnapshot, usageSnapshot, requestSnapshot] =
+        await Promise.all([workspace, project, subscription, access, control, usage, idempotency].map(ref => transaction.get(ref)));
+      assertAutomationAllowed(controlSnapshot.exists ? controlSnapshot.data() : null);
+      if (!workspaceSnapshot.exists || workspaceSnapshot.data().ownerUid !== uid) {
+        throw new ApiError("AUTH_REQUIRED", "워크스페이스 권한을 확인할 수 없습니다.", 403);
+      }
+      if (!projectSnapshot.exists) throw new ApiError("INVALID_INPUT", "프로젝트를 찾을 수 없습니다.", 404);
+      if (accessSnapshot.exists && accessSnapshot.data().blocked === true) {
+        throw new ApiError("AUTH_REQUIRED", "현재 실행할 수 없는 계정입니다.", 403);
+      }
+      const active = assertUsableSubscription(subscriptionSnapshot.exists ? subscriptionSnapshot.data() : null);
+      const catalogPlan = PAID_PLANS[active.planId];
+      if (!catalogPlan) throw new ApiError("SUBSCRIPTION_REQUIRED", "주간 광고 결과 저장은 유료 구독에서 사용할 수 있습니다.", 403);
+      if (requestSnapshot.exists) {
+        const previous = requestSnapshot.data();
+        if (previous.requestDigest !== digest) throw new ApiError("INVALID_INPUT", "같은 요청 식별자를 다른 결과에 사용할 수 없습니다.", 409);
+        return { runId: previous.runId, reused: true };
+      }
+      const capacity = reserveUsageCapacity({ plan: catalogPlan, usage: usageSnapshot.data() || {}, requestedKeywords: 0, allowZeroKeywords: true });
+      const run = workspace.collection("runs").doc();
+      const report = workspace.collection("reports").doc(run.id);
+      const timestamp = FieldValue.serverTimestamp();
+      transaction.set(run, {
+        projectId: input.projectId, tool: "weekly-ad", toolLabel: "주간 광고 분석", status: "succeeded",
+        inputSummary: `${input.sourceName} · ${input.analysis.rowCount}행`, reportId: report.id,
+        usagePeriod: usage.id, createdAt: timestamp, completedAt: timestamp
+      });
+      transaction.set(report, {
+        projectId: input.projectId, runId: run.id, tool: "weekly-ad", status: "ready", title: "주간 광고 분석",
+        summary: `광고비 ${Math.round(input.analysis.total.cost).toLocaleString("ko-KR")}원 · ROAS ${input.analysis.total.roas.toFixed(1)}%`,
+        sourceName: input.sourceName, sheet: input.sheet, analysisMode: "브라우저 계산·고객 제출",
+        analysis: input.analysis, createdAt: timestamp
+      });
+      transaction.set(usage, {
+        runs: capacity.runs + 1, succeeded: capacity.succeeded + 1,
+        runsReserved: capacity.runsReserved, keywordLookups: capacity.keywordLookups,
+        keywordLookupsReserved: capacity.keywordLookupsReserved, failed: capacity.failed,
+        updatedAt: timestamp
+      }, { merge: true });
+      transaction.set(idempotency, { runId: run.id, status: "succeeded", requestDigest: digest, createdAt: timestamp });
+      return { runId: run.id, reused: false };
     });
   },
 

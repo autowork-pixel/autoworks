@@ -48,6 +48,27 @@ test("health check는 인증 없이 응답한다", async () => {
   });
 });
 
+test("주간 광고 결과 저장은 인증·입력 검증 뒤 고객별 저장소에 전달한다", async () => {
+  const metrics = { impr: 1000, click: 50, cost: 10000, conv: 5, revenue: 30000, ctr: 5, cpc: 200, cvr: 10, roas: 300 };
+  const body = { projectId: "project-a", idempotencyKey: "random-request-key-0001", sourceName: "ads.xlsx", sheet: "광고",
+    analysis: { rowCount: 1, total: metrics, campaigns: [], waste: [], winners: [] } };
+  let received;
+  await withServer({ verifyIdToken: async () => ({ uid: "user-a" }),
+    repository: { saveWeeklyAdReport: async value => { received = value; return { runId: "run-a", reused: false }; } }
+  }, async base => {
+    const url = `${base}/v1/workspaces/workspace-a/weekly-ad-reports`;
+    const headers = { authorization: "Bearer token", "content-type": "application/json" };
+    assert.equal((await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) })).status, 401);
+    assert.equal((await fetch(url, { method: "POST", headers, body: JSON.stringify({ ...body, sourceName: "wrong.csv" }) })).status, 400);
+    const response = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
+    assert.equal(response.status, 201);
+    assert.equal((await response.json()).runId, "run-a");
+    assert.equal(received.uid, "user-a");
+    assert.equal(received.workspaceId, "workspace-a");
+    assert.equal(received.input.analysis.total.roas, 300);
+  });
+});
+
 test("프로젝트 생성은 인증과 입력 정규화 뒤 서버 저장소에 전달한다", async () => {
   let received;
   await withServer({
