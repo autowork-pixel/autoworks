@@ -7,6 +7,7 @@
     "test:security": "node scripts/check-security.mjs",
     "test:auth-state": "node scripts/check-auth-state.mjs",
     "test:admin-controls": "node scripts/check-admin-controls.mjs",
+    "test:account-deletion": "node scripts/check-account-deletion.mjs",
     "test:server": "node --test server/test/*.test.mjs",
     "verify:hosting": "node scripts/verify-hosting.mjs"
   },
