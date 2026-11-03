@@ -17,7 +17,7 @@
 - `projectId`, `tool`, `toolLabel`
 - `status`: `queued | validating | running | retrying | succeeded | failed | canceled`
 - `inputSummary`: 화면 표시용 요약. API 키·원문 인증정보·민감 입력은 넣지 않는다.
-- `requestId`, `idempotencyKey`, `attempt`, `maxAttempts`, `retryable`
+- `requestId`, `attempt`, `maxAttempts`, `retryable`. 고객이 보낸 멱등키 원문은 실행 문서에 저장하지 않는다.
 - `resultReportId`, `errorCode`, `errorMessage`: 고객에게 보여도 되는 코드와 요약만 저장한다.
 - `usageReservationId`, `estimatedCost`, `actualCost`: 사용량·원가 원장 참조와 집계값. 제공자 키나 요청 원문은 넣지 않는다.
 - `createdAt`, `validatedAt`, `startedAt`, `nextRetryAt`, `completedAt`
@@ -38,9 +38,16 @@
 
 ### `usage/{YYYY-MM}`
 
-- `runs`, `keywordLookups`, `succeeded`, `failed`, `updatedAt`
+- `runs`, `keywordLookups`, `runsReserved`, `keywordLookupsReserved`, `succeeded`, `failed`, `updatedAt`
 - 결제용 확정 원장과 화면용 집계를 분리한다. 현재는 실행 현황 표시용이며 구독 차감 기준은 Q4에서 확정한다.
 - 서버만 생성·변경하고 고객은 읽기만 한다.
+
+### 서버 전용 실행 제어 경로
+
+- `serverControls/access`: `blocked`로 서버 실행 차단 여부를 관리한다. 브라우저는 읽거나 쓸 수 없다.
+- `runRequests/{privateHash}`: 사용자 uid와 멱등키로 만든 비가역 해시를 문서 ID로 사용하고 `runId`, `requestDigest`, `status`만 저장한다. 멱등키 원문은 저장하지 않는다.
+- `usageReservations/{runId}`: 실행 시작 전 예약한 `runs`, `keywordLookups`와 `reserved | committed | released` 상태를 보관한다.
+- 이 경로들은 Firebase Admin SDK를 쓰는 서버만 접근하고, 성공·실패·취소 시 같은 트랜잭션에서 예약을 확정하거나 해제한다.
 
 ### `inquiries/{inquiryId}`
 
@@ -80,5 +87,5 @@
 - 실제 Google 계정에서 브랜드 프로젝트 저장·재조회
 - 다른 실제 계정으로 같은 workspace ID 접근 차단 확인
 - 로그아웃 뒤 워크스페이스와 실행 데이터 화면이 닫히는지 확인
-- Cloud Run 도입 후 서버 쓰기와 ID 토큰·소유권 검증
+- Cloud Run 배포 후 서버 쓰기와 ID 토큰·소유권 검증
 - Cloud Storage 결과 파일의 소유권, 만료 URL, 삭제·보존 확인
