@@ -1,4 +1,6 @@
 import { createCorsHandler } from "./cors-handler.mjs";
+import { createAccountDeletionHandler } from "./account-deletion-handler.mjs";
+import { createAccountDeletionRepository } from "./account-deletion-repository.mjs";
 import { createAdminHandler } from "./admin-handler.mjs";
 import { createAdminRepository } from "./admin-repository.mjs";
 import { createCredentialRepository } from "./credential-repository.mjs";
@@ -49,5 +51,6 @@ export function createApplication({ config, database, serverTimestamp, verifyIdT
     allowedOrigins: config.allowedOrigins, logger
   });
   const adminHandler = createCorsHandler({ allowedOrigins: config.allowedOrigins, handler: createAdminHandler({ verifyIdToken, repository: createAdminRepository({ database, serverTimestamp }), logger }) });
-  return createRouter({ publicHandler, workerHandler, recoveryHandler, oauthHandler, adminHandler });
+  const accountDeletionHandler = createCorsHandler({ allowedOrigins: config.allowedOrigins, handler: createAccountDeletionHandler({ verifyIdToken, repository: createAccountDeletionRepository({ database, serverTimestamp }), logger }) });
+  return createRouter({ publicHandler, workerHandler, recoveryHandler, oauthHandler, adminHandler, accountDeletionHandler });
 }
