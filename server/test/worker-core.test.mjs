@@ -18,6 +18,8 @@ test("키워드별 결과를 모아 실행을 완료한다", async () => {
   const recordedAt = new Date("2026-11-03T00:00:00Z");
   const result = await executeBrandSearchRun({
     runId: "run-a",
+    workspaceId: "workspace-a",
+    workerId: "worker-a",
     input: { keywords: ["오토웍스", "마케팅 자동화"] },
     credentials: { secretKey: "never-store" },
     provider: { fetchKeywordVolume: async ({ keyword }) => ({ keyword, pc: 10, mobile: 20, total: 30 }) },
@@ -26,7 +28,7 @@ test("키워드별 결과를 모아 실행을 완료한다", async () => {
   });
   assert.equal(result.status, "succeeded");
   assert.deepEqual(repository.calls.map(call => call[0]), ["running", "complete"]);
-  assert.equal(repository.calls[1][2].snapshots.length, 2);
+  assert.equal(repository.calls[1][3].snapshots.length, 2);
   assert.equal(JSON.stringify(repository.calls).includes("never-store"), false);
 });
 
@@ -34,6 +36,8 @@ test("일부 실패는 성공·실패 목록을 분리해 완료한다", async (
   const repository = repositorySpy();
   const result = await executeBrandSearchRun({
     runId: "run-a",
+    workspaceId: "workspace-a",
+    workerId: "worker-a",
     input: { keywords: ["성공", "실패"] },
     credentials: {},
     provider: { fetchKeywordVolume: async ({ keyword }) => {
@@ -52,6 +56,8 @@ test("전부 실패하면 실행을 실패 처리하고 내부 오류는 일반�
   const repository = repositorySpy();
   const result = await executeBrandSearchRun({
     runId: "run-a",
+    workspaceId: "workspace-a",
+    workerId: "worker-a",
     input: { keywords: ["첫째", "둘째"] },
     credentials: {},
     provider: { fetchKeywordVolume: async ({ keyword }) => {

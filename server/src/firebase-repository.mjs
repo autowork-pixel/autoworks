@@ -21,7 +21,8 @@ export const repository = {
     const access = workspace.collection("serverControls").doc("access");
     const subscription = workspace.collection("subscriptions").doc("current");
     const credential = workspace.collection("providerCredentials").doc("naver-searchad");
-    const usage = workspace.collection("usage").doc(usagePeriod());
+    const period = usagePeriod();
+    const usage = workspace.collection("usage").doc(period);
     const idempotency = workspace.collection("runRequests").doc(privateIdempotencyId(uid, input.idempotencyKey));
     const digest = requestDigest(input);
 
@@ -69,6 +70,8 @@ export const repository = {
         status: "queued",
         inputSummary: { brand: input.brand, keywordCount: input.keywords.length, displayPeriodDays: input.displayPeriodDays },
         requestId,
+        requestDocumentId: idempotency.id,
+        usagePeriod: period,
         attempt: 0,
         maxAttempts: 3,
         retryable: true,
@@ -90,6 +93,7 @@ export const repository = {
         status: "reserved",
         runs: 1,
         keywordLookups: input.keywords.length,
+        usagePeriod: period,
         createdAt: timestamp,
         updatedAt: timestamp
       });
