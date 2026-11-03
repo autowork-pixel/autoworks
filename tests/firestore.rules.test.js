@@ -75,6 +75,9 @@ test("실행·스냅샷·결과·사용량은 소유자에게만 읽기 전용�
     await setDoc(doc(admin, "workspaces/workspace-a/reports/report-a"), { title: "브랜드 검색량 결과", status: "ready", summary: "3개 키워드 조회", createdAt: new Date() });
     await setDoc(doc(admin, "workspaces/workspace-a/usage/2026-11"), { runs: 1, keywordLookups: 3, succeeded: 1, failed: 0 });
     await setDoc(doc(admin, "workspaces/workspace-a/providerCredentials/naver"), { secret: "test" });
+    await setDoc(doc(admin, "workspaces/workspace-a/paymentSummaries/current"), { status: "paid", amount: 9900, currency: "KRW" });
+    await setDoc(doc(admin, "workspaces/workspace-a/paymentEvents/event-a"), { type: "PAYMENT_STATUS_CHANGED", eventId: "event-a" });
+    await setDoc(doc(admin, "workspaces/workspace-a/billingCredentials/current"), { billingKey: "secret" });
     await setDoc(doc(admin, "workspaces/workspace-a/subscriptions/current"), { planId: "beta", planLabel: "베타", status: "active", runLimit: 30, keywordLookupLimit: 300 });
   });
 
@@ -91,6 +94,10 @@ test("실행·스냅샷·결과·사용량은 소유자에게만 읽기 전용�
   await assertFails(getDoc(doc(otherUser, "workspaces/workspace-a/runs/run-a")));
   await assertFails(getDoc(doc(otherUser, "workspaces/workspace-a/reports/report-a")));
   await assertFails(getDoc(doc(owner, "workspaces/workspace-a/providerCredentials/naver")));
+  await assertSucceeds(getDoc(doc(owner, "workspaces/workspace-a/paymentSummaries/current")));
+  await assertFails(getDoc(doc(owner, "workspaces/workspace-a/paymentEvents/event-a")));
+  await assertFails(getDoc(doc(owner, "workspaces/workspace-a/billingCredentials/current")));
+  await assertFails(setDoc(doc(owner, "workspaces/workspace-a/paymentSummaries/current"), { status: "paid" }, { merge: true }));
   await assertSucceeds(getDoc(doc(owner, "workspaces/workspace-a/subscriptions/current")));
   await assertFails(setDoc(doc(owner, "workspaces/workspace-a/subscriptions/current"), { status: "active" }, { merge: true }));
 });
@@ -133,6 +140,8 @@ test("관리자 claim은 운영 데이터만 읽고 문의 답변만 수정하�
     await setDoc(doc(admin, "workspaces/workspace-a/subscriptions/current"), { planId: "beta", planLabel: "베타", status: "trialing", runLimit: 30, keywordLookupLimit: 300 });
     await setDoc(doc(admin, "workspaces/workspace-a/providerCredentials/naver"), { secret: "test" });
     await setDoc(doc(admin, "workspaces/workspace-a/auditLogs/audit-a"), { action: "inquiry.answered", createdAt: new Date() });
+    await setDoc(doc(admin, "workspaces/workspace-a/paymentEvents/event-a"), { type: "PAYMENT_STATUS_CHANGED", eventId: "event-a" });
+    await setDoc(doc(admin, "workspaces/workspace-a/billingCredentials/current"), { billingKey: "secret" });
   });
 
   const operator = environment.authenticatedContext("operator-a", { admin: true }).firestore();
@@ -140,6 +149,7 @@ test("관리자 claim은 운영 데이터만 읽고 문의 답변만 수정하�
   await assertSucceeds(getDoc(doc(operator, "workspaces/workspace-a/usage/2026-11")));
   await assertSucceeds(getDoc(doc(operator, "workspaces/workspace-a/subscriptions/current")));
   await assertSucceeds(getDoc(doc(operator, "workspaces/workspace-a/auditLogs/audit-a")));
+  await assertSucceeds(getDoc(doc(operator, "workspaces/workspace-a/paymentEvents/event-a")));
   await assertSucceeds(setDoc(doc(operator, "workspaces/workspace-a/inquiries/inquiry-a"), {
     reply: "내 결과에서 확인할 수 있습니다.",
     status: "answered",
@@ -147,6 +157,7 @@ test("관리자 claim은 운영 데이터만 읽고 문의 답변만 수정하�
     updatedAt: serverTimestamp()
   }, { merge: true }));
   await assertFails(getDoc(doc(operator, "workspaces/workspace-a/providerCredentials/naver")));
+  await assertFails(getDoc(doc(operator, "workspaces/workspace-a/billingCredentials/current")));
   await assertFails(setDoc(doc(operator, "workspaces/workspace-a/subscriptions/current"), { status: "active" }, { merge: true }));
   await assertFails(setDoc(doc(operator, "workspaces/workspace-a/auditLogs/audit-b"), { action: "forged" }));
   const owner = environment.authenticatedContext("user-a").firestore();

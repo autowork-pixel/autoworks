@@ -65,6 +65,13 @@
 - 고객과 브라우저는 생성·수정·삭제할 수 없다. 관리자 claim은 읽기만 가능하며, API 키·토큰·문의 원문 같은 민감값은 기록하지 않는다.
 - 상세 기록 기준과 권한 절차는 `OPERATIONS_SECURITY.md`를 따른다.
 
+### 결제 경로
+
+- `paymentSummaries/current`: 고객에게 공개하는 최근 결제 요약. `status`, `amount`, `currency`, `paidAt`, `nextBillingAt`, `updatedAt`만 저장하고 고객은 읽기만 한다.
+- `paymentEvents/{eventId}`: 서버가 처리한 승인·실패·취소·웹훅 사건. 운영자는 읽기만 하고 고객은 직접 읽지 않는다. 이벤트 원문과 카드·계좌 정보는 넣지 않는다.
+- `billingCredentials/current`: 빌링키와 `customerKey` 등 재결제 자격정보. 브라우저와 관리자 화면 모두 읽기·쓰기를 거부하고 서버 보안 저장소에서만 다룬다.
+- 구체적인 멱등성·검증 순서는 `TOSS_PAYMENTS_PLAN.md`를 따른다.
+
 ## 보류된 실제 검증
 
 - 실제 Google 계정에서 브랜드 프로젝트 저장·재조회

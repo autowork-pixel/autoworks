@@ -106,6 +106,21 @@ service cloud.firestore {
         allow get, list: if isAdmin();
         allow create, update, delete: if false;
       }
+
+      match /paymentSummaries/{summaryId} {
+        allow get, list: if isAdmin() || (ownsWorkspace(workspaceId)
+          && resource.data.keys().hasOnly(['status', 'amount', 'currency', 'paidAt', 'nextBillingAt', 'updatedAt']));
+        allow create, update, delete: if false;
+      }
+
+      match /paymentEvents/{eventId} {
+        allow get, list: if isAdmin();
+        allow create, update, delete: if false;
+      }
+
+      match /billingCredentials/{credentialId} {
+        allow read, write: if false;
+      }
     }
 
     match /{document=**} {

@@ -1,0 +1,51 @@
+# 토스페이먼츠 정기결제 구현 계약
+
+작성일: 2026-11-03
+
+실제 테스트 키·빌링 계약·서버가 준비되기 전에 결제창을 활성화하지 않는다. 시크릿 키와 빌링키는 정적 HTML, Firestore 공개 문서, 브라우저 로그에 두지 않는다.
+
+## 최초 등록
+
+1. 서버가 로그인 고객의 Firebase ID token과 workspace 소유권을 확인한다.
+2. 이메일·전화번호처럼 예측 가능한 값이 아닌 무작위 `customerKey`와 1회용 요청 ID를 만든다.
+3. 브라우저는 토스 결제창에서 카드 등록 인증만 수행한다.
+4. 성공 URL의 `authKey`, `customerKey`를 서버가 기존 요청과 대조한 뒤 빌링키 발급 API를 호출한다.
+5. 발급된 `billingKey`는 서버 보안 저장소에 저장하고 고객·운영자 화면에는 표시하지 않는다.
+
+## 갱신 승인
+
+1. 서버가 구독 상태·기간·금액·고유 `orderId`를 먼저 저장한다.
+2. 동일 갱신 건에는 같은 멱등키를 사용한다. 처리 중 응답과 재시도 응답을 구분한다.
+3. 자동결제 승인 응답의 `paymentKey`, 금액, 상태를 서버 주문과 대조한다.
+4. 결제가 성공한 경우에만 구독 기간을 갱신하고 `paymentSummaries/current`, `paymentEvents`, `auditLogs`를 함께 기록한다.
+5. 응답 유실 시 새 청구를 만들지 않고 `paymentKey` 또는 `orderId` 조회로 상태를 복구한다.
+
+## 웹훅
+
+- 웹훅 `eventId`를 고유 키로 저장해 같은 이벤트를 한 번만 처리한다.
+- 응답 본문을 신뢰해 바로 권한을 주지 않고 주문·결제 조회 결과와 기존 금액을 대조한다.
+- 처리 성공 후 2xx를 반환한다. 일시 오류는 재시도 가능하게 하고 영구 오류는 운영 알림과 수동 복구 대상으로 남긴다.
+- 원문 payload는 최소 보존하고 카드·계좌·인증정보를 로그에 남기지 않는다.
+
+## 취소·해지
+
+- 구독 해지는 다음 자동 승인 예약을 중단하는 동작과 이미 승인된 결제 취소를 구분한다.
+- 환불은 환불정책과 사용 이력 확인 후 서버에서만 실행한다.
+- 중복 취소를 막기 위해 취소 요청에도 고유 멱등키와 상태 전이를 적용한다.
+
+## 공식 문서 확인 근거
+
+- [정기/자동결제와 카드사 심사](https://docs.tosspayments.com/resources/glossary/card-payment)
+- [결제 흐름과 서버 승인 전 검증](https://docs.tosspayments.com/guides/v2/get-started/payment-flow)
+- [식별자·요청/응답 처리](https://docs.tosspayments.com/reference/using-api/req-res)
+- [API 키와 서버 시크릿 관리](https://docs.tosspayments.com/reference/using-api/api-keys)
+- [인증 및 멱등키](https://docs.tosspayments.com/reference/using-api/authorization)
+
+## 실제 검증 보류
+
+- 테스트 키와 정기결제 계약 기능 확인
+- 카드 등록 → 빌링키 발급 → 첫 승인
+- 같은 멱등키 재요청과 동시에 두 번 요청
+- 승인 응답 유실 후 결제 조회 복구
+- 웹훅 중복·순서 역전·지연
+- 결제 실패, 해지, 부분·전액 취소와 구독 상태 일치

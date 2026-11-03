@@ -26,8 +26,8 @@
 <main class="wrap">
  <section class="intro"><p class="kicker">MARKETING ANALYSIS</p><h1>오늘은 어떤 분석을 도와드릴까요?</h1><p>브랜드와 키워드, 관심 채널을 고르면<br class="mobile-break"> 분석 조건을 한 번에 정리할 수 있어요.</p></section>
  <section class="workspace" id="workspace" aria-label="내 프로젝트"><div class="workspace-head"><div><h2>내 프로젝트</h2><p>브랜드와 키워드를 계정에 저장합니다.</p></div><button class="workspace-add" id="projectAdd">프로젝트 추가</button></div><form class="project-form" id="projectForm"><input id="projectName" maxlength="80" placeholder="프로젝트 이름" aria-label="프로젝트 이름" required><input id="projectBrand" maxlength="80" placeholder="브랜드명" aria-label="브랜드명" required><input id="projectKeywords" maxlength="500" placeholder="키워드 (쉼표로 구분, 최대 20개)" aria-label="키워드"><button type="submit">저장</button></form><div class="workspace-state" id="projectState" role="status">저장된 프로젝트를 불러오는 중입니다.</div><table class="project-list" id="projectTable" hidden><thead><tr><th>프로젝트</th><th>브랜드</th><th>키워드</th><th>수정일</th></tr></thead><tbody id="projectRows"></tbody></table><p class="workspace-note">입력한 프로젝트 정보는 로그인한 계정의 워크스페이스에 저장됩니다. API 키와 실행 결과는 이 화면에서 저장하지 않습니다.</p></section>
- <nav class="account-nav" id="accountNav" aria-label="내 계정 바로가기"><a class="account-link" href="./api-guide.html"><b>API 연결</b><span>필요한 키와 발급 안내</span></a><a class="account-link" href="#subscriptionCard"><b>구독 상태</b><span>베타 상태와 기간 확인</span></a><a class="account-link" href="#accountData"><b>사용량</b><span>이번 달 실행 현황</span></a><button class="account-link" type="button" data-toast><b>결제 내역</b><span>정기결제 연결 후 제공</span></button></nav>
- <section class="account-data" id="accountData" aria-label="내 실행 데이터"><article class="data-card"><div class="data-head"><h2>최근 실행</h2><span>내 워크스페이스만 표시</span></div><div class="data-state" id="runState">실행 기록을 불러오는 중입니다.</div><ul class="run-list" id="runList" hidden></ul></article><article class="data-card"><div class="data-head"><h2>이번 달 사용량</h2><span id="usagePeriod">-</span></div><div class="data-state" id="usageState">사용량 기록이 없습니다.</div><div class="usage-grid" id="usageGrid" hidden><div><b id="usageRuns">0</b><span>실행</span></div><div><b id="usageLookups">0</b><span>키워드 조회</span></div><div><b id="usageSuccess">0</b><span>성공</span></div><div><b id="usageFailed">0</b><span>실패</span></div></div></article><article class="data-card wide" id="subscriptionCard"><div class="data-head"><h2>구독 상태</h2><span>서버가 확인한 상태만 표시</span></div><div class="data-state" id="subscriptionState">활성 구독이 없습니다.</div></article><article class="data-card wide"><div class="data-head"><h2>최근 결과</h2><span>다운로드는 서버 검증 연결 후 제공</span></div><div class="data-state" id="reportState">저장된 결과가 없습니다.</div><ul class="report-list" id="reportList" hidden></ul></article></section>
+ <nav class="account-nav" id="accountNav" aria-label="내 계정 바로가기"><a class="account-link" href="./api-guide.html"><b>API 연결</b><span>필요한 키와 발급 안내</span></a><a class="account-link" href="#subscriptionCard"><b>구독 상태</b><span>베타 상태와 기간 확인</span></a><a class="account-link" href="#accountData"><b>사용량</b><span>이번 달 실행 현황</span></a><a class="account-link" href="#paymentCard"><b>결제 내역</b><span>최근 결제 요약</span></a></nav>
+ <section class="account-data" id="accountData" aria-label="내 실행 데이터"><article class="data-card"><div class="data-head"><h2>최근 실행</h2><span>내 워크스페이스만 표시</span></div><div class="data-state" id="runState">실행 기록을 불러오는 중입니다.</div><ul class="run-list" id="runList" hidden></ul></article><article class="data-card"><div class="data-head"><h2>이번 달 사용량</h2><span id="usagePeriod">-</span></div><div class="data-state" id="usageState">사용량 기록이 없습니다.</div><div class="usage-grid" id="usageGrid" hidden><div><b id="usageRuns">0</b><span>실행</span></div><div><b id="usageLookups">0</b><span>키워드 조회</span></div><div><b id="usageSuccess">0</b><span>성공</span></div><div><b id="usageFailed">0</b><span>실패</span></div></div></article><article class="data-card wide" id="subscriptionCard"><div class="data-head"><h2>구독 상태</h2><span>서버가 확인한 상태만 표시</span></div><div class="data-state" id="subscriptionState">활성 구독이 없습니다.</div></article><article class="data-card wide" id="paymentCard"><div class="data-head"><h2>최근 결제</h2><span>민감 결제정보는 표시하지 않음</span></div><div class="data-state" id="paymentState">결제 내역이 없습니다.</div></article><article class="data-card wide"><div class="data-head"><h2>최근 결과</h2><span>다운로드는 서버 검증 연결 후 제공</span></div><div class="data-state" id="reportState">저장된 결과가 없습니다.</div><ul class="report-list" id="reportList" hidden></ul></article></section>
  <section class="inquiries" id="inquiries" aria-label="내 문의"><div class="inquiry-head"><h2>내 문의</h2><p>문의에는 API 키·비밀번호·결제정보를 입력하지 마세요. 운영 답변은 이 계정에서 확인할 수 있습니다.</p></div><form class="inquiry-form" id="inquiryForm"><input id="inquirySubject" maxlength="100" placeholder="문의 제목" aria-label="문의 제목" required><small>제목 100자 · 내용 2,000자</small><textarea id="inquiryMessage" maxlength="2000" placeholder="문의 내용을 입력하세요" aria-label="문의 내용" required></textarea><button type="submit">문의 접수</button></form><div class="inquiry-state" id="inquiryState">등록된 문의가 없습니다.</div><ul class="inquiry-list" id="inquiryList" hidden></ul></section>
  <section class="composer" aria-label="분석 조건 만들기">
   <div class="topic"><input id="topic" type="text" placeholder="분석할 브랜드나 주제어를 입력하세요" autocomplete="off"></div>
@@ -196,6 +196,12 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
         const limit = Number.isFinite(data.runLimit) ? `월 ${Number(data.runLimit).toLocaleString()}회` : "실행 한도 검증 중";
         state.textContent = `${data.planLabel || "베타 플랜"} · ${labels[data.status] || "상태 확인 중"} · ${end}까지 · ${limit}`;
       }
+      function renderPayment(snapshot) {
+        const state = document.getElementById("paymentState");
+        if (!snapshot.exists()) { state.textContent = "결제 내역이 없습니다. 정기결제는 테스트 전입니다."; return; }
+        const data = snapshot.data(), paidAt = data.paidAt?.toDate?.().toLocaleDateString("ko-KR") || "처리일 확인 중";
+        state.textContent = `${paidAt} · ${Number(data.amount || 0).toLocaleString()}원 · ${data.status || "상태 확인 중"}`;
+      }
       function renderInquiries(snapshot) {
         const list = document.getElementById("inquiryList"), state = document.getElementById("inquiryState");
         list.replaceChildren(); state.hidden = !snapshot.empty; list.hidden = snapshot.empty;
@@ -212,20 +218,22 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
         document.getElementById("accountData").classList.add("visible");
         const period = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit" }).format(new Date());
         try {
-          const [runs, reports, usage, inquiries, subscription] = await Promise.all([
+          const [runs, reports, usage, inquiries, subscription, payment] = await Promise.all([
             getDocs(query(workspaceCollection(workspaceId, "runs"), orderBy("createdAt", "desc"), limit(5))),
             getDocs(query(workspaceCollection(workspaceId, "reports"), orderBy("createdAt", "desc"), limit(5))),
             getDoc(doc(db, "workspaces", workspaceId, "usage", period)),
             getDocs(query(workspaceCollection(workspaceId, "inquiries"), orderBy("createdAt", "desc"), limit(5))),
-            getDoc(doc(db, "workspaces", workspaceId, "subscriptions", "current"))
+            getDoc(doc(db, "workspaces", workspaceId, "subscriptions", "current")),
+            getDoc(doc(db, "workspaces", workspaceId, "paymentSummaries", "current"))
           ]);
-          renderRuns(runs); renderReports(reports); renderUsage(usage, period); renderInquiries(inquiries); renderSubscription(subscription);
+          renderRuns(runs); renderReports(reports); renderUsage(usage, period); renderInquiries(inquiries); renderSubscription(subscription); renderPayment(payment);
         } catch (error) {
           document.getElementById("runState").textContent = "실행 데이터를 불러오지 못했습니다.";
           document.getElementById("reportState").textContent = "결과 데이터를 불러오지 못했습니다.";
           document.getElementById("usageState").textContent = "사용량 데이터를 불러오지 못했습니다.";
           document.getElementById("inquiryState").textContent = "문의 내역을 불러오지 못했습니다.";
           document.getElementById("subscriptionState").textContent = "구독 상태를 불러오지 못했습니다.";
+          document.getElementById("paymentState").textContent = "결제 내역을 불러오지 못했습니다.";
           console.error("워크스페이스 실행 데이터 조회 실패", error.code);
         }
       }
