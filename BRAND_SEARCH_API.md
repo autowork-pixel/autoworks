@@ -39,5 +39,7 @@
 
 - Cloud Run 배포와 비동기 작업자 연결. 현재 저장소에는 ID 토큰·소유권·구독·자격정보·사용량 한도를 확인해 실행을 예약하는 HTTP 서버 코어까지만 있다.
 - 네이버 검색광고 키 암호화 저장·교체·삭제
-- 실제 키워드도구 응답 매핑과 테스트
+- 실제 자격정보로 키워드도구 호출 검증. 공식 `timestamp.method.path` HMAC-SHA256/Base64 서명, 인증 헤더, 정확 키워드의 PC·모바일 월간 검색량 매핑과 안전한 제공자 오류 변환은 서버 단위 테스트로 구현했다.
 - 결과 파일의 고객별 저장·만료 다운로드
+
+공식 기준: [Search Ads API 가이드](https://naver.github.io/searchad-apidoc/), [공식 서명 샘플](https://github.com/naver/searchad-apidoc/blob/master/python-sample/examples/signaturehelper.py)
