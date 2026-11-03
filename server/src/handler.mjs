@@ -113,8 +113,23 @@ export function createHandler({ verifyIdToken, repository, credentialService, ta
         if (reportMatch) return csv(response, await repository.getBrandSearchReport(context), route[2], requestId);
         return json(response, 200, { ...await repository.getBrandSearchRun(context), requestId }, requestId);
       }
-      const match = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/brand-search-runs$/);
-      if (request.method !== "POST" || !match) throw new ApiError("NOT_FOUND", "요청 경로를 찾을 수 없습니다.", 404);
+      const listUrl = new URL(request.url || "/", "http://localhost");
+      const match = listUrl.pathname.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/brand-search-runs$/);
+      if (request.method === "GET" && match) {
+        const token = bearer(request);
+        let decoded;
+        try {
+          decoded = await verifyIdToken(token);
+        } catch {
+          throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401);
+        }
+        if (!decoded?.uid) throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401);
+        const rawLimit = listUrl.searchParams.get("limit");
+        const limit = rawLimit === null ? 20 : Number(rawLimit);
+        if (!Number.isInteger(limit) || limit < 1 || limit > 20) throw new ApiError("INVALID_INPUT", "목록 개수는 1~20이어야 합니다.");
+        return json(response, 200, { runs: await repository.listBrandSearchRuns({ workspaceId: match[1], uid: decoded.uid, limit }), requestId }, requestId);
+      }
+      if (request.method !== "POST" || !match || listUrl.search) throw new ApiError("NOT_FOUND", "요청 경로를 찾을 수 없습니다.", 404);
       if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("application/json")) {
         throw new ApiError("INVALID_INPUT", "Content-Type은 application/json이어야 합니다.", 415);
       }

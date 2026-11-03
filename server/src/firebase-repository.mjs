@@ -18,6 +18,7 @@ function usagePeriod(now = new Date()) {
 export const verifyIdToken = token => getAuth().verifyIdToken(token, true);
 
 export const repository = {
+  listBrandSearchRuns: input => runLifecycleRepository.listBrandSearchRuns(input),
   cancelBrandSearchRun: input => runLifecycleRepository.cancelBrandSearchRun(input),
   getBrandSearchRun: input => runLifecycleRepository.getBrandSearchRun(input),
   getBrandSearchReport: input => runLifecycleRepository.getBrandSearchReport(input),

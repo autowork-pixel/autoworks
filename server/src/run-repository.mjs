@@ -36,7 +36,32 @@ function audit(root, transaction, { id, action, actorUid, actorRole, runId, proj
 export function createRunRepository({ database, serverTimestamp, now = () => new Date(), leaseMs = 60_000 }) {
   const workspace = workspaceId => database.doc(`workspaces/${workspaceId}`);
 
+  async function assertOwner(root, uid) {
+    await database.runTransaction(async transaction => {
+      const snapshot = await transaction.get(root);
+      if (!snapshot.exists || snapshot.data().ownerUid !== uid) {
+        throw new ApiError("AUTH_REQUIRED", "워크스페이스 권한을 확인할 수 없습니다.", 403);
+      }
+    });
+  }
+
   return {
+    async listBrandSearchRuns({ workspaceId, uid, limit = 20 }) {
+      const root = workspace(workspaceId);
+      await assertOwner(root, uid);
+      const safeLimit = Math.min(20, Math.max(1, Number.isInteger(limit) ? limit : 20));
+      const snapshot = await root.collection("runs").where("tool", "==", "brand-search").orderBy("createdAt", "desc").limit(safeLimit).get();
+      return snapshot.docs.map(document => {
+        const run = document.data();
+        return {
+          runId: document.id, projectId: run.projectId, status: run.status,
+          inputSummary: run.inputSummary || null, errorCode: run.errorCode || null,
+          succeededKeywords: Number(run.succeededKeywords || 0), failedKeywords: Number(run.failedKeywords || 0),
+          resultReady: Boolean(run.resultReportId && run.status === "succeeded"), createdAt: run.createdAt || null
+        };
+      });
+    },
+
     async getBrandSearchRun({ workspaceId, runId, uid }) {
       const root = workspace(workspaceId);
       const runRef = root.collection("runs").doc(runId);

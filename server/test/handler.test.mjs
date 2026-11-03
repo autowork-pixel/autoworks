@@ -157,6 +157,31 @@ test("실행 상태와 UTF-8 CSV 결과를 인증 후 반환한다", async () =>
   });
 });
 
+test("최근 실행 목록은 인증 uid와 제한 개수를 저장소에 전달한다", async () => {
+  let received;
+  await withServer({
+    verifyIdToken: async () => ({ uid: "user-a" }),
+    repository: { listBrandSearchRuns: async value => { received = value; return [{ runId: "run-a", status: "succeeded", resultReady: true }]; } }
+  }, async base => {
+    const response = await fetch(`${base}/v1/workspaces/workspace-a/brand-search-runs?limit=10`, { headers: { authorization: "Bearer token" } });
+    assert.equal(response.status, 200);
+    assert.deepEqual(received, { workspaceId: "workspace-a", uid: "user-a", limit: 10 });
+    assert.equal((await response.json()).runs[0].runId, "run-a");
+  });
+});
+
+test("최근 실행 목록의 과도한 개수는 저장소 호출 전에 거부한다", async () => {
+  let called = false;
+  await withServer({
+    verifyIdToken: async () => ({ uid: "user-a" }),
+    repository: { listBrandSearchRuns: async () => { called = true; return []; } }
+  }, async base => {
+    const response = await fetch(`${base}/v1/workspaces/workspace-a/brand-search-runs?limit=100`, { headers: { authorization: "Bearer token" } });
+    assert.equal(response.status, 400);
+    assert.equal(called, false);
+  });
+});
+
 test("로그인 토큰 없이는 실행 취소 저장소를 호출하지 않는다", async () => {
   let called = false;
   await withServer({ verifyIdToken: async () => ({ uid: "user-a" }), repository: { cancelBrandSearchRun: async () => { called = true; } } }, async base => {
