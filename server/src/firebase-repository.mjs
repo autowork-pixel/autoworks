@@ -4,6 +4,7 @@ import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { ApiError, privateIdempotencyId, requestDigest } from "./domain.mjs";
 import { createRunRepository } from "./run-repository.mjs";
 import { reserveUsageCapacity } from "./usage-policy.mjs";
+import { assertUsableSubscription } from "./subscription-policy.mjs";
 
 if (!getApps().length) initializeApp();
 export const database = getFirestore();
@@ -46,10 +47,7 @@ export const repository = {
       if (accessSnapshot.exists && accessSnapshot.data().blocked === true) {
         throw new ApiError("AUTH_REQUIRED", "현재 실행할 수 없는 계정입니다.", 403);
       }
-      const plan = subscriptionSnapshot.data();
-      if (!subscriptionSnapshot.exists || !["trialing", "active"].includes(plan.status)) {
-        throw new ApiError("SUBSCRIPTION_REQUIRED", "이용 가능한 구독이 필요합니다.", 403);
-      }
+      const plan = assertUsableSubscription(subscriptionSnapshot.exists ? subscriptionSnapshot.data() : null);
       if (!credentialSnapshot.exists || credentialSnapshot.data().status !== "active" || !credentialSnapshot.data().ciphertext) {
         throw new ApiError("PROVIDER_CREDENTIAL_REQUIRED", "네이버 검색광고 API 연결이 필요합니다.", 409);
       }
