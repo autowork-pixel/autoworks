@@ -123,7 +123,7 @@
 - [ ] 로그아웃 후 계정 상태와 워크스페이스 화면이 닫히고, 재로그인할 수 있는지 검증한다.
 - [x] 네이버·카카오는 Firebase OIDC 직접 연결 대신 각 디벨로퍼 OAuth와 서버 callback을 사용하고, Firebase custom token으로 로그인시키는 방향을 정한다.
 - [ ] 네이버·카카오 디벨로퍼 앱을 만들고 서비스 도메인·callback URL을 등록한다. client secret은 서버에만 저장한다.
-- [ ] Cloud Run callback에서 인가 코드를 교환하고 Firebase custom token을 발급한다. Cloud Billing/월 예산 결정 전에는 배포하지 않는다.
+- [ ] Cloud Run callback의 서버 코어를 구현했다. 10분짜리 일회성 state, 공식 토큰 교환·프로필 조회, 제공자별 안정 UID, Firebase custom token 발급 경계를 단위 테스트했으며 실제 HTTP 라우트·state 저장소·Cloud Run 배포는 Cloud Billing/월 예산 결정 전까지 보류한다.
 - [x] Firebase 승인 도메인에 `localhost`, `autoworks-c9a6a.firebaseapp.com`, `autoworks-c9a6a.web.app`이 등록된 것을 확인했다 (2026-11-03).
 - [ ] 네이버·카카오 서버 callback 주소를 개발·운영 환경별로 확정하고 디벨로퍼 콘솔 등록값과 일치시킨다 (Cloud Run·운영 도메인 결정 후).
 - [x] Firebase의 사용자 계정 연결 설정이 ‘동일한 이메일을 사용하는 계정 연결’로 선택된 것을 확인했다 (2026-11-03).
@@ -267,6 +267,7 @@
 - 카카오채널: 고객센터와 운영 안내 채널로 검토한다. Q6-1/Q6-3에서 문의 담당·응답 절차와 개인정보 수집 경계를 정한 뒤 연결한다.
 
 ## 변경 기록
+- 2026-11-03: 네이버·카카오 공식 OAuth 계약에 맞춰 state 발급·일회 소비, 서버 토큰 교환, 최소 프로필 정규화와 Firebase custom token 발급 코어를 추가했다. 앱 등록값·client secret과 Cloud Run 배포는 사용하지 않았다.
 - 2026-11-03: 고객 API 연결 정보의 AES-256-GCM 암호화 봉투와 변조 감지·허용 필드 테스트를 추가했다. 평문 데이터 키를 저장하지 않으며 KMS 연결과 실제 저장은 보류했다.
 - 2026-11-03: 작업자용 입력을 서버 전용 `runInputs`로 분리하고, 일부 키워드 실패를 숨기지 않는 브랜드 검색량 작업자 코어와 성공·부분 실패·전체 실패 테스트를 추가했다.
 - 2026-11-03: 네이버 검색광고 공식 샘플을 기준으로 `timestamp.method.path` 서명, 인증 헤더, 정확 키워드 검색량 매핑과 제공자 오류 변환을 구현했다. 실제 자격정보 호출과 배포는 하지 않았다.
