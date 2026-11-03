@@ -60,8 +60,9 @@
 ### `providerCredentials/{provider}`
 
 - 브라우저 읽기·쓰기를 전부 거부한다.
-- 서버에서 AES-256-GCM으로 암호화한 `ciphertext`, `iv`, `authTag`와 KMS가 감싼 `encryptedDataKey`, `keyVersion`, `status`, `updatedAt`만 저장한다. 원문 키, 평문 데이터 키, Authorization 헤더, 토큰을 로그·실행 문서·보고서에 복사하지 않는다.
+- 서버에서 AES-256-GCM으로 암호화한 `ciphertext`, `iv`, `authTag`와 KMS가 감싼 `encryptedDataKey`, `keyVersion`, 비민감 `apiKeyHint`, `status`, `updatedAt`만 저장한다. 원문 키, 평문 데이터 키, Authorization 헤더, 토큰을 로그·실행 문서·보고서에 복사하지 않는다.
 - KMS는 Cloud Billing과 키 수명주기 결정 뒤 연결한다. 저장 전 암호화·변조 감지 봉투 형식은 서버 단위 테스트로 고정했다.
+- 연결 서비스 계층은 `uid`와 `workspaceId`를 저장소 권한 검증에 항상 전달하고, 암호화 성공·실패와 관계없이 평문 데이터 키 버퍼를 즉시 0으로 덮어쓴다.
 
 ### `subscriptions/{subscriptionId}`
 
