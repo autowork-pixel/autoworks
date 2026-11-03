@@ -1,0 +1,33 @@
+name: Deploy Firebase Hosting and rules
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: firebase-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:html
+      - run: npm run test:links
+      - run: npm run test:security
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_AUTOWORKS_C9A6A }}
+      - name: Deploy Hosting and Firestore rules
+        run: npx --yes firebase-tools@15.34.2 deploy --project autoworks-c9a6a --only hosting,firestore:rules --non-interactive

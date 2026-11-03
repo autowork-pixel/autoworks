@@ -3,6 +3,7 @@ export const FREE_SEARCH_PLAN = Object.freeze({
   planLabel: "검색량 무료",
   status: "active",
   priceKrw: 0,
+  projectLimit: 1,
   runLimit: 30,
   keywordLookupLimit: 300
 });

@@ -32,18 +32,7 @@ service cloud.firestore {
 
       match /projects/{projectId} {
         allow get, list: if ownsWorkspace(workspaceId) || isAdmin();
-        allow create: if ownsWorkspace(workspaceId)
-          && request.resource.data.keys().hasOnly(['name', 'brandName', 'keywords', 'createdAt', 'updatedAt'])
-          && request.resource.data.name is string
-          && request.resource.data.name.size() > 0
-          && request.resource.data.name.size() <= 80
-          && request.resource.data.brandName is string
-          && request.resource.data.brandName.size() > 0
-          && request.resource.data.brandName.size() <= 80
-          && request.resource.data.keywords is list
-          && request.resource.data.keywords.size() <= 20
-          && request.resource.data.createdAt == request.time
-          && request.resource.data.updatedAt == request.time;
+        allow create: if false;
         allow update: if ownsWorkspace(workspaceId)
           && request.resource.data.keys().hasOnly(['name', 'brandName', 'keywords', 'createdAt', 'updatedAt'])
           && request.resource.data.name is string

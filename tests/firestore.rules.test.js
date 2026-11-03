@@ -54,7 +54,7 @@ test("워크스페이스 소유자만 고객 데이터를 읽고 쓸 수 있다"
   }));
 
   const project = doc(owner, "workspaces/workspace-a/projects/project-a");
-  await assertSucceeds(setDoc(project, {
+  await assertFails(setDoc(project, {
     name: "검색량 모니터링",
     brandName: "브랜드 A",
     keywords: ["브랜드 A", "브랜드 A 검색량"],

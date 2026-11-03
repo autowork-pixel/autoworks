@@ -437,19 +437,24 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
         submit.disabled = true;
         submit.textContent = "저장 중";
         try {
-          await addDoc(projectCollection(workspaceId), {
-            name,
-            brandName,
-            keywords,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
+          if (!apiBase) throw new Error("api-not-configured");
+          const user = auth.currentUser;
+          if (!user) throw new Error("auth-required");
+          const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(workspaceId)}/projects`, {
+            method:"POST",
+            headers:{ authorization:`Bearer ${await user.getIdToken()}`, "content-type":"application/json" },
+            body:JSON.stringify({ name, brandName, keywords })
           });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(result.error?.message || "project-create-failed");
           form.reset();
           form.classList.remove("open");
           await loadProjects(workspaceId);
           showToast("프로젝트를 저장했습니다.");
         } catch (error) {
-          document.getElementById("projectState").textContent = "저장하지 못했습니다. 로그인 상태와 연결을 확인해 주세요.";
+          document.getElementById("projectState").textContent = error.message === "api-not-configured"
+            ? "프로젝트 생성 서버가 아직 연결되지 않았습니다."
+            : error.message || "저장하지 못했습니다. 로그인 상태와 연결을 확인해 주세요.";
           document.getElementById("projectState").hidden = false;
           console.error("프로젝트 저장 실패", error.code);
         } finally {

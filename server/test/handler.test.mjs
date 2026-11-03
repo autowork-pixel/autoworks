@@ -33,11 +33,54 @@ const requestRun = (base, body = validBody, headers = {}) => fetch(`${base}/v1/w
   body: JSON.stringify(body)
 });
 
+const requestProject = (base, body = { name: "브랜드 모니터링", brandName: "오토웍스", keywords: ["오토웍스", "오토웍스"] }, headers = {}) =>
+  fetch(`${base}/v1/workspaces/workspace-a/projects`, {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: "Bearer token", ...headers },
+    body: JSON.stringify(body)
+  });
+
 test("health check는 인증 없이 응답한다", async () => {
   await withServer({ verifyIdToken: async () => ({}), repository: {} }, async base => {
     const response = await fetch(`${base}/healthz`);
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), { ok: true });
+  });
+});
+
+test("프로젝트 생성은 인증과 입력 정규화 뒤 서버 저장소에 전달한다", async () => {
+  let received;
+  await withServer({
+    verifyIdToken: async () => ({ uid: "user-a" }),
+    repository: { createProject: async value => { received = value; return { projectId: "project-a", projectLimit: 1 }; } }
+  }, async base => {
+    const response = await requestProject(base);
+    assert.equal(response.status, 201);
+    assert.equal((await response.json()).projectId, "project-a");
+    assert.deepEqual(received, {
+      workspaceId: "workspace-a",
+      uid: "user-a",
+      input: { name: "브랜드 모니터링", brandName: "오토웍스", keywords: ["오토웍스"] }
+    });
+  });
+});
+
+test("프로젝트 생성은 비로그인·잘못된 입력·요금제 한도를 구분한다", async () => {
+  let called = 0;
+  const dependencies = {
+    verifyIdToken: async token => {
+      if (token === "invalid") throw new Error("invalid");
+      return { uid: "user-a" };
+    },
+    repository: { createProject: async () => { called += 1; throw new ApiError("PROJECT_LIMIT_EXCEEDED", "이 요금제는 프로젝트를 1개까지 만들 수 있습니다.", 409); } }
+  };
+  await withServer(dependencies, async base => {
+    assert.equal((await fetch(`${base}/v1/workspaces/workspace-a/projects`, { method:"POST", headers:{ "content-type":"application/json" }, body:"{}" })).status, 401);
+    assert.equal((await requestProject(base, { name:"", brandName:"오토웍스", keywords:[] })).status, 400);
+    const limited = await requestProject(base);
+    assert.equal(limited.status, 409);
+    assert.equal((await limited.json()).error.code, "PROJECT_LIMIT_EXCEEDED");
+    assert.equal(called, 1);
   });
 });
 

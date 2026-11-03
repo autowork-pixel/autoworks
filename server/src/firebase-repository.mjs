@@ -27,6 +27,29 @@ export const repository = {
   getBrandSearchRun: input => runLifecycleRepository.getBrandSearchRun(input),
   getBrandSearchReport: input => runLifecycleRepository.getBrandSearchReport(input),
 
+  async createProject({ workspaceId, uid, input }) {
+    const workspace = database.doc(`workspaces/${workspaceId}`);
+    const subscription = workspace.collection("subscriptions").doc("current");
+    const projects = workspace.collection("projects");
+    return database.runTransaction(async transaction => {
+      const [workspaceSnapshot, subscriptionSnapshot] = await Promise.all([
+        transaction.get(workspace), transaction.get(subscription)
+      ]);
+      if (!workspaceSnapshot.exists || workspaceSnapshot.data().ownerUid !== uid) {
+        throw new ApiError("AUTH_REQUIRED", "워크스페이스 권한을 확인할 수 없습니다.", 403);
+      }
+      const plan = resolveBrandSearchPlan(subscriptionSnapshot.exists ? subscriptionSnapshot.data() : null);
+      const existing = await transaction.get(projects.limit(plan.projectLimit));
+      if (existing.size >= plan.projectLimit) {
+        throw new ApiError("PROJECT_LIMIT_EXCEEDED", `이 요금제는 프로젝트를 ${plan.projectLimit}개까지 만들 수 있습니다.`, 409);
+      }
+      const project = projects.doc();
+      const timestamp = FieldValue.serverTimestamp();
+      transaction.create(project, { ...input, createdAt: timestamp, updatedAt: timestamp });
+      return { projectId: project.id, projectLimit: plan.projectLimit };
+    });
+  },
+
   async reserveBrandSearchRun({ workspaceId, uid, input, requestId }) {
     const workspace = database.doc(`workspaces/${workspaceId}`);
     const automationControl = database.doc("systemControls/automation");

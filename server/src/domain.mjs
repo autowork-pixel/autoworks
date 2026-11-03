@@ -61,6 +61,24 @@ export function normalizeBrandSearchInput(body) {
   };
 }
 
+export function normalizeProjectInput(body) {
+  if (!body || typeof body !== "object" || Array.isArray(body)) throw new ApiError("INVALID_INPUT", "요청 본문이 올바르지 않습니다.");
+  const name = text(body.name, "name", 80);
+  const brandName = text(body.brandName, "brandName", 80);
+  const keywords = textList(body.keywords, "keywords", 20);
+  const seen = new Set();
+  return {
+    name,
+    brandName,
+    keywords: keywords.filter(keyword => {
+      const key = keyword.toLocaleLowerCase("ko-KR");
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+  };
+}
+
 export function requestDigest(input) {
   const stable = JSON.stringify({
     projectId: input.projectId,

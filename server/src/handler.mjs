@@ -1,4 +1,4 @@
-import { ApiError, newRequestId, normalizeBrandSearchInput } from "./domain.mjs";
+import { ApiError, newRequestId, normalizeBrandSearchInput, normalizeProjectInput } from "./domain.mjs";
 
 const maximumBodyBytes = 64 * 1024;
 
@@ -62,6 +62,24 @@ export function createHandler({ verifyIdToken, repository, credentialService, ta
     try {
       if (request.method === "GET" && request.url === "/healthz") {
         return json(response, 200, { ok: true }, requestId);
+      }
+      const projectMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/projects$/);
+      if (request.method === "POST" && projectMatch) {
+        if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("application/json")) {
+          throw new ApiError("INVALID_INPUT", "Content-Type은 application/json이어야 합니다.", 415);
+        }
+        const token = bearer(request);
+        let decoded;
+        try {
+          decoded = await verifyIdToken(token);
+        } catch {
+          throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401);
+        }
+        if (!decoded?.uid) throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401);
+        const result = await repository.createProject({
+          workspaceId: projectMatch[1], uid: decoded.uid, input: normalizeProjectInput(await readJson(request))
+        });
+        return json(response, 201, { ...result, requestId }, requestId);
       }
       const credentialMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/provider-credentials\/(naver-searchad)$/);
       if (credentialMatch && credentialService) {
