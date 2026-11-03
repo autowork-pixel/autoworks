@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const files = ["public/index.html", "public/api-guide.html", "public/admin.html", "public/brand-search.html"];
+const moduleFiles = ["public/brand-search.js"];
 const directory = mkdtempSync(join(tmpdir(), "autoworks-html-"));
 
 try {
@@ -18,6 +19,11 @@ try {
       if (checked.status !== 0) throw new Error(`${file} script ${index + 1}:\n${checked.stderr || checked.stdout}`);
     });
     console.log(`${file}: ${scripts.length}개 스크립트 구문 확인`);
+  }
+  for (const file of moduleFiles) {
+    const checked = spawnSync(process.execPath, ["--check", file], { encoding: "utf8" });
+    if (checked.status !== 0) throw new Error(`${file}:\n${checked.stderr || checked.stdout}`);
+    console.log(`${file}: 모듈 구문 확인`);
   }
 } finally {
   rmSync(directory, { recursive: true, force: true });
