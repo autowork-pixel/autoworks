@@ -1,5 +1,5 @@
 import { ApiError } from "./domain.mjs";
-import { FREE_SEARCH_PLAN, STANDARD_PLAN } from "./plan-catalog.mjs";
+import { FREE_SEARCH_PLAN, PAID_PLANS } from "./plan-catalog.mjs";
 
 function endDate(value){
   try{
@@ -24,7 +24,8 @@ export function resolveBrandSearchPlan(plan,{now=new Date()}={}){
   if(!plan)return FREE_SEARCH_PLAN;
   try{
     const usable=assertUsableSubscription(plan,{now});
-    if(usable.planId==="standard")return {...usable,...STANDARD_PLAN};
+    const catalogPlan=PAID_PLANS[usable.planId];
+    if(catalogPlan)return {...usable,...catalogPlan};
   }catch(error){
     if(error?.code!=="SUBSCRIPTION_REQUIRED")throw error;
   }

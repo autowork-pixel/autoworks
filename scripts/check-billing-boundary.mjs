@@ -3,7 +3,7 @@ import { readFile, readdir } from "node:fs/promises";
 
 const rules=await readFile(new URL("../firestore.rules",import.meta.url),"utf8");
 
-assert.match(rules,/match \/subscriptions\/\{subscriptionId\}[\s\S]*?allow get, list: if isAdmin\(\) \|\| \(ownsWorkspace\(workspaceId\)[\s\S]*?keys\(\)\.hasOnly\(\['planId', 'planLabel', 'status', 'periodStart', 'periodEnd', 'graceEnd', 'autoRenew', 'runLimit', 'keywordLookupLimit', 'updatedAt'\]\)[\s\S]*?allow create, update, delete: if false;/,"구독 공개 요약은 허용 필드만 고객에게 읽기 전용이어야 합니다.");
+assert.match(rules,/match \/subscriptions\/\{subscriptionId\}[\s\S]*?allow get, list: if isAdmin\(\) \|\| \(ownsWorkspace\(workspaceId\)[\s\S]*?keys\(\)\.hasOnly\(\['planId', 'planLabel', 'status', 'periodStart', 'periodEnd', 'graceEnd', 'autoRenew', 'projectLimit', 'runLimit', 'keywordLookupLimit', 'updatedAt'\]\)[\s\S]*?allow create, update, delete: if false;/,"구독 공개 요약은 허용 필드만 고객에게 읽기 전용이어야 합니다.");
 assert.match(rules,/match \/paymentSummaries\/\{summaryId\}[\s\S]*?allow get, list: if isAdmin\(\) \|\| \(ownsWorkspace\(workspaceId\)[\s\S]*?keys\(\)\.hasOnly\(\['status', 'amount', 'currency', 'paidAt', 'nextBillingAt', 'updatedAt'\]\)[\s\S]*?allow create, update, delete: if false;/,"결제 공개 요약은 허용 필드만 고객에게 읽기 전용이어야 합니다.");
 assert.match(rules,/match \/paymentEvents\/\{eventId\}[\s\S]*?allow get, list: if isAdmin\(\);[\s\S]*?allow create, update, delete: if false;/,"결제 이벤트는 운영자만 읽고 브라우저가 변경할 수 없어야 합니다.");
 assert.match(rules,/match \/billingCredentials\/\{credentialId\}[\s\S]*?allow read, write: if false;/,"빌링 자격정보는 모든 브라우저 접근을 차단해야 합니다.");

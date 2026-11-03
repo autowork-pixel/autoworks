@@ -16,12 +16,15 @@ test("해지는 결제기간 종료까지, 결제 실패는 3일 유예 종료�
   assert.throws(()=>assertUsableSubscription({status:"past_due",graceEnd:new Date("2026-11-03T00:00:00Z")},{now}),error=>error.code==="SUBSCRIPTION_REQUIRED");
 });
 
-test("검색량은 구독이 없어도 무료 한도를 적용하고 스탠다드는 확정 한도를 적용한다",()=>{
+test("검색량은 구독이 없어도 무료 한도를 적용하고 유료 3단계는 서버 카탈로그 한도를 적용한다",()=>{
   assert.deepEqual(resolveBrandSearchPlan(null,{now}),{planId:"free-search",planLabel:"검색량 무료",status:"active",priceKrw:0,runLimit:30,keywordLookupLimit:300});
-  const paid=resolveBrandSearchPlan({planId:"standard",status:"active",periodEnd:new Date("2026-12-01T00:00:00Z")},{now});
-  assert.equal(paid.priceKrw,19_900);
-  assert.equal(paid.runLimit,100);
-  assert.equal(paid.keywordLookupLimit,2_000);
+  const periodEnd=new Date("2026-12-01T00:00:00Z");
+  const starter=resolveBrandSearchPlan({planId:"starter",status:"active",periodEnd,runLimit:999_999},{now});
+  const standard=resolveBrandSearchPlan({planId:"standard",status:"active",periodEnd},{now});
+  const premium=resolveBrandSearchPlan({planId:"premium",status:"active",periodEnd},{now});
+  assert.deepEqual([starter.priceKrw,standard.priceKrw,premium.priceKrw],[19_900,59_900,129_000]);
+  assert.deepEqual([starter.runLimit,standard.runLimit,premium.runLimit],[100,300,1_000]);
+  assert.deepEqual([starter.keywordLookupLimit,standard.keywordLookupLimit,premium.keywordLookupLimit],[2_000,6_000,20_000]);
   assert.equal(resolveBrandSearchPlan({planId:"standard",status:"expired",periodEnd:new Date("2026-11-01T00:00:00Z")},{now}).planId,"free-search");
 });
 
