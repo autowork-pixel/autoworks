@@ -129,7 +129,7 @@ test("고객 문의는 소유자가 생성·조회하고 상태 변경은 서버
   await assertFails(setDoc(inquiry, { status: "answered" }, { merge: true }));
 });
 
-test("관리자 claim은 운영 데이터만 읽고 문의 답변만 수정하며 API 키는 읽지 못한다", async () => {
+test("관리자 claim은 운영 데이터를 읽지만 문의 답변과 API 키는 브라우저에서 변경·조회하지 못한다", async () => {
   await environment.clearFirestore();
   await environment.withSecurityRulesDisabled(async context => {
     const admin = context.firestore();
@@ -157,7 +157,7 @@ test("관리자 claim은 운영 데이터만 읽고 문의 답변만 수정하�
   await assertSucceeds(getDoc(doc(operator, "workspaces/workspace-a/subscriptions/current")));
   await assertSucceeds(getDoc(doc(operator, "workspaces/workspace-a/auditLogs/audit-a")));
   await assertSucceeds(getDoc(doc(operator, "workspaces/workspace-a/paymentEvents/event-a")));
-  await assertSucceeds(setDoc(doc(operator, "workspaces/workspace-a/inquiries/inquiry-a"), {
+  await assertFails(setDoc(doc(operator, "workspaces/workspace-a/inquiries/inquiry-a"), {
     reply: "내 결과에서 확인할 수 있습니다.",
     status: "answered",
     respondedAt: serverTimestamp(),

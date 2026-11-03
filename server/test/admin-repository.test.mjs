@@ -21,3 +21,13 @@ test("없는 워크스페이스는 운영 조치 전에 거부한다", async () 
   await assert.rejects(()=>repository.setWorkspaceBlocked({workspaceId:"missing",blocked:true,reason:"확인용 사유",actorUid:"admin-a",requestId:"request-a"}),error=>error.status===404);
   assert.equal(fake.writes.length,0);
 });
+
+test("문의 답변과 비민감 감사 기록을 같은 트랜잭션에 남긴다", async () => {
+  const fake=fakeDatabase({"workspaces/workspace-a":{ownerUid:"user-a"},"workspaces/workspace-a/inquiries/inquiry-a":{status:"open",message:"원문 문의"}}),repository=createAdminRepository({database:fake.database,serverTimestamp:()=>"server-time"});
+  const input={workspaceId:"workspace-a",inquiryId:"inquiry-a",reply:"내 결과에서 확인해 주세요.",actorUid:"admin-a",requestId:"request-a"};
+  assert.deepEqual(await repository.answerInquiry(input),{status:"answered",reused:false});
+  const inquiry=fake.values.get("workspaces/workspace-a/inquiries/inquiry-a");assert.equal(inquiry.status,"answered");assert.equal(inquiry.reply,input.reply);
+  const audit=[...fake.values.entries()].find(([path,value])=>path.includes("/auditLogs/")&&value.action==="inquiry.answered")[1];
+  assert.equal(audit.actorUid,"admin-a");assert.equal(JSON.stringify(audit).includes("원문 문의"),false);assert.equal(JSON.stringify(audit).includes(input.reply),false);
+  const writes=fake.writes.length;assert.deepEqual(await repository.answerInquiry(input),{status:"answered",reused:true});assert.equal(fake.writes.length,writes);
+});
