@@ -1,0 +1,12 @@
+import assert from "node:assert/strict";
+import { createServer } from "node:http";
+import { once } from "node:events";
+import test from "node:test";
+import { createAdminHandler } from "../src/admin-handler.mjs";
+
+async function withServer(dependencies,callback){const server=createServer(createAdminHandler(dependencies));server.listen(0,"127.0.0.1");await once(server,"listening");try{await callback(`http://127.0.0.1:${server.address().port}`)}finally{server.close();await once(server,"close")}}
+const request=(base,headers={})=>fetch(`${base}/v1/admin/workspaces/workspace-a/access`,{method:"PUT",headers:{authorization:"Bearer token","content-type":"application/json",...headers},body:JSON.stringify({blocked:true,reason:"비정상 사용량 확인"})});
+
+test("admin claim이 있는 계정만 차단 조치를 저장소에 전달한다",async()=>{let received;await withServer({verifyIdToken:async()=>({uid:"admin-a",admin:true}),repository:{setWorkspaceBlocked:async value=>{received=value;return{blocked:true,reused:false}}}},async base=>{const response=await request(base);assert.equal(response.status,200);assert.equal(received.workspaceId,"workspace-a");assert.equal(received.actorUid,"admin-a");assert.equal(received.reason,"비정상 사용량 확인")})});
+test("일반 로그인 계정은 저장소 호출 전에 거부한다",async()=>{let called=false;await withServer({verifyIdToken:async()=>({uid:"user-a"}),repository:{setWorkspaceBlocked:async()=>{called=true}}},async base=>{const response=await request(base);assert.equal(response.status,403);assert.equal(called,false)})});
+test("사유 없는 운영 조치는 저장하지 않는다",async()=>{let called=false;await withServer({verifyIdToken:async()=>({uid:"admin-a",admin:true}),repository:{setWorkspaceBlocked:async()=>{called=true}}},async base=>{const response=await fetch(`${base}/v1/admin/workspaces/workspace-a/access`,{method:"PUT",headers:{authorization:"Bearer token","content-type":"application/json"},body:JSON.stringify({blocked:true,reason:""})});assert.equal(response.status,400);assert.equal(called,false)})});

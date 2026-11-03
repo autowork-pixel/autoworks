@@ -1,4 +1,6 @@
 import { createCorsHandler } from "./cors-handler.mjs";
+import { createAdminHandler } from "./admin-handler.mjs";
+import { createAdminRepository } from "./admin-repository.mjs";
 import { createCredentialRepository } from "./credential-repository.mjs";
 import { createCredentialService } from "./credential-service.mjs";
 import { createHandler } from "./handler.mjs";
@@ -46,5 +48,6 @@ export function createApplication({ config, database, serverTimestamp, verifyIdT
     identityStore: createOAuthIdentityStore({ database, serverTimestamp }), tokenIssuer,
     allowedOrigins: config.allowedOrigins, logger
   });
-  return createRouter({ publicHandler, workerHandler, recoveryHandler, oauthHandler });
+  const adminHandler = createCorsHandler({ allowedOrigins: config.allowedOrigins, handler: createAdminHandler({ verifyIdToken, repository: createAdminRepository({ database, serverTimestamp }), logger }) });
+  return createRouter({ publicHandler, workerHandler, recoveryHandler, oauthHandler, adminHandler });
 }
