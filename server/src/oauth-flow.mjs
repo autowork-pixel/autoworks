@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { ApiError } from "./domain.mjs";
 import { authorizationUrl, exchangeAuthorizationCode, fetchProviderIdentity } from "./oauth-providers.mjs";
 
@@ -16,7 +16,7 @@ export async function completeOAuth({ provider, code, state, config, stateStore,
   }
   const accessToken = await exchangeAuthorizationCode({ provider, clientId: config.clientId, clientSecret: config.clientSecret, redirectUri: pending.redirectUri, code, state, fetchImpl });
   const identity = await fetchProviderIdentity({ provider, accessToken, fetchImpl });
-  const uid = `${provider}:${identity.subject}`;
+  const uid = `${provider}:${createHash("sha256").update(`${provider}:${identity.subject}`).digest("base64url")}`;
   if (uid.length > 128) throw new ApiError("AUTH_REQUIRED", "로그인 사용자 식별값이 올바르지 않습니다.", 401);
   await identityStore.upsert({ uid, ...identity });
   const customToken = await tokenIssuer.createCustomToken(uid, { authProvider: provider });

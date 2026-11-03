@@ -4,6 +4,8 @@
 
 모든 실행 데이터는 `workspaces/{workspaceId}` 아래에 저장한다. 브라우저는 소유한 워크스페이스의 공개 데이터만 읽고, 실행 기록과 결과·사용량은 서버만 쓴다. Firebase Admin SDK는 Firestore Rules를 우회하므로 서버는 매 요청에서 Firebase ID 토큰과 `ownerUid`를 다시 확인해야 한다.
 
+외부 로그인 제공자의 원본 사용자 ID는 문서 경로나 Firebase UID에 넣지 않는다. `provider:subject`를 SHA-256으로 변환한 안정 식별자만 UID와 `providerSubjectHash`에 사용하고, 원본 제공자 ID는 저장하지 않는다.
+
 ## 컬렉션
 
 ### `projects/{projectId}`

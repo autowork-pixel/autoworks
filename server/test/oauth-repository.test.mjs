@@ -21,5 +21,9 @@ test("OAuth state 원문은 문서 경로에 남기지 않고 한 번만 소비�
 test("외부 로그인 식별자는 최소 프로필만 사용자 문서에 병합한다", async () => {
   const fake = fakeDatabase(), store = createOAuthIdentityStore({ database: fake.database, serverTimestamp: () => "server-time" });
   await store.upsert({ uid: "kakao:123", provider: "kakao", subject: "123", email: "user@example.com", displayName: "사용자" });
-  assert.deepEqual(fake.writes[0], ["users/kakao:123", { provider: "kakao", providerSubject: "123", email: "user@example.com", displayName: "사용자", updatedAt: "server-time" }, { merge: true }]);
+  assert.equal(fake.writes[0][0], "users/kakao:123");
+  assert.equal(fake.writes[0][1].provider, "kakao");
+  assert.match(fake.writes[0][1].providerSubjectHash, /^[a-f0-9]{64}$/);
+  assert.equal(JSON.stringify(fake.writes[0][1]).includes('\"123\"'), false);
+  assert.equal(fake.writes[0][1].email, "user@example.com");
 });

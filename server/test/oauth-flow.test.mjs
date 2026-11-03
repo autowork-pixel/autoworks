@@ -54,8 +54,9 @@ test("콜백은 state를 한 번 소비한 뒤 Firebase custom token을 발급�
     tokenIssuer: { createCustomToken: async (uid, claims) => { events.push(["token", uid, claims]); return "firebase-custom"; } }
   });
   assert.deepEqual(result, { customToken: "firebase-custom", provider: "naver", returnOrigin: "https://app.example" });
-  assert.equal(events[1][1].uid, "naver:subject-a");
-  assert.deepEqual(events[2], ["token", "naver:subject-a", { authProvider: "naver" }]);
+  assert.match(events[1][1].uid, /^naver:[A-Za-z0-9_-]{43}$/);
+  assert.deepEqual(events[2], ["token", events[1][1].uid, { authProvider: "naver" }]);
+  assert.equal(events[1][1].uid.includes("subject-a"), false);
   assert.equal(JSON.stringify(events).includes("provider-access"), false);
   assert.equal(JSON.stringify(events).includes("secret"), false);
 });

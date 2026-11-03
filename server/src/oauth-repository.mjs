@@ -25,7 +25,8 @@ export function createOAuthStateStore({ database, serverTimestamp }) {
 export function createOAuthIdentityStore({ database, serverTimestamp }) {
   return {
     async upsert({ uid, provider, subject, email, displayName }) {
-      await database.doc(`users/${uid}`).set({ provider, providerSubject: subject, email: email || null, displayName: displayName || null, updatedAt: serverTimestamp() }, { merge: true });
+      const providerSubjectHash = createHash("sha256").update(`${provider}:${subject}`).digest("hex");
+      await database.doc(`users/${uid}`).set({ provider, providerSubjectHash, email: email || null, displayName: displayName || null, updatedAt: serverTimestamp() }, { merge: true });
     }
   };
 }
