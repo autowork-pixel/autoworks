@@ -32,6 +32,40 @@ const runPath = "workspaces/workspace-a/runs/run-a";
 const reservationPath = "workspaces/workspace-a/usageReservations/run-a";
 const usagePath = "workspaces/workspace-a/usage/2026-11";
 
+test("대기 중 실행 취소는 예약 사용량을 반환하고 비공개 입력을 삭제한다", async () => {
+  const fake = fakeDatabase({
+    "workspaces/workspace-a": { ownerUid: "user-a" },
+    [runPath]: { status: "queued", inputId: "run-a", requestDocumentId: "request-a" },
+    [reservationPath]: { status: "reserved", runs: 1, keywordLookups: 2, usagePeriod: "2026-11" },
+    [usagePath]: { runsReserved: 1, keywordLookupsReserved: 2, runs: 3, keywordLookups: 6 },
+    "workspaces/workspace-a/runInputs/run-a": { keywords: ["오토웍스"] }
+  });
+  const repository = createRunRepository({ database: fake.database, serverTimestamp: () => "server-time" });
+  assert.deepEqual(await repository.cancelBrandSearchRun({ workspaceId: "workspace-a", runId: "run-a", uid: "user-a" }), { status: "canceled", reused: false });
+  assert.equal(fake.values.get(runPath).status, "canceled");
+  assert.equal(fake.values.get(reservationPath).status, "released");
+  assert.equal(fake.values.get(usagePath).runsReserved, 0);
+  assert.equal(fake.values.get(usagePath).keywordLookupsReserved, 0);
+  assert.equal(fake.values.has("workspaces/workspace-a/runInputs/run-a"), false);
+  assert.equal(fake.values.get("workspaces/workspace-a/runRequests/request-a").status, "canceled");
+  const writes = fake.writes.length;
+  assert.deepEqual(await repository.cancelBrandSearchRun({ workspaceId: "workspace-a", runId: "run-a", uid: "user-a" }), { status: "canceled", reused: true });
+  assert.equal(fake.writes.length, writes);
+});
+
+test("다른 고객과 이미 시작된 실행은 취소할 수 없다", async () => {
+  const base = {
+    "workspaces/workspace-a": { ownerUid: "user-a" },
+    [reservationPath]: { status: "reserved", runs: 1, keywordLookups: 2, usagePeriod: "2026-11" }
+  };
+  const foreign = fakeDatabase({ ...base, [runPath]: { status: "queued" } });
+  const foreignRepository = createRunRepository({ database: foreign.database, serverTimestamp: () => "server-time" });
+  await assert.rejects(() => foreignRepository.cancelBrandSearchRun({ workspaceId: "workspace-a", runId: "run-a", uid: "user-b" }), error => error.code === "AUTH_REQUIRED");
+  const running = fakeDatabase({ ...base, [runPath]: { status: "running", leaseOwner: "worker-a" } });
+  const runningRepository = createRunRepository({ database: running.database, serverTimestamp: () => "server-time" });
+  await assert.rejects(() => runningRepository.cancelBrandSearchRun({ workspaceId: "workspace-a", runId: "run-a", uid: "user-a" }), error => error.code === "RUN_CANCEL_CONFLICT");
+});
+
 test("한 작업자에게 lease를 주고 만료 전 다른 작업자를 차단한다", async () => {
   const fake = fakeDatabase({ [runPath]: { status: "queued", attempt: 0 } });
   const now = new Date("2026-11-03T00:00:00Z");

@@ -49,6 +49,7 @@
 - `runRequests/{privateHash}`: 사용자 uid와 멱등키로 만든 비가역 해시를 문서 ID로 사용하고 `runId`, `requestDigest`, `status`만 저장한다. 멱등키 원문은 저장하지 않는다.
 - `usageReservations/{runId}`: 실행 시작 전 예약한 `runs`, `keywordLookups`와 `reserved | committed | released` 상태를 보관한다.
 - 이 경로들은 Firebase Admin SDK를 쓰는 서버만 접근하고, 성공·실패·취소 시 같은 트랜잭션에서 예약을 확정하거나 해제한다.
+- 고객 취소는 작업자가 lease를 얻기 전 `queued | validating` 상태에서만 허용한다. 취소 트랜잭션은 예약 사용량을 반환하고 `runInputs` 원문을 삭제하며 실행·멱등 요청을 `canceled`로 함께 갱신한다.
 - 내부 작업 컨텍스트 로더는 `runs/{runId}`의 `inputId`와 `projectId`를 같은 워크스페이스의 `runInputs`와 대조한 뒤에만 `providerCredentials/naver-searchad` 봉투를 읽는다. 종료된 실행은 봉투를 읽거나 복호화하지 않는다.
 
 ### `inquiries/{inquiryId}`

@@ -2,9 +2,11 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { ApiError, privateIdempotencyId, requestDigest } from "./domain.mjs";
+import { createRunRepository } from "./run-repository.mjs";
 
 if (!getApps().length) initializeApp();
 const database = getFirestore();
+const runLifecycleRepository = createRunRepository({ database, serverTimestamp: () => FieldValue.serverTimestamp() });
 
 function usagePeriod(now = new Date()) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit" })
@@ -15,6 +17,8 @@ function usagePeriod(now = new Date()) {
 export const verifyIdToken = token => getAuth().verifyIdToken(token, true);
 
 export const repository = {
+  cancelBrandSearchRun: input => runLifecycleRepository.cancelBrandSearchRun(input),
+
   async reserveBrandSearchRun({ workspaceId, uid, input, requestId }) {
     const workspace = database.doc(`workspaces/${workspaceId}`);
     const project = workspace.collection("projects").doc(input.projectId);

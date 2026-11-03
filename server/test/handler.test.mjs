@@ -107,6 +107,28 @@ test("같은 멱등 요청은 기존 실행을 반환한다", async () => {
   });
 });
 
+test("로그인한 소유자의 실행 취소 요청을 저장소에 전달한다", async () => {
+  let received;
+  await withServer({
+    verifyIdToken: async () => ({ uid: "user-a" }),
+    repository: { cancelBrandSearchRun: async value => { received = value; return { status: "canceled", reused: false }; } }
+  }, async base => {
+    const response = await fetch(`${base}/v1/workspaces/workspace-a/brand-search-runs/run-a:cancel`, { method: "POST", headers: { authorization: "Bearer token" } });
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).status, "canceled");
+    assert.deepEqual(received, { workspaceId: "workspace-a", runId: "run-a", uid: "user-a" });
+  });
+});
+
+test("로그인 토큰 없이는 실행 취소 저장소를 호출하지 않는다", async () => {
+  let called = false;
+  await withServer({ verifyIdToken: async () => ({ uid: "user-a" }), repository: { cancelBrandSearchRun: async () => { called = true; } } }, async base => {
+    const response = await fetch(`${base}/v1/workspaces/workspace-a/brand-search-runs/run-a:cancel`, { method: "POST" });
+    assert.equal(response.status, 401);
+    assert.equal(called, false);
+  });
+});
+
 test("도메인 오류는 안전한 코드로 반환한다", async () => {
   await withServer({
     verifyIdToken: async () => ({ uid: "user-a" }),

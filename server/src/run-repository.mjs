@@ -30,6 +30,45 @@ export function createRunRepository({ database, serverTimestamp, now = () => new
   const workspace = workspaceId => database.doc(`workspaces/${workspaceId}`);
 
   return {
+    async cancelBrandSearchRun({ workspaceId, runId, uid }) {
+      const root = workspace(workspaceId);
+      const runRef = root.collection("runs").doc(runId);
+      const reservationRef = root.collection("usageReservations").doc(runId);
+      return database.runTransaction(async transaction => {
+        const [workspaceSnapshot, runSnapshot, reservationSnapshot] = await Promise.all([
+          transaction.get(root), transaction.get(runRef), transaction.get(reservationRef)
+        ]);
+        if (!workspaceSnapshot.exists || workspaceSnapshot.data().ownerUid !== uid) {
+          throw new ApiError("AUTH_REQUIRED", "워크스페이스 권한을 확인할 수 없습니다.", 403);
+        }
+        if (!runSnapshot.exists || !reservationSnapshot.exists) throw new ApiError("INVALID_INPUT", "실행 예약을 찾을 수 없습니다.", 404);
+        const run = runSnapshot.data();
+        if (run.status === "canceled") return { status: "canceled", reused: true };
+        if (!["queued", "validating"].includes(run.status)) {
+          throw new ApiError("RUN_CANCEL_CONFLICT", "이미 시작되었거나 종료된 실행은 취소할 수 없습니다.", 409);
+        }
+        const reservation = reservationSnapshot.data();
+        if (reservation.status !== "reserved") throw new ApiError("RUN_CANCEL_CONFLICT", "이미 정산된 실행은 취소할 수 없습니다.", 409);
+        const usageRef = root.collection("usage").doc(reservation.usagePeriod);
+        const usageSnapshot = await transaction.get(usageRef);
+        const usage = usageValues(usageSnapshot.data());
+        const timestamp = serverTimestamp();
+        transaction.set(usageRef, {
+          runsReserved: Math.max(0, usage.runsReserved - Number(reservation.runs || 1)),
+          keywordLookupsReserved: Math.max(0, usage.keywordLookupsReserved - Number(reservation.keywordLookups || 0)),
+          updatedAt: timestamp
+        }, { merge: true });
+        transaction.set(reservationRef, { status: "released", releasedReason: "customer_canceled", updatedAt: timestamp }, { merge: true });
+        transaction.set(runRef, {
+          status: "canceled", canceledBy: uid, completedAt: timestamp, updatedAt: timestamp,
+          leaseOwner: null, leaseExpiresAt: null
+        }, { merge: true });
+        if (run.inputId) transaction.delete(root.collection("runInputs").doc(run.inputId));
+        if (run.requestDocumentId) transaction.set(root.collection("runRequests").doc(run.requestDocumentId), { status: "canceled", updatedAt: timestamp }, { merge: true });
+        return { status: "canceled", reused: false };
+      });
+    },
+
     async markRunning(workspaceId, runId, { workerId }) {
       const runRef = workspace(workspaceId).collection("runs").doc(runId);
       return database.runTransaction(async transaction => {

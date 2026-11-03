@@ -67,6 +67,19 @@ export function createHandler({ verifyIdToken, repository, credentialService, lo
         }
         throw new ApiError("NOT_FOUND", "요청 경로를 찾을 수 없습니다.", 404);
       }
+      const cancelMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/brand-search-runs\/([A-Za-z0-9_-]{1,128}):cancel$/);
+      if (request.method === "POST" && cancelMatch) {
+        const token = bearer(request);
+        let decoded;
+        try {
+          decoded = await verifyIdToken(token);
+        } catch {
+          throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401);
+        }
+        if (!decoded?.uid) throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401);
+        const result = await repository.cancelBrandSearchRun({ workspaceId: cancelMatch[1], runId: cancelMatch[2], uid: decoded.uid });
+        return json(response, 200, { runId: cancelMatch[2], status: result.status, reused: Boolean(result.reused), requestId }, requestId);
+      }
       const match = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/brand-search-runs$/);
       if (request.method !== "POST" || !match) throw new ApiError("NOT_FOUND", "요청 경로를 찾을 수 없습니다.", 404);
       if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("application/json")) {
