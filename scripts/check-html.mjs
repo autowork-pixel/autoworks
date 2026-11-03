@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-const files = ["index.html", "api-guide.html"];
+const files = ["index.html", "api-guide.html", "admin.html"];
 const directory = mkdtempSync(join(tmpdir(), "autoworks-html-"));
 
 try {

@@ -116,3 +116,34 @@ test("고객 문의는 소유자가 생성·조회하고 상태 변경은 서버
   await assertFails(setDoc(inquiry, { status: "answered" }, { merge: true }));
 });
 
+test("관리자 claim은 운영 데이터만 읽고 문의 답변만 수정하며 API 키는 읽지 못한다", async () => {
+  await environment.clearFirestore();
+  await environment.withSecurityRulesDisabled(async context => {
+    const admin = context.firestore();
+    await setDoc(doc(admin, "workspaces/workspace-a"), { ownerUid: "user-a", name: "고객 A" });
+    await setDoc(doc(admin, "workspaces/workspace-a/inquiries/inquiry-a"), {
+      subject: "사용 문의",
+      message: "결과 확인 방법을 알려주세요.",
+      status: "open",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+    await setDoc(doc(admin, "workspaces/workspace-a/usage/2026-11"), { runs: 2 });
+    await setDoc(doc(admin, "workspaces/workspace-a/subscriptions/current"), { status: "trial" });
+    await setDoc(doc(admin, "workspaces/workspace-a/providerCredentials/naver"), { secret: "test" });
+  });
+
+  const operator = environment.authenticatedContext("operator-a", { admin: true }).firestore();
+  await assertSucceeds(getDocs(collection(operator, "workspaces")));
+  await assertSucceeds(getDoc(doc(operator, "workspaces/workspace-a/usage/2026-11")));
+  await assertSucceeds(getDoc(doc(operator, "workspaces/workspace-a/subscriptions/current")));
+  await assertSucceeds(setDoc(doc(operator, "workspaces/workspace-a/inquiries/inquiry-a"), {
+    reply: "내 결과에서 확인할 수 있습니다.",
+    status: "answered",
+    respondedAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  }, { merge: true }));
+  await assertFails(getDoc(doc(operator, "workspaces/workspace-a/providerCredentials/naver")));
+  await assertFails(setDoc(doc(operator, "workspaces/workspace-a/subscriptions/current"), { status: "active" }, { merge: true }));
+});
+
