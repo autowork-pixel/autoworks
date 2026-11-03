@@ -39,12 +39,33 @@ function bearer(request) {
   return match[1];
 }
 
-export function createHandler({ verifyIdToken, repository, logger = console }) {
+export function createHandler({ verifyIdToken, repository, credentialService, logger = console }) {
   return async function handler(request, response) {
     const requestId = newRequestId();
     try {
       if (request.method === "GET" && request.url === "/healthz") {
         return json(response, 200, { ok: true }, requestId);
+      }
+      const credentialMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/provider-credentials\/(naver-searchad)$/);
+      if (credentialMatch && credentialService) {
+        const token = bearer(request);
+        let decoded;
+        try {
+          decoded = await verifyIdToken(token);
+        } catch {
+          throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401);
+        }
+        if (!decoded?.uid) throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401);
+        const context = { workspaceId: credentialMatch[1], provider: credentialMatch[2], uid: decoded.uid };
+        if (request.method === "GET") return json(response, 200, await credentialService.status(context), requestId);
+        if (request.method === "DELETE") return json(response, 200, await credentialService.remove(context), requestId);
+        if (request.method === "PUT") {
+          if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("application/json")) {
+            throw new ApiError("INVALID_INPUT", "Content-Type은 application/json이어야 합니다.", 415);
+          }
+          return json(response, 200, await credentialService.save({ ...context, credentials: await readJson(request) }), requestId);
+        }
+        throw new ApiError("NOT_FOUND", "요청 경로를 찾을 수 없습니다.", 404);
       }
       const match = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/brand-search-runs$/);
       if (request.method !== "POST" || !match) throw new ApiError("NOT_FOUND", "요청 경로를 찾을 수 없습니다.", 404);

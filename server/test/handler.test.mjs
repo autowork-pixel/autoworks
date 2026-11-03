@@ -133,3 +133,54 @@ test("예상하지 못한 오류 내용은 고객 응답에 노출하지 않는�
     assert.equal(logs.length, 1);
   });
 });
+
+test("키 관리 서비스가 없으면 API 연결 경로를 공개하지 않는다", async () => {
+  await withServer({ verifyIdToken: async () => ({ uid: "user-a" }), repository: {} }, async base => {
+    const response = await fetch(`${base}/v1/workspaces/workspace-a/provider-credentials/naver-searchad`, { headers: { authorization: "Bearer token" } });
+    assert.equal(response.status, 404);
+  });
+});
+
+test("API 연결 상태 조회는 토큰 uid와 워크스페이스를 서비스에 전달한다", async () => {
+  let received;
+  await withServer({
+    verifyIdToken: async () => ({ uid: "user-a" }),
+    repository: {},
+    credentialService: { status: async value => { received = value; return { provider: "naver-searchad", status: "active", apiKeyHint: "••••1234" }; } }
+  }, async base => {
+    const response = await fetch(`${base}/v1/workspaces/workspace-a/provider-credentials/naver-searchad`, { headers: { authorization: "Bearer token" } });
+    assert.equal(response.status, 200);
+    assert.deepEqual(received, { workspaceId: "workspace-a", provider: "naver-searchad", uid: "user-a" });
+    assert.equal(JSON.stringify(await response.json()).includes("ciphertext"), false);
+  });
+});
+
+test("API 연결 저장 응답에는 원문 인증정보가 포함되지 않는다", async () => {
+  let received;
+  await withServer({
+    verifyIdToken: async () => ({ uid: "user-a" }), repository: {},
+    credentialService: { save: async value => { received = value; return { provider: "naver-searchad", status: "active", apiKeyHint: "••••1234" }; } }
+  }, async base => {
+    const credentials = { apiKey: "license-1234", secretKey: "very-secret", customerId: "987654" };
+    const response = await fetch(`${base}/v1/workspaces/workspace-a/provider-credentials/naver-searchad`, {
+      method: "PUT", headers: { authorization: "Bearer token", "content-type": "application/json" }, body: JSON.stringify(credentials)
+    });
+    assert.equal(response.status, 200);
+    assert.deepEqual(received.credentials, credentials);
+    const body = JSON.stringify(await response.json());
+    assert.equal(body.includes("very-secret"), false);
+    assert.equal(body.includes("license-1234"), false);
+  });
+});
+
+test("API 연결 해제는 토큰 uid를 검증한 뒤 서비스에 위임한다", async () => {
+  let received;
+  await withServer({
+    verifyIdToken: async () => ({ uid: "user-a" }), repository: {},
+    credentialService: { remove: async value => { received = value; return { provider: "naver-searchad", status: "disconnected" }; } }
+  }, async base => {
+    const response = await fetch(`${base}/v1/workspaces/workspace-a/provider-credentials/naver-searchad`, { method: "DELETE", headers: { authorization: "Bearer token" } });
+    assert.equal(response.status, 200);
+    assert.equal(received.uid, "user-a");
+  });
+});
