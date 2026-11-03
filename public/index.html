@@ -215,9 +215,10 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
         if (!snapshot.exists()) { state.textContent = "활성 구독이 없습니다. 베타 요금은 확정 전입니다."; return; }
         const data = snapshot.data(), labels = { pending: "시작 대기", trialing: "베타 이용 중", active: "이용 중", past_due: "결제 확인 필요", canceled: "해지됨", expired: "만료됨" };
         const endDate = data.periodEnd?.toDate?.();
+        const validEnd = endDate instanceof Date && Number.isFinite(endDate.getTime());
         const usableStatus = ["trialing", "active"].includes(data.status);
-        const label = usableStatus && !(endDate instanceof Date) ? "기간 확인 필요" : usableStatus && endDate <= new Date() ? "만료됨" : labels[data.status] || "상태 확인 중";
-        const end = endDate instanceof Date ? endDate.toLocaleDateString("ko-KR") : "기간 미정";
+        const label = usableStatus && !validEnd ? "기간 확인 필요" : usableStatus && endDate <= new Date() ? "만료됨" : labels[data.status] || "상태 확인 중";
+        const end = validEnd ? endDate.toLocaleDateString("ko-KR") : "기간 미정";
         const limit = Number.isFinite(data.runLimit) ? `월 ${Number(data.runLimit).toLocaleString()}회` : "실행 한도 검증 중";
         state.textContent = `${data.planLabel || "베타 플랜"} · ${label} · ${end}까지 · ${limit}`;
       }

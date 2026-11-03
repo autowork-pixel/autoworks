@@ -17,6 +17,7 @@ test("만료·누락·손상된 기간과 이용 불가 상태는 실패-닫힘�
     {status:"active"},
     {status:"active",periodEnd:"2026-12-01"},
     {status:"active",periodEnd:new Date("invalid")},
+    {status:"active",periodEnd:{toDate(){throw new Error("corrupt timestamp");}}},
     {status:"active",periodEnd:new Date("2026-11-03T00:00:00Z")},
     {status:"trialing",periodEnd:new Date("2026-11-02T23:59:59Z")}
   ])assert.throws(()=>assertUsableSubscription(plan,{now}),error=>error.code==="SUBSCRIPTION_REQUIRED"&&error.status===403);

@@ -1,8 +1,10 @@
 import { ApiError } from "./domain.mjs";
 
 function endDate(value){
-  if(value instanceof Date)return value;
-  if(value&&typeof value.toDate==="function")return value.toDate();
+  try{
+    if(value instanceof Date)return value;
+    if(value&&typeof value.toDate==="function")return value.toDate();
+  }catch{}
   return null;
 }
 
