@@ -28,6 +28,12 @@ test("멱등키는 충분히 긴 안전한 식별자여야 한다", () => {
   assert.throws(() => normalizeBrandSearchInput(body), /idempotencyKey/);
 });
 
+test("키워드의 줄바꿈과 제어 문자를 거부한다", () => {
+  const body = valid();
+  body.keywords = ["정상\n=HYPERLINK(\"https://example.com\")"];
+  assert.throws(() => normalizeBrandSearchInput(body), error => error instanceof ApiError && error.code === "INVALID_INPUT");
+});
+
 test("동일 입력의 digest는 안정적이고 멱등키는 포함하지 않는다", () => {
   const first = normalizeBrandSearchInput(valid());
   const second = { ...first, idempotencyKey: "another-request-key-0002" };

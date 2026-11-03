@@ -18,6 +18,8 @@ export const verifyIdToken = token => getAuth().verifyIdToken(token, true);
 
 export const repository = {
   cancelBrandSearchRun: input => runLifecycleRepository.cancelBrandSearchRun(input),
+  getBrandSearchRun: input => runLifecycleRepository.getBrandSearchRun(input),
+  getBrandSearchReport: input => runLifecycleRepository.getBrandSearchReport(input),
 
   async reserveBrandSearchRun({ workspaceId, uid, input, requestId }) {
     const workspace = database.doc(`workspaces/${workspaceId}`);

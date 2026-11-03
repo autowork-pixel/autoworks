@@ -12,6 +12,23 @@ function json(response, status, body, requestId) {
   response.end(JSON.stringify(body));
 }
 
+function csvCell(value) {
+  const text = String(value ?? "");
+  const safe = /^[=+\-@]/.test(text) ? `'${text}` : text;
+  return `"${safe.replaceAll('"', '""')}"`;
+}
+
+function csv(response, report, runId, requestId) {
+  const header = ["키워드", "PC 월간 검색량", "모바일 월간 검색량", "합계", "기준시각"];
+  const rows = report.rows.map(item => [item.keyword, item.pc, item.mobile, item.total, item.recordedAt instanceof Date ? item.recordedAt.toISOString() : String(item.recordedAt || "")]);
+  const body = `\ufeff${[header, ...rows].map(row => row.map(csvCell).join(",")).join("\r\n")}\r\n`;
+  response.writeHead(200, {
+    "content-type": "text/csv; charset=utf-8", "content-disposition": `attachment; filename="brand-search-${runId}.csv"`,
+    "cache-control": "no-store", "x-content-type-options": "nosniff", "x-request-id": requestId
+  });
+  response.end(body);
+}
+
 async function readJson(request) {
   let size = 0;
   let tooLarge = false;
@@ -79,6 +96,22 @@ export function createHandler({ verifyIdToken, repository, credentialService, ta
         if (!decoded?.uid) throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401);
         const result = await repository.cancelBrandSearchRun({ workspaceId: cancelMatch[1], runId: cancelMatch[2], uid: decoded.uid });
         return json(response, 200, { runId: cancelMatch[2], status: result.status, reused: Boolean(result.reused), requestId }, requestId);
+      }
+      const reportMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/brand-search-runs\/([A-Za-z0-9_-]{1,128})\/report\.csv$/);
+      const runMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/brand-search-runs\/([A-Za-z0-9_-]{1,128})$/);
+      if (request.method === "GET" && (reportMatch || runMatch)) {
+        const token = bearer(request);
+        let decoded;
+        try {
+          decoded = await verifyIdToken(token);
+        } catch {
+          throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401);
+        }
+        if (!decoded?.uid) throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401);
+        const route = reportMatch || runMatch;
+        const context = { workspaceId: route[1], runId: route[2], uid: decoded.uid };
+        if (reportMatch) return csv(response, await repository.getBrandSearchReport(context), route[2], requestId);
+        return json(response, 200, { ...await repository.getBrandSearchRun(context), requestId }, requestId);
       }
       const match = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/brand-search-runs$/);
       if (request.method !== "POST" || !match) throw new ApiError("NOT_FOUND", "요청 경로를 찾을 수 없습니다.", 404);

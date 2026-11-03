@@ -32,6 +32,27 @@ const runPath = "workspaces/workspace-a/runs/run-a";
 const reservationPath = "workspaces/workspace-a/usageReservations/run-a";
 const usagePath = "workspaces/workspace-a/usage/2026-11";
 
+test("소유자만 실행 상태와 준비된 결과를 조회한다", async () => {
+  const fake = fakeDatabase({
+    "workspaces/workspace-a": { ownerUid: "user-a" },
+    [runPath]: { status: "succeeded", projectId: "project-a", tool: "brand-search", inputSummary: { brand: "오토웍스" }, resultReportId: "run-a", succeededKeywords: 1 },
+    "workspaces/workspace-a/reports/run-a": { status: "ready", title: "오토웍스 검색량 결과", rows: [{ keyword: "오토웍스", pc: 1, mobile: 2, total: 3 }] }
+  });
+  const repository = createRunRepository({ database: fake.database, serverTimestamp: () => "server-time" });
+  const run = await repository.getBrandSearchRun({ workspaceId: "workspace-a", runId: "run-a", uid: "user-a" });
+  assert.equal(run.resultReady, true);
+  assert.equal(run.succeededKeywords, 1);
+  const report = await repository.getBrandSearchReport({ workspaceId: "workspace-a", runId: "run-a", uid: "user-a" });
+  assert.equal(report.rows[0].total, 3);
+  await assert.rejects(() => repository.getBrandSearchRun({ workspaceId: "workspace-a", runId: "run-a", uid: "user-b" }), error => error.code === "AUTH_REQUIRED");
+});
+
+test("완료 전 결과 다운로드를 거부한다", async () => {
+  const fake = fakeDatabase({ "workspaces/workspace-a": { ownerUid: "user-a" }, [runPath]: { status: "running" } });
+  const repository = createRunRepository({ database: fake.database, serverTimestamp: () => "server-time" });
+  await assert.rejects(() => repository.getBrandSearchReport({ workspaceId: "workspace-a", runId: "run-a", uid: "user-a" }), error => error.code === "RESULT_NOT_READY");
+});
+
 test("대기 중 실행 취소는 예약 사용량을 반환하고 비공개 입력을 삭제한다", async () => {
   const fake = fakeDatabase({
     "workspaces/workspace-a": { ownerUid: "user-a" },
@@ -94,6 +115,7 @@ test("완료는 스냅샷·보고서·사용량·예약·멱등 상태를 한 �
   assert.deepEqual(await repository.completeRun("workspace-a", "run-a", payload), { status: "succeeded", reused: false });
   assert.deepEqual(fake.values.get(usagePath), { runsReserved: 0, keywordLookupsReserved: 0, runs: 4, keywordLookups: 8, succeeded: 3, failed: 1, updatedAt: "server-time" });
   assert.equal(fake.values.get(runPath).status, "succeeded");
+  assert.equal(fake.values.get("workspaces/workspace-a/reports/run-a").rows.length, 2);
   assert.equal(fake.values.get(reservationPath).status, "committed");
   assert.equal(fake.values.get("workspaces/workspace-a/runRequests/request-a").status, "succeeded");
   assert.equal([...fake.values.keys()].filter(path => path.includes("/searchSnapshots/")).length, 2);

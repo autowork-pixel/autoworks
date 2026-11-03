@@ -52,6 +52,7 @@
 - 고객 취소는 작업자가 lease를 얻기 전 `queued | validating` 상태에서만 허용한다. 취소 트랜잭션은 예약 사용량을 반환하고 `runInputs` 원문을 삭제하며 실행·멱등 요청을 `canceled`로 함께 갱신한다.
 - 큐 작업명은 workspace/run ID의 해시로 결정해 같은 멱등 요청을 다시 보내도 작업이 중복되지 않는다. 큐에는 경로 ID만 넣고 입력·자격정보는 작업자가 서버 저장소에서 다시 불러온다.
 - 내부 작업자는 OIDC 토큰의 Cloud Run audience와 지정 Cloud Tasks 서비스 계정 이메일·검증 상태를 모두 확인한 뒤에만 실행 컨텍스트를 읽는다.
+- 고객용 실행 상태와 결과 조회는 매 요청마다 workspace 소유자를 확인한다. 완료 보고서는 최대 20개 키워드의 숫자 스냅샷을 함께 보관하고, CSV 다운로드는 UTF-8·`nosniff`·`no-store`로 반환하며 수식 시작 문자를 이스케이프한다.
 - 내부 작업 컨텍스트 로더는 `runs/{runId}`의 `inputId`와 `projectId`를 같은 워크스페이스의 `runInputs`와 대조한 뒤에만 `providerCredentials/naver-searchad` 봉투를 읽는다. 종료된 실행은 봉투를 읽거나 복호화하지 않는다.
 
 ### `inquiries/{inquiryId}`

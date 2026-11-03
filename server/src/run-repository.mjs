@@ -30,6 +30,43 @@ export function createRunRepository({ database, serverTimestamp, now = () => new
   const workspace = workspaceId => database.doc(`workspaces/${workspaceId}`);
 
   return {
+    async getBrandSearchRun({ workspaceId, runId, uid }) {
+      const root = workspace(workspaceId);
+      const runRef = root.collection("runs").doc(runId);
+      return database.runTransaction(async transaction => {
+        const [workspaceSnapshot, runSnapshot] = await Promise.all([transaction.get(root), transaction.get(runRef)]);
+        if (!workspaceSnapshot.exists || workspaceSnapshot.data().ownerUid !== uid) {
+          throw new ApiError("AUTH_REQUIRED", "워크스페이스 권한을 확인할 수 없습니다.", 403);
+        }
+        if (!runSnapshot.exists) throw new ApiError("INVALID_INPUT", "실행을 찾을 수 없습니다.", 404);
+        const run = runSnapshot.data();
+        return {
+          runId, projectId: run.projectId, tool: run.tool, status: run.status,
+          inputSummary: run.inputSummary || null, errorCode: run.errorCode || null,
+          succeededKeywords: Number(run.succeededKeywords || 0), failedKeywords: Number(run.failedKeywords || 0),
+          resultReady: Boolean(run.resultReportId && run.status === "succeeded")
+        };
+      });
+    },
+
+    async getBrandSearchReport({ workspaceId, runId, uid }) {
+      const root = workspace(workspaceId);
+      const runRef = root.collection("runs").doc(runId);
+      return database.runTransaction(async transaction => {
+        const [workspaceSnapshot, runSnapshot] = await Promise.all([transaction.get(root), transaction.get(runRef)]);
+        if (!workspaceSnapshot.exists || workspaceSnapshot.data().ownerUid !== uid) {
+          throw new ApiError("AUTH_REQUIRED", "워크스페이스 권한을 확인할 수 없습니다.", 403);
+        }
+        if (!runSnapshot.exists) throw new ApiError("INVALID_INPUT", "실행을 찾을 수 없습니다.", 404);
+        const run = runSnapshot.data();
+        if (run.status !== "succeeded" || !run.resultReportId) throw new ApiError("RESULT_NOT_READY", "아직 내려받을 결과가 없습니다.", 409);
+        const reportSnapshot = await transaction.get(root.collection("reports").doc(run.resultReportId));
+        if (!reportSnapshot.exists || reportSnapshot.data().status !== "ready") throw new ApiError("RESULT_NOT_READY", "아직 내려받을 결과가 없습니다.", 409);
+        const report = reportSnapshot.data();
+        return { runId, title: report.title, rows: Array.isArray(report.rows) ? report.rows : [] };
+      });
+    },
+
     async cancelBrandSearchRun({ workspaceId, runId, uid }) {
       const root = workspace(workspaceId);
       const runRef = root.collection("runs").doc(runId);
@@ -115,7 +152,9 @@ export function createRunRepository({ database, serverTimestamp, now = () => new
         }
         transaction.set(reportRef, {
           projectId: run.projectId, runId, title: `${run.inputSummary?.brand || "브랜드"} 검색량 결과`, status: "ready",
-          summary: { succeededKeywords: payload.succeededKeywords, failedKeywords: payload.failedKeywords, failures: payload.failures }, createdAt: timestamp
+          summary: { succeededKeywords: payload.succeededKeywords, failedKeywords: payload.failedKeywords, failures: payload.failures },
+          rows: payload.snapshots.map(item => ({ keyword: item.keyword, pc: item.pc, mobile: item.mobile, total: item.total, recordedAt: item.recordedAt })),
+          createdAt: timestamp
         });
         const providerKeywordAttempts = Number(reservation.providerKeywordAttempts || 0) + payload.keywordLookups;
         transaction.set(usageRef, {

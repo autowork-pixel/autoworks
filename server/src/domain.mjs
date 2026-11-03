@@ -17,6 +17,7 @@ function text(value, field, max) {
   if (typeof value !== "string") throw new ApiError("INVALID_INPUT", `${field} 형식이 올바르지 않습니다.`);
   const normalized = value.trim();
   if (!normalized || normalized.length > max) throw new ApiError("INVALID_INPUT", `${field} 길이가 올바르지 않습니다.`);
+  if (/[\u0000-\u001f\u007f]/.test(normalized)) throw new ApiError("INVALID_INPUT", `${field}에 허용되지 않는 문자가 있습니다.`);
   return normalized;
 }
 

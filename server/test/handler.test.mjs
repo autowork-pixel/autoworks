@@ -136,6 +136,27 @@ test("로그인한 소유자의 실행 취소 요청을 저장소에 전달한�
   });
 });
 
+test("실행 상태와 UTF-8 CSV 결과를 인증 후 반환한다", async () => {
+  await withServer({
+    verifyIdToken: async () => ({ uid: "user-a" }),
+    repository: {
+      getBrandSearchRun: async () => ({ runId: "run-a", status: "succeeded", resultReady: true }),
+      getBrandSearchReport: async () => ({ rows: [{ keyword: "=위험", pc: 1, mobile: 2, total: 3, recordedAt: new Date("2026-11-03T00:00:00Z") }] })
+    }
+  }, async base => {
+    const headers = { authorization: "Bearer token" };
+    const statusResponse = await fetch(`${base}/v1/workspaces/workspace-a/brand-search-runs/run-a`, { headers });
+    assert.equal(statusResponse.status, 200);
+    assert.equal((await statusResponse.json()).resultReady, true);
+    const csvResponse = await fetch(`${base}/v1/workspaces/workspace-a/brand-search-runs/run-a/report.csv`, { headers });
+    const body = await csvResponse.text();
+    assert.equal(csvResponse.status, 200);
+    assert.match(csvResponse.headers.get("content-disposition"), /brand-search-run-a\.csv/);
+    assert.equal(body.includes("'=위험"), true);
+    assert.equal(body.includes("2026-11-03T00:00:00.000Z"), true);
+  });
+});
+
 test("로그인 토큰 없이는 실행 취소 저장소를 호출하지 않는다", async () => {
   let called = false;
   await withServer({ verifyIdToken: async () => ({ uid: "user-a" }), repository: { cancelBrandSearchRun: async () => { called = true; } } }, async base => {
