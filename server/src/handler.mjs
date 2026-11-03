@@ -14,12 +14,17 @@ function json(response, status, body, requestId) {
 
 async function readJson(request) {
   let size = 0;
+  let tooLarge = false;
   const chunks = [];
   for await (const chunk of request) {
     size += chunk.length;
-    if (size > maximumBodyBytes) throw new ApiError("INVALID_INPUT", "요청 본문이 너무 큽니다.", 413);
+    if (size > maximumBodyBytes) {
+      tooLarge = true;
+      continue;
+    }
     chunks.push(chunk);
   }
+  if (tooLarge) throw new ApiError("INVALID_INPUT", "요청 본문이 너무 큽니다.", 413);
   try {
     return JSON.parse(Buffer.concat(chunks).toString("utf8"));
   } catch {
