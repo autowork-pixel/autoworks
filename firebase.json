@@ -7,18 +7,25 @@
     "ignore": [
       "firebase.json",
       ".firebaserc",
-      ".gitignore",
-      "README.md",
-      "QUEST_LOG.md",
-      "firestore.rules",
-      "package.json",
-      "package-lock.json",
-      "firebase-debug.log",
-      "firestore-debug.log",
-      "ui-debug.log",
-      "tests/**",
       "**/.*",
+      "**/*.md",
+      "**/*.json",
+      "**/*.log",
+      "firestore.rules",
+      "scripts/**",
+      "tests/**",
       "**/node_modules/**"
+    ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          { "key": "X-Content-Type-Options", "value": "nosniff" },
+          { "key": "X-Frame-Options", "value": "DENY" },
+          { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+          { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+        ]
+      }
     ]
   }
 }
