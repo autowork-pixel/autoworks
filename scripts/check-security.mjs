@@ -35,7 +35,7 @@ for (const required of [
 
 const headers = new Map(
   (firebase.hosting?.headers || [])
-    .filter(rule => rule.source === "**/*.@(html|css|js)")
+    .filter(rule => rule.source === "**")
     .flatMap(rule => rule.headers || [])
     .map(header => [header.key.toLowerCase(), header.value])
 );
@@ -89,3 +89,4 @@ if (errors.length) {
 }
 
 console.log(`${htmlFiles.length}개 공개 HTML과 ${scriptFiles.length}개 JavaScript의 비밀정보·저장소·원격 스크립트·Hosting 보안 경계를 확인`);
+
