@@ -9,6 +9,7 @@ import { createCollabYouTubeService } from "./collab-youtube-service.mjs";
 import { createCollabInstagramService } from "./collab-instagram-service.mjs";
 import { createContentReferenceService } from "./content-reference-service.mjs";
 import { createInfluencerCandidateService } from "./influencer-candidate-service.mjs";
+import { createAiBlogService } from "./ai-blog-service.mjs";
 import { createHandler } from "./handler.mjs";
 import { createKmsKeyManager } from "./kms-key-manager.mjs";
 import { createOAuthHandler } from "./oauth-handler.mjs";
@@ -32,6 +33,7 @@ export function createApplication({ config, database, serverTimestamp, verifyIdT
   const collabInstagramService = createCollabInstagramService({ repository, keyManager });
   const contentReferenceService = createContentReferenceService({ repository, keyManager });
   const influencerCandidateService = createInfluencerCandidateService({ repository, keyManager });
+  const aiBlogService = createAiBlogService({ repository, keyManager, model: config.openAiModel });
   const taskDispatcher = createTaskDispatcher({
     client: tasksClient, projectId: config.projectId, location: config.location, queue: config.queue,
     workerUrl: config.serviceUrl, serviceAccountEmail: config.serviceAccountEmail, audience: config.workerAudience
@@ -41,7 +43,7 @@ export function createApplication({ config, database, serverTimestamp, verifyIdT
   });
   const publicHandler = createCorsHandler({
     allowedOrigins: config.allowedOrigins,
-    handler: createHandler({ verifyIdToken, repository, credentialService, collabYouTubeService, collabInstagramService, contentReferenceService, influencerCandidateService, taskDispatcher, logger })
+    handler: createHandler({ verifyIdToken, repository, credentialService, collabYouTubeService, collabInstagramService, contentReferenceService, influencerCandidateService, aiBlogService, taskDispatcher, logger })
   });
   const contextLoader = createWorkerContextLoader({
     repository: createWorkerContextRepository({ database }), keyManager

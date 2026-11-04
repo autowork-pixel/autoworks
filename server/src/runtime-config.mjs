@@ -42,8 +42,10 @@ export function readRuntimeConfig(env = process.env) {
     const value = oauthProvider(env, prefix, provider, serviceUrl);
     if (value) oauthProviders[provider] = value;
   }
+  const openAiModel = String(env.OPENAI_TEXT_MODEL || "gpt-6-astra").trim();
+  if (!/^[A-Za-z0-9._-]{2,80}$/.test(openAiModel)) throw new Error("Invalid runtime configuration: OPENAI_TEXT_MODEL");
   return {
     projectId, location, queue, serviceUrl, workerAudience: httpsOrigin(env.WORKER_AUDIENCE || serviceUrl, "WORKER_AUDIENCE"),
-    serviceAccountEmail, keyName, allowedOrigins: [...new Set(origins)], oauthProviders
+    serviceAccountEmail, keyName, allowedOrigins: [...new Set(origins)], oauthProviders, openAiModel
   };
 }

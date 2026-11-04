@@ -12,6 +12,7 @@ import { collabYouTubeDigest } from "./collab-youtube.mjs";
 import { collabInstagramDigest } from "./collab-instagram.mjs";
 import { contentReferenceDigest } from "./content-reference.mjs";
 import { influencerCandidateDigest } from "./influencer-candidate.mjs";
+import { aiBlogDigest } from "./ai-blog.mjs";
 
 if (!getApps().length) initializeApp();
 export const database = getFirestore();
@@ -386,6 +387,46 @@ export const repository = {
       transaction.set(usage, { runsReserved: runsReserved - 1, runs: Number(current.runs || 0) + 1, succeeded: Number(current.succeeded || 0) + Number(succeeded), failed: Number(current.failed || 0) + Number(!succeeded), youtubeChannelSearchAttempts: Number(current.youtubeChannelSearchAttempts || 0) + Number(providerCalled), youtubeCalls: Number(current.youtubeCalls || 0) + (succeeded ? 2 : 0), youtubeQuotaUnits: Number(current.youtubeQuotaUnits || 0) + (succeeded ? 101 : 0), updatedAt: timestamp }, { merge: true });
       transaction.set(reservation, { status: "committed", actualRuns: 1, youtubeChannelSearchAttempts: Number(providerCalled), youtubeCalls: succeeded ? 2 : 0, youtubeQuotaUnits: succeeded ? 101 : 0, updatedAt: timestamp }, { merge: true });
       transaction.set(run, { status: succeeded ? "succeeded" : "failed", resultReportId: succeeded ? runId : null, succeededItems: succeeded ? result.rows.length : 0, failedItems: succeeded ? 0 : 1, errorCode: succeeded ? null : errorCode || "PROVIDER_UNAVAILABLE", completedAt: timestamp, updatedAt: timestamp }, { merge: true });
+      transaction.set(workspace.collection("runRequests").doc(runDoc.data().requestDocumentId), { status: succeeded ? "succeeded" : "failed", updatedAt: timestamp }, { merge: true });
+      return { status: succeeded ? "succeeded" : "failed", reused: false };
+    });
+  },
+
+  async reserveAiBlogRun({ workspaceId, uid, input }) {
+    const workspace = database.doc(`workspaces/${workspaceId}`), project = workspace.collection("projects").doc(input.projectId), subscription = workspace.collection("subscriptions").doc("current"), access = workspace.collection("serverControls").doc("access"), control = database.doc("systemControls/automation"), credential = workspace.collection("providerCredentials").doc("openai"), usage = workspace.collection("usage").doc(usagePeriod()), request = workspace.collection("runRequests").doc(privateIdempotencyId(uid, input.idempotencyKey));
+    const digest = aiBlogDigest(input);
+    return database.runTransaction(async transaction => {
+      const [owner, projectDoc, planDoc, accessDoc, controlDoc, credentialDoc, usageDoc, requestDoc] = await Promise.all([workspace, project, subscription, access, control, credential, usage, request].map(ref => transaction.get(ref)));
+      assertAutomationAllowed(controlDoc.exists ? controlDoc.data() : null);
+      if (!owner.exists || owner.data().ownerUid !== uid) throw new ApiError("AUTH_REQUIRED", "워크스페이스 권한을 확인할 수 없습니다.", 403);
+      if (!projectDoc.exists) throw new ApiError("INVALID_INPUT", "프로젝트를 찾을 수 없습니다.", 404);
+      if (accessDoc.exists && accessDoc.data().blocked === true) throw new ApiError("AUTH_REQUIRED", "현재 실행할 수 없는 계정입니다.", 403);
+      const active = assertUsableSubscription(planDoc.exists ? planDoc.data() : null), plan = PAID_PLANS[active.planId];
+      if (!plan) throw new ApiError("SUBSCRIPTION_REQUIRED", "AI 블로그 초안은 유료 구독에서 사용할 수 있습니다.", 403);
+      if (requestDoc.exists) { const previous = requestDoc.data(); if (previous.requestDigest !== digest) throw new ApiError("INVALID_INPUT", "같은 요청 식별자를 다른 조건에 사용할 수 없습니다.", 409); return { runId: previous.runId, status: previous.status, reused: true }; }
+      if (!credentialDoc.exists || credentialDoc.data().status !== "active" || !credentialDoc.data().ciphertext) throw new ApiError("PROVIDER_CREDENTIAL_REQUIRED", "OpenAI API 키 연결이 필요합니다.", 409);
+      const capacity = reserveUsageCapacity({ plan, usage: usageDoc.data() || {}, requestedKeywords: 0, allowZeroKeywords: true }), run = workspace.collection("runs").doc(), reservation = workspace.collection("usageReservations").doc(run.id), timestamp = FieldValue.serverTimestamp();
+      transaction.set(run, { projectId: input.projectId, tool: "ai-blog", toolLabel: "AI 블로그 초안", status: "running", inputSummary: { topic: input.topic, contentType: input.contentType, tone: input.tone, targetLength: input.targetLength }, usagePeriod: usage.id, requestDocumentId: request.id, createdAt: timestamp, startedAt: timestamp });
+      transaction.set(reservation, { runId: run.id, status: "reserved", runs: 1, keywordLookups: 0, usagePeriod: usage.id, createdAt: timestamp });
+      transaction.set(usage, { runsReserved: capacity.nextRunsReserved, updatedAt: timestamp }, { merge: true });
+      transaction.set(request, { runId: run.id, status: "running", requestDigest: digest, createdAt: timestamp });
+      return { runId: run.id, status: "running", reused: false, envelope: credentialDoc.data() };
+    });
+  },
+
+  async finishAiBlogRun({ workspaceId, runId, result, errorCode, providerCalled }) {
+    const workspace = database.doc(`workspaces/${workspaceId}`), run = workspace.collection("runs").doc(runId), reservation = workspace.collection("usageReservations").doc(runId);
+    return database.runTransaction(async transaction => {
+      const [runDoc, reservationDoc] = await Promise.all([transaction.get(run), transaction.get(reservation)]);
+      if (!runDoc.exists || !reservationDoc.exists || runDoc.data().tool !== "ai-blog") throw new ApiError("INVALID_INPUT", "실행을 찾을 수 없습니다.", 404);
+      if (runDoc.data().status !== "running" || reservationDoc.data().status !== "reserved") return { status: runDoc.data().status, reused: true };
+      const usage = workspace.collection("usage").doc(reservationDoc.data().usagePeriod), usageDoc = await transaction.get(usage), current = usageDoc.data() || {}, runsReserved = Number(current.runsReserved || 0);
+      if (!Number.isSafeInteger(runsReserved) || runsReserved < 1) throw new ApiError("USAGE_STATE_INVALID", "사용량 상태를 확인할 수 없습니다.", 503);
+      const succeeded = Boolean(result?.draft), timestamp = FieldValue.serverTimestamp(), inputTokens = succeeded && Number.isSafeInteger(result.inputTokens) ? result.inputTokens : 0, outputTokens = succeeded && Number.isSafeInteger(result.outputTokens) ? result.outputTokens : 0;
+      if (succeeded) transaction.set(workspace.collection("reports").doc(runId), { runId, projectId: runDoc.data().projectId, tool: "ai-blog", status: "ready", title: "AI 블로그 초안", summary: runDoc.data().inputSummary.topic, draft: result.draft, model: result.model, generatedAt: result.generatedAt, inputTokens: result.inputTokens, outputTokens: result.outputTokens, reviewRequired: true, createdAt: timestamp });
+      transaction.set(usage, { runsReserved: runsReserved - 1, runs: Number(current.runs || 0) + 1, succeeded: Number(current.succeeded || 0) + Number(succeeded), failed: Number(current.failed || 0) + Number(!succeeded), openAiAttempts: Number(current.openAiAttempts || 0) + Number(providerCalled), openAiInputTokens: Number(current.openAiInputTokens || 0) + inputTokens, openAiOutputTokens: Number(current.openAiOutputTokens || 0) + outputTokens, updatedAt: timestamp }, { merge: true });
+      transaction.set(reservation, { status: "committed", actualRuns: 1, openAiAttempts: Number(providerCalled), inputTokens, outputTokens, updatedAt: timestamp }, { merge: true });
+      transaction.set(run, { status: succeeded ? "succeeded" : "failed", resultReportId: succeeded ? runId : null, errorCode: succeeded ? null : errorCode || "PROVIDER_UNAVAILABLE", completedAt: timestamp, updatedAt: timestamp }, { merge: true });
       transaction.set(workspace.collection("runRequests").doc(runDoc.data().requestDocumentId), { status: succeeded ? "succeeded" : "failed", updatedAt: timestamp }, { merge: true });
       return { status: succeeded ? "succeeded" : "failed", reused: false };
     });

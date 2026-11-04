@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 
 const source=await readFile(new URL("../public/api-guide.html",import.meta.url),"utf8");
 assert.match(source,/data-credential="'\+escapeHtml\(f\[4\]\|\|""\)\+'"/,"인증정보 필드는 허용된 서버 필드명에만 매핑해야 합니다.");
-assert.match(source,/providers=\{ads:"naver-searchad",youtube:"youtube",apify:"apify"\}/,"허용된 세 제공자만 고객 자격정보 API에 연결해야 합니다.");
+assert.match(source,/providers=\{ads:"naver-searchad",youtube:"youtube",apify:"apify",openai:"openai"\}/,"허용된 네 제공자만 고객 자격정보 API에 연결해야 합니다.");
 assert.match(source,/provider-credentials\/\$\{provider\}/,"선택한 허용 제공자의 전용 자격정보 API를 사용해야 합니다.");
 assert.match(source,/authorization:`Bearer \$\{token\}`/,"API 연결 요청은 Firebase ID 토큰으로 인증해야 합니다.");
 assert.match(source,/button\.disabled=!\(apiBase&&currentUser&&workspaceId\)/,"서버·로그인·워크스페이스가 모두 준비되기 전에는 연결 조작을 막아야 합니다.");

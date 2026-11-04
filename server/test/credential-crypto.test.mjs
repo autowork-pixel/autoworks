@@ -35,8 +35,8 @@ test("예상하지 않은 필드는 암호화 전에 거부한다", () => {
   }), error => error.code === "INVALID_INPUT");
 });
 
-test("YouTube 키와 Apify 토큰은 제공자별 필드만 암호화한다", () => {
-  for (const [provider, value] of [["youtube", { apiKey: "youtube-key" }], ["apify", { token: "apify-token" }]]) {
+test("YouTube·OpenAI 키와 Apify 토큰은 제공자별 필드만 암호화한다", () => {
+  for (const [provider, value] of [["youtube", { apiKey: "youtube-key" }], ["apify", { token: "apify-token" }], ["openai", { apiKey: "openai-key" }]]) {
     const plaintextDataKey = randomBytes(32);
     const envelope = encryptCredentialPayload({ provider, credentials: value, plaintextDataKey, encryptedDataKey: "kms-ciphertext", keyVersion: "kms-key-v1" });
     assert.deepEqual(decryptCredentialPayload({ provider, envelope, plaintextDataKey }), value);

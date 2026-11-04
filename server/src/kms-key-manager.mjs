@@ -4,7 +4,7 @@ import crc32c from "fast-crc32c";
 const keyPattern = /^projects\/[^/]+\/locations\/[^/]+\/keyRings\/[^/]+\/cryptoKeys\/[^/]+$/;
 
 function context({ workspaceId, provider }) {
-  if (!/^[A-Za-z0-9_-]{1,128}$/.test(workspaceId || "") || !["naver-searchad", "youtube", "apify"].includes(provider)) {
+  if (!/^[A-Za-z0-9_-]{1,128}$/.test(workspaceId || "") || !["naver-searchad", "youtube", "apify", "openai"].includes(provider)) {
     throw new Error("KMS encryption context is invalid");
   }
   return Buffer.from(`${workspaceId}:${provider}`, "utf8");

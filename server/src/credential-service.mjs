@@ -1,7 +1,7 @@
 import { ApiError } from "./domain.mjs";
 import { encryptCredentialPayload } from "./credential-crypto.mjs";
 
-const supportedProviders = new Set(["naver-searchad", "youtube", "apify"]);
+const supportedProviders = new Set(["naver-searchad", "youtube", "apify", "openai"]);
 
 function providerName(value) {
   if (!supportedProviders.has(value)) throw new ApiError("INVALID_INPUT", "지원하지 않는 API 연결입니다.");
