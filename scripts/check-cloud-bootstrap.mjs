@@ -17,5 +17,8 @@ assert.match(workflow, /inputs\.confirm == 'DEPLOY_DEV'/);
 assert.match(workflow, /CLOUD_RUN_RUNTIME_SERVICE_ACCOUNT/);
 assert.match(workflow, /CLOUD_RUN_TASK_SERVICE_ACCOUNT/);
 assert.match(workflow, /CLOUD_RUN_KMS_KEY_NAME/);
+assert.match(workflow, /printf 'window\.AUTOWORKS_API_BASE/);
+assert.match(workflow, /firebase-tools@15\.34\.2 deploy/);
+assert.match(workflow, /npm run verify:hosting/);
 console.log("개발 Cloud Run 부트스트랩의 결제 확인·무키 파일·최소 분리 계정 경계를 확인");
 
