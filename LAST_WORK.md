@@ -4,9 +4,9 @@
 
 ## 마지막 기능 작업
 
-- 커밋: `9f09483` — 실제 로그인 계정의 읽기 전용 통합 스모크 검증
-- 내용: 본인 실행 목록·제공자 연결 상태, 잘못된 입력 거부, A/B 계정 상호 워크스페이스 403을 반복 검증하고 비밀정보 없는 증빙 JSON을 생성
-- 확인: 인증 스모크 정적 보안검사, 공개 파일 보안검사, Cloud 부트스트랩 검사와 서버 테스트 176개 통과
+- 커밋: `d4bba70` — 예산 100% 도달 시 신규 자동화 실행 중지
+- 내용: Cloud Billing Pub/Sub 알림을 OIDC로 검증해 멱등 저장하고, 정확한 개발 예산이 100%에 도달하면 전역 자동화 차단을 켠다. 낮은 값·역순 알림으로는 자동 해제하지 않는다.
+- 확인: 예산 payload·중복·타 예산·무인증 차단 포함 서버 테스트 181개와 보안·런타임·컨테이너·Cloud 부트스트랩·인증 스모크 검사 통과
 
 ## 지금 사용할 수 있는 범위
 
@@ -18,8 +18,9 @@
 ## 다음 작업
 
 1. 폐쇄 상태가 아닌 활성 결제 계정을 준비해 개발 프로젝트 `autoworks-c9a6a`에 연결한다.
-2. 개발 Google Cloud에 실행 계정·호출 계정·KMS 키·Tasks 큐를 준비하고 GitHub `development` 환경 변수 3개를 등록한다.
-3. **Deploy development Cloud Run API**를 수동 실행한 뒤 `smoke:development-api`와 두 테스트 계정의 `smoke:authenticated-api`를 실행한다. 외부 계정·비용·검색 품질 확인은 [검토 목록](USER_REVIEW.md)에서 순차 확인한다.
+2. 개발 Google Cloud에 실행 계정·호출 계정·KMS 키·Tasks 큐·예산 Pub/Sub topic을 준비하고 GitHub `development` 환경 변수 3개를 등록한다.
+3. 예산 표시 이름을 `autoworks-development-monthly-50000`으로 만들고 프로그램 알림 topic을 연결한다.
+4. **Deploy development Cloud Run API**를 수동 실행한 뒤 `smoke:development-api`와 두 테스트 계정의 `smoke:authenticated-api`를 실행한다. 외부 계정·비용·검색 품질 확인은 [검토 목록](USER_REVIEW.md)에서 순차 확인한다.
 
 작업을 마칠 때마다 **마지막 기능 커밋, 배포 범위, 확인 결과, 다음 작업**을 이 파일에 갱신하고 GitHub `main`에 저장한다. 전체 진행 기록은 [퀘스트 로그](QUEST_LOG.md), 사용자 확인 사항은 [검토 목록](USER_REVIEW.md)에 남긴다. API 키와 비밀정보는 기록하지 않는다.
 
