@@ -31,9 +31,12 @@ export function createBillingService({ repository, provider, keyManager, clientK
       const session=await repository.reserveCompletion({workspaceId,uid,sessionId,customerKey});
       if(session.reused)return{status:"active",reused:true};
       const plan=PAID_PLANS[session.planId]; if(!plan||plan.priceKrw!==session.amount)throw new ApiError("PAYMENT_STATE_INVALID","저장된 결제 금액을 확인할 수 없습니다.",503);
+      let chargeStarted=false;
       try {
         const binding=await provider.issueBillingKey({authKey:key,customerKey:session.customerKey,idempotencyKey:session.issueIdempotencyKey});
         const billingKey=validateBilling(binding,session.customerKey);
+        await repository.markChargeStarted({workspaceId,uid,sessionId});
+        chargeStarted=true;
         let payment;
         try { payment=await provider.charge({billingKey,customerKey:session.customerKey,amount:session.amount,orderId:session.orderId,orderName:`오토웍스 ${plan.planLabel} 월 구독`,idempotencyKey:session.chargeIdempotencyKey}); }
         catch(error) { if(error?.code!=="PAYMENT_TEMPORARILY_UNAVAILABLE")throw error; payment=await provider.findByOrderId(session.orderId); }
@@ -41,7 +44,7 @@ export function createBillingService({ repository, provider, keyManager, clientK
         const generated=await keyManager.generateDataKey({workspaceId,provider:"toss-billing"});
         try { const envelope=encryptCredentialPayload({credentials:{billingKey,customerKey:session.customerKey},plaintextDataKey:generated.plaintextDataKey,encryptedDataKey:generated.encryptedDataKey,keyVersion:generated.keyVersion,provider:"toss-billing"}); return await repository.complete({workspaceId,uid,sessionId,plan,envelope,payment}); }
         finally { generated.plaintextDataKey.fill(0); }
-      } catch(error) { await repository.fail({workspaceId,uid,sessionId,errorCode:error?.code||"INTERNAL_ERROR"}); throw error; }
+      } catch(error) { if(chargeStarted){await repository.requireReview({workspaceId,uid,sessionId,errorCode:error?.code||"INTERNAL_ERROR"}).catch(()=>{});throw new ApiError("PAYMENT_REVIEW_REQUIRED","결제 승인 결과를 확인 중입니다. 추가 결제하지 말고 고객센터로 문의해 주세요.",409)}await repository.fail({workspaceId,uid,sessionId,errorCode:error?.code||"INTERNAL_ERROR"});throw error; }
     },
     cancel({workspaceId,uid}) { return repository.cancelSubscription({workspaceId,uid}); }
   };

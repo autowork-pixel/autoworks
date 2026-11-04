@@ -15,6 +15,7 @@ assert.match(success,/auth\.currentUser|onAuthStateChanged/,"결제 완료 API�
 assert.match(success,/signInWithPopup\(auth,new GoogleAuthProvider\(\)\)/,"결제 반환 화면에서 로그인을 다시 진행할 수 있어야 합니다.");
 assert.match(success,/signInWithCustomToken\(auth,event\.data\.customToken\)/,"네이버·카카오 로그인도 결제 반환 화면에서 복구할 수 있어야 합니다.");
 assert.match(success,/retry\.addEventListener\("click"/,"결제 확인 실패 뒤 같은 화면에서 다시 시도할 수 있어야 합니다.");
+assert.match(success,/review=error\.message==="PAYMENT_REVIEW_REQUIRED"/,"승인 결과가 불확실하면 자동 재시도를 막아야 합니다.");
 assert.match(success,/billing-sessions\/\$\{encodeURIComponent\(sessionId\)\}:complete/,"결제 완료는 검증된 세션 완료 API만 호출해야 합니다.");
 assert.match(success,/authorization:`Bearer \$\{await user\.getIdToken\(\)\}`/,"결제 완료 API에 Firebase ID token을 전달해야 합니다.");
 assert.doesNotMatch(success,/localStorage|sessionStorage/,"일회용 결제 결과를 브라우저 저장소에 남기면 안 됩니다.");
