@@ -56,6 +56,20 @@
 
 `smoke:development-api`는 배포 URL의 healthz, 허용 Hosting origin CORS, P1~P8 핵심 고객 API의 무인증 401, 내부 복구 경로의 무인증 401을 확인한다. 실제 고객 토큰·외부 제공자 키·결제는 사용하지 않는다.
 
+배포 뒤에는 비용 없는 읽기 전용 인증 스모크를 실행한다. 토큰은 셸 환경변수로만 전달하고 명령 기록·증빙 파일·GitHub에 넣지 않는다. A 계정만 주면 본인 실행 목록과 제공자 연결 상태의 비밀정보 비노출을 확인하고, A·B 두 계정을 모두 주면 서로의 워크스페이스 접근이 403으로 차단되는지도 확인한다.
+
+```powershell
+$env:AUTOWORKS_API_BASE = "https://SERVICE.run.app"
+$env:AUTOWORKS_TEST_A_TOKEN = "<일회성 Firebase ID token>"
+$env:AUTOWORKS_TEST_A_WORKSPACE = "<A workspace id>"
+$env:AUTOWORKS_TEST_B_TOKEN = "<일회성 Firebase ID token>"
+$env:AUTOWORKS_TEST_B_WORKSPACE = "<B workspace id>"
+$env:AUTOWORKS_EVIDENCE_PATH = "artifacts/development-authenticated-smoke.json"
+npm run smoke:authenticated-api
+```
+
+이 스모크는 `GET`만 사용해 제공자 호출·사용량 예약·결제를 발생시키지 않는다. 증빙에는 API origin, 시각, 검사명, HTTP 상태만 기록하고 토큰·workspace ID·응답 본문은 남기지 않는다.
+
 결제 연결 뒤 Cloud Shell에서 `bash scripts/bootstrap-cloud-dev.sh APPLY_DEV`를 실행하면 필요한 API, 분리된 실행·호출 계정, 서울 리전 KMS 키와 Tasks 큐를 멱등하게 준비한다. 인자를 생략하면 생성 없이 대상만 출력하며 서비스 계정 키 파일은 만들지 않는다. 배포 워크플로는 성공 후 호출 계정에 해당 서비스의 invoker만 부여하고 5분 주기 복구 Scheduler를 같은 OIDC 신원으로 생성·갱신한다.
 
 ## 중지 조건
