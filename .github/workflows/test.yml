@@ -38,6 +38,7 @@ jobs:
       - run: npm run test:api-connection
       - run: npm run test:runtime-config
       - run: npm run test:billing-boundary
+      - run: npm run test:billing-callback
       - run: npm run test:container
       - run: npm run test:cloud-bootstrap
       - run: npm run test:authenticated-smoke

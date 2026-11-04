@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>구독 확인 · 오토웍스</title>
+<style>:root{font-family:Inter,"Pretendard","Noto Sans KR",system-ui,sans-serif;color:#242631;background:#f6f5fb}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px}.card{width:min(500px,100%);background:#fff;border:1px solid #e4e1ee;border-radius:16px;padding:28px;box-shadow:0 14px 40px #33246612}.mark{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#eeeaff;color:#5d49d3;font-weight:900}h1{font-size:23px;margin:18px 0 8px}p{font-size:13px;line-height:1.7;color:#6c6878}.state{margin:18px 0;padding:13px;border-radius:9px;background:#f7f6fa;font-size:12px}.actions{display:flex;gap:8px}.actions a{flex:1;text-align:center;text-decoration:none;border-radius:8px;padding:11px;font-size:12px;font-weight:700;background:#5d49d3;color:#fff}.actions a.secondary{background:#fff;color:#5d49d3;border:1px solid #d8d1f1}</style>
+</head>
+<body><main class="card"><div class="mark">✓</div><h1>결제 결과를 확인하고 있어요</h1><p>서버가 결제사 응답과 주문 금액을 다시 대조한 뒤 구독을 활성화합니다. 이 화면을 새로고침해도 같은 결제가 중복 승인되지 않도록 처리합니다.</p><div class="state" id="state" role="status">로그인 상태를 확인하는 중입니다.</div><div class="actions"><a href="./index.html#subscriptionCard">구독 상태 보기</a><a class="secondary" href="./help.html">문제가 있나요?</a></div></main>
+<script src="./runtime-config.js"></script>
+<script type="module">
+const state=document.getElementById("state"),params=new URLSearchParams(location.search),workspaceId=params.get("workspaceId"),sessionId=params.get("sessionId"),customerKey=params.get("customerKey"),authKey=params.get("authKey"),apiBase=String(window.AUTOWORKS_API_BASE||"").replace(/\/$/,"");
+history.replaceState(null,"",location.pathname);
+const validId=value=>typeof value==="string"&&/^[A-Za-z0-9_-]{1,128}$/.test(value);
+if(!validId(workspaceId)||!validId(sessionId)||!validId(customerKey)||typeof authKey!=="string"||!authKey||authKey.length>300){state.textContent="결제 결과 정보가 올바르지 않습니다. 다시 결제하지 말고 고객센터로 문의해 주세요."}else if(!apiBase){state.textContent="결제 확인 서버가 아직 연결되지 않았습니다. 결제는 완료 처리되지 않았습니다."}else{
+ const firebaseConfig={apiKey:"AIzaSyBHcgYeZM8-n_PPSLbsazSfGx32BMDnB2M",authDomain:"autoworks-c9a6a.firebaseapp.com",projectId:"autoworks-c9a6a",storageBucket:"autoworks-c9a6a.firebasestorage.app",messagingSenderId:"576193408775",appId:"1:576193408775:web:fae402ea7b94045d21ba1f"};
+ const {initializeApp}=await import("https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js"),{getAuth,onAuthStateChanged}=await import("https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js"),auth=getAuth(initializeApp(firebaseConfig));
+ onAuthStateChanged(auth,async user=>{if(!user){state.textContent="결제를 시작한 계정으로 다시 로그인한 뒤 이 페이지를 열어 주세요.";return}state.textContent="주문과 결제 결과를 확인하는 중입니다.";try{const response=await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(workspaceId)}/billing-sessions/${encodeURIComponent(sessionId)}:complete`,{method:"POST",headers:{authorization:`Bearer ${await user.getIdToken()}`,"content-type":"application/json"},body:JSON.stringify({customerKey,authKey})}),result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.error?.code||"PAYMENT_CONFIRM_FAILED");state.textContent="구독이 활성화되었습니다. 구독 상태에서 이용 기간과 다음 결제일을 확인해 주세요."}catch(error){state.textContent="결제 확인을 완료하지 못했습니다. 중복 결제하지 말고 고객센터로 문의해 주세요.";console.error("결제 완료 확인 실패",error.message)}});
+}
+</script></body></html>

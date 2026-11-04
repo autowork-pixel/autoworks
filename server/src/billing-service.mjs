@@ -23,7 +23,7 @@ export function createBillingService({ repository, provider, keyManager, clientK
       const plan=PAID_PLANS[planId]; if(!plan)throw new ApiError("INVALID_INPUT","지원하지 않는 요금제입니다.");
       const requestKey=id(idempotencyKey,"idempotencyKey",16,128),customerKey=randomUUIDImpl(),orderId=`aw_${randomUUIDImpl().replaceAll("-","")}`;
       const session=await repository.createSession({workspaceId,uid,plan,idempotencyKey:requestKey,customerKey,orderId,issueIdempotencyKey:randomUUIDImpl(),chargeIdempotencyKey:randomUUIDImpl()});
-      const suffix=`sessionId=${encodeURIComponent(session.sessionId)}`;
+      const suffix=`workspaceId=${encodeURIComponent(workspaceId)}&sessionId=${encodeURIComponent(session.sessionId)}`;
       return {sessionId:session.sessionId,status:session.status,customerKey:session.customerKey,clientKey,planId:session.planId,amount:session.amount,orderName:`오토웍스 ${plan.planLabel} 월 구독`,successUrl:`${webOrigin}/billing-success.html?${suffix}`,failUrl:`${webOrigin}/billing-fail.html?${suffix}`,reused:session.reused};
     },
     async complete({ workspaceId, uid, sessionId, customerKey, authKey:oneTimeKey }) {
