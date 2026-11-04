@@ -25,7 +25,26 @@
         { "fieldPath": "tool", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "subscriptions",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "autoRenew", "order": "ASCENDING" },
+        { "fieldPath": "periodEnd", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "subscriptions",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "autoRenew", "order": "ASCENDING" },
+        { "fieldPath": "nextRenewalAt", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
 }
+
