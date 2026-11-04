@@ -46,6 +46,14 @@
 6. `public/runtime-config.js`의 `AUTOWORKS_API_BASE`를 Cloud Run HTTPS origin으로 설정하고 Hosting을 배포한다. 이 파일에는 URL 외 비밀정보를 넣지 않는다.
 7. `/healthz`, CORS 사전 요청, 로그인 고객 예약, Tasks 작업자, 결과 CSV, 취소, 재시도 복구를 순서대로 검증한다.
 
+개발 환경은 GitHub Actions의 **Deploy development Cloud Run API** 워크플로로 위 3~4단계를 재현한다. `development` 환경에 다음 Repository variable 세 개가 모두 있어야 하며, 실행 시 확인값 `DEPLOY_DEV`를 직접 입력해야 한다.
+
+- `CLOUD_RUN_RUNTIME_SERVICE_ACCOUNT`
+- `CLOUD_RUN_TASK_SERVICE_ACCOUNT`
+- `CLOUD_RUN_KMS_KEY_NAME`
+
+워크플로는 먼저 전체 서버·런타임·컨테이너 검사를 실행한다. 최초 revision은 임시 HTTPS audience로 기동한 뒤 실제 Cloud Run URL을 조회해 `SERVICE_URL`과 `WORKER_AUDIENCE`를 즉시 고정한다. 마지막에 공개 `/healthz` 성공과 무인증 내부 복구 경로의 401 거부를 확인한다. OAuth·토스 비밀값은 이 기본 배포에 포함하지 않고 Secret Manager 연결 퀘스트에서 별도로 주입한다.
+
 ## 중지 조건
 
 - 다른 workspace 문서를 읽거나 수정할 수 있음
