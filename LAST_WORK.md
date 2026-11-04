@@ -4,9 +4,9 @@
 
 ## 마지막 기능 작업
 
-- 커밋: `a1d1c90` — 개발 Cloud Run 수동 배포 준비
-- 내용: 전체 사전검사, 필수 변수 검증, bootstrap revision, 실제 URL audience 고정, 공개·내부 경계 확인 워크플로
-- 확인: 서버 테스트 176개와 런타임·컨테이너·API 연결·결제·인증·관리자·탈퇴·사용량 검사 통과
+- 커밋: `b2bfee0` — 개발 Google Cloud 부트스트랩 자동화
+- 내용: 결제 선확인, API·분리 계정·KMS·Tasks 멱등 준비, 배포 후 invoker·OIDC 복구 Scheduler 구성
+- 확인: 부트스트랩 무키 파일·최소 분리 계정 검사와 런타임·컨테이너 검사 통과
 
 ## 지금 사용할 수 있는 범위
 
@@ -22,3 +22,4 @@
 3. **Deploy development Cloud Run API**를 수동 실행한 뒤 실제 API URL을 Hosting runtime config에 연결한다. 외부 계정·비용·검색 품질 확인은 [검토 목록](USER_REVIEW.md)에서 순차 확인한다.
 
 작업을 마칠 때마다 **마지막 기능 커밋, 배포 범위, 확인 결과, 다음 작업**을 이 파일에 갱신하고 GitHub `main`에 저장한다. 전체 진행 기록은 [퀘스트 로그](QUEST_LOG.md), 사용자 확인 사항은 [검토 목록](USER_REVIEW.md)에 남긴다. API 키와 비밀정보는 기록하지 않는다.
+
