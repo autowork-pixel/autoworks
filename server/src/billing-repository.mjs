@@ -7,8 +7,29 @@ export function createBillingRepository({ database, serverTimestamp }) {
   function refs(workspaceId) { const workspace=database.doc(`workspaces/${workspaceId}`); return {workspace, sessions:workspace.collection("billingSessions"), requests:workspace.collection("billingRequests")}; }
   return {
     async createSession({ workspaceId, uid, plan, idempotencyKey, customerKey, orderId, issueIdempotencyKey, chargeIdempotencyKey }) {
-      const {workspace,sessions,requests}=refs(workspaceId),request=requests.doc(privateIdempotencyId(uid,idempotencyKey)),subscription=workspace.collection("subscriptions").doc("current");
-      return database.runTransaction(async transaction=>{const[owner,previous,current]=await Promise.all([transaction.get(workspace),transaction.get(request),transaction.get(subscription)]);if(!owner.exists||owner.data().ownerUid!==uid)throw new ApiError("AUTH_REQUIRED","워크스페이스 권한을 확인할 수 없습니다.",403);if(previous.exists){const data=previous.data();if(data.planId!==plan.planId)throw new ApiError("INVALID_INPUT","같은 요청 식별자를 다른 요금제에 사용할 수 없습니다.",409);const session=await transaction.get(sessions.doc(data.sessionId));return{...session.data(),sessionId:data.sessionId,reused:true}}if(current.exists&&current.data().planId!=="free-search"){const data=current.data(),end=data.periodEnd?.toDate?.()||new Date(data.periodEnd);if(["active","trialing","past_due"].includes(data.status)||(data.status==="canceled"&&(!Number.isFinite(end.getTime())||end>new Date())))throw new ApiError("SUBSCRIPTION_ALREADY_ACTIVE","이미 유효한 유료 구독이 있습니다.",409)}const session=sessions.doc(),timestamp=serverTimestamp(),value={status:"pending",uid,planId:plan.planId,amount:plan.priceKrw,customerKey,orderId,issueIdempotencyKey,chargeIdempotencyKey,createdAt:timestamp,updatedAt:timestamp};transaction.set(session,value);transaction.set(request,{sessionId:session.id,planId:plan.planId,status:"pending",createdAt:timestamp,updatedAt:timestamp});return{...value,sessionId:session.id,reused:false}});
+      const {workspace,sessions,requests}=refs(workspaceId),request=requests.doc(privateIdempotencyId(uid,idempotencyKey)),subscription=workspace.collection("subscriptions").doc("current"),checkout=workspace.collection("billingCheckout").doc("current");
+      return database.runTransaction(async transaction=>{
+        const[owner,previous,current,lock]=await Promise.all([transaction.get(workspace),transaction.get(request),transaction.get(subscription),transaction.get(checkout)]);
+        if(!owner.exists||owner.data().ownerUid!==uid)throw new ApiError("AUTH_REQUIRED","워크스페이스 권한을 확인할 수 없습니다.",403);
+        if(previous.exists){const data=previous.data();if(data.planId!==plan.planId)throw new ApiError("INVALID_INPUT","같은 요청 식별자를 다른 요금제에 사용할 수 없습니다.",409);const session=await transaction.get(sessions.doc(data.sessionId));return{...session.data(),sessionId:data.sessionId,reused:true}}
+        if(current.exists&&current.data().planId!=="free-search"){const data=current.data(),end=data.periodEnd?.toDate?.()||new Date(data.periodEnd);if(["active","trialing","past_due"].includes(data.status)||(data.status==="canceled"&&(!Number.isFinite(end.getTime())||end>new Date())))throw new ApiError("SUBSCRIPTION_ALREADY_ACTIVE","이미 유효한 유료 구독이 있습니다.",409)}
+        if(lock.exists){
+          const locked=lock.data();
+          if(locked.uid!==uid||!locked.sessionId)throw new ApiError("BILLING_SESSION_IN_PROGRESS","기존 결제 등록 상태를 확인해 주세요.",409);
+          const existing=await transaction.get(sessions.doc(locked.sessionId));
+          if(!existing.exists)throw new ApiError("BILLING_SESSION_IN_PROGRESS","기존 결제 등록 상태를 확인해 주세요.",409);
+          if(["pending","processing"].includes(existing.data().status)){
+            if(locked.planId!==plan.planId)throw new ApiError("BILLING_SESSION_IN_PROGRESS","진행 중인 결제 등록을 먼저 완료해 주세요.",409);
+            return{...existing.data(),sessionId:locked.sessionId,reused:true};
+          }
+          if(existing.data().status==="failed")throw new ApiError("BILLING_SESSION_IN_PROGRESS","이전 결제 결과를 확인한 뒤 다시 시도해 주세요.",409);
+        }
+        const session=sessions.doc(),timestamp=serverTimestamp(),value={status:"pending",uid,planId:plan.planId,amount:plan.priceKrw,customerKey,orderId,issueIdempotencyKey,chargeIdempotencyKey,createdAt:timestamp,updatedAt:timestamp};
+        transaction.set(session,value);
+        transaction.set(request,{sessionId:session.id,planId:plan.planId,status:"pending",createdAt:timestamp,updatedAt:timestamp});
+        transaction.set(checkout,{sessionId:session.id,uid,planId:plan.planId,updatedAt:timestamp});
+        return{...value,sessionId:session.id,reused:false};
+      });
     },
     async reserveCompletion({ workspaceId, uid, sessionId, customerKey }) {
       const {workspace,sessions}=refs(workspaceId),session=sessions.doc(sessionId);
