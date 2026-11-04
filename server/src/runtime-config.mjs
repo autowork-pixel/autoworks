@@ -44,8 +44,14 @@ export function readRuntimeConfig(env = process.env) {
   }
   const openAiModel = String(env.OPENAI_TEXT_MODEL || "gpt-6-astra").trim();
   if (!/^[A-Za-z0-9._-]{2,80}$/.test(openAiModel)) throw new Error("Invalid runtime configuration: OPENAI_TEXT_MODEL");
+  const tossClientKey = String(env.TOSS_BILLING_CLIENT_KEY || "").trim();
+  const tossSecretKey = String(env.TOSS_BILLING_SECRET_KEY || "").trim();
+  if (Boolean(tossClientKey) !== Boolean(tossSecretKey) || /[\r\n]/.test(tossClientKey + tossSecretKey) || tossClientKey.length > 200 || tossSecretKey.length > 200) {
+    throw new Error("Invalid runtime configuration: TOSS_BILLING_KEYS");
+  }
   return {
     projectId, location, queue, serviceUrl, workerAudience: httpsOrigin(env.WORKER_AUDIENCE || serviceUrl, "WORKER_AUDIENCE"),
-    serviceAccountEmail, keyName, allowedOrigins: [...new Set(origins)], oauthProviders, openAiModel
+    serviceAccountEmail, keyName, allowedOrigins: [...new Set(origins)], oauthProviders, openAiModel,
+    tossBilling: tossClientKey ? { clientKey: tossClientKey, secretKey: tossSecretKey } : null
   };
 }
