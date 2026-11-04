@@ -27,6 +27,9 @@ jobs:
       REGION: asia-northeast3
       SERVICE: autoworks-api-dev
       TASKS_QUEUE: brand-search
+      BUDGET_DISPLAY_NAME: autoworks-development-monthly-50000
+      BUDGET_TOPIC: autoworks-budget-alerts
+      BUDGET_SUBSCRIPTION: autoworks-budget-push-dev
       WEB_ORIGINS: https://autoworks-c9a6a.web.app,https://autoworks-c9a6a.firebaseapp.com
       RUNTIME_SERVICE_ACCOUNT: ${{ vars.CLOUD_RUN_RUNTIME_SERVICE_ACCOUNT }}
       TASK_SERVICE_ACCOUNT: ${{ vars.CLOUD_RUN_TASK_SERVICE_ACCOUNT }}
@@ -72,7 +75,7 @@ jobs:
             --source server \
             --service-account "$RUNTIME_SERVICE_ACCOUNT" \
             --allow-unauthenticated \
-            --set-env-vars "^:^GOOGLE_CLOUD_PROJECT=$PROJECT_ID:TASKS_LOCATION=$REGION:TASKS_QUEUE=$TASKS_QUEUE:SERVICE_URL=https://bootstrap.invalid:WORKER_AUDIENCE=https://bootstrap.invalid:TASK_SERVICE_ACCOUNT_EMAIL=$TASK_SERVICE_ACCOUNT:KMS_KEY_NAME=$KMS_KEY_NAME:WEB_ORIGINS=$WEB_ORIGINS" \
+            --set-env-vars "^:^GOOGLE_CLOUD_PROJECT=$PROJECT_ID:TASKS_LOCATION=$REGION:TASKS_QUEUE=$TASKS_QUEUE:SERVICE_URL=https://bootstrap.invalid:WORKER_AUDIENCE=https://bootstrap.invalid:TASK_SERVICE_ACCOUNT_EMAIL=$TASK_SERVICE_ACCOUNT:KMS_KEY_NAME=$KMS_KEY_NAME:WEB_ORIGINS=$WEB_ORIGINS:BUDGET_DISPLAY_NAME=$BUDGET_DISPLAY_NAME" \
             --quiet
       - name: Pin worker audience to deployed service URL
         shell: bash
@@ -114,6 +117,16 @@ jobs:
             --uri "$SERVICE_URL/internal/v1/recovery:run" --http-method POST \
             --oidc-service-account-email "$TASK_SERVICE_ACCOUNT" \
             --oidc-token-audience "$SERVICE_URL" --quiet
+          if gcloud pubsub subscriptions describe "$BUDGET_SUBSCRIPTION" --project "$PROJECT_ID" >/dev/null 2>&1; then
+            gcloud pubsub subscriptions update "$BUDGET_SUBSCRIPTION" \
+              --project "$PROJECT_ID" --push-endpoint "$SERVICE_URL/internal/v1/budget-alerts:receive" \
+              --push-auth-service-account "$TASK_SERVICE_ACCOUNT" --push-auth-token-audience "$SERVICE_URL" --quiet
+          else
+            gcloud pubsub subscriptions create "$BUDGET_SUBSCRIPTION" \
+              --project "$PROJECT_ID" --topic "$BUDGET_TOPIC" --ack-deadline 60 \
+              --push-endpoint "$SERVICE_URL/internal/v1/budget-alerts:receive" \
+              --push-auth-service-account "$TASK_SERVICE_ACCOUNT" --push-auth-token-audience "$SERVICE_URL" --quiet
+          fi
       - name: Connect Hosting to the deployed API
         shell: bash
         env:

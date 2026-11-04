@@ -8,6 +8,7 @@ CALLER_ACCOUNT_ID="autoworks-task-caller"
 KEYRING="autoworks"
 KEY="provider-credentials"
 QUEUE="brand-search"
+BUDGET_TOPIC="autoworks-budget-alerts"
 
 if [[ "${1:-}" != "APPLY_DEV" ]]; then
   cat <<EOF
@@ -18,6 +19,7 @@ if [[ "${1:-}" != "APPLY_DEV" ]]; then
   호출 계정: $CALLER_ACCOUNT_ID
   KMS: $KEYRING/$KEY
   Tasks 큐: $QUEUE
+  예산 알림 topic: $BUDGET_TOPIC
 
 실제 생성은 다음처럼 명시적으로 실행하세요.
   bash scripts/bootstrap-cloud-dev.sh APPLY_DEV
@@ -35,7 +37,7 @@ gcloud billing projects describe "$PROJECT_ID" --format='value(billingEnabled)' 
 gcloud services enable \
   run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com \
   cloudtasks.googleapis.com cloudkms.googleapis.com cloudscheduler.googleapis.com \
-  secretmanager.googleapis.com --project "$PROJECT_ID"
+  secretmanager.googleapis.com pubsub.googleapis.com --project "$PROJECT_ID"
 
 ensure_service_account() {
   local id="$1" display="$2"
@@ -49,6 +51,11 @@ ensure_service_account "$CALLER_ACCOUNT_ID" "Autoworks Tasks and Scheduler calle
 
 RUNTIME_EMAIL="$RUNTIME_ACCOUNT_ID@$PROJECT_ID.iam.gserviceaccount.com"
 CALLER_EMAIL="$CALLER_ACCOUNT_ID@$PROJECT_ID.iam.gserviceaccount.com"
+gcloud beta services identity create --service pubsub.googleapis.com --project "$PROJECT_ID" >/dev/null
+PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"
+gcloud iam service-accounts add-iam-policy-binding "$CALLER_EMAIL" --project "$PROJECT_ID" \
+  --member "serviceAccount:service-$PROJECT_NUMBER@gcp-sa-pubsub.iam.gserviceaccount.com" \
+  --role roles/iam.serviceAccountTokenCreator --quiet
 for role in roles/datastore.user roles/cloudtasks.enqueuer roles/logging.logWriter; do
   gcloud projects add-iam-policy-binding "$PROJECT_ID" \
     --member "serviceAccount:$RUNTIME_EMAIL" --role "$role" --condition=None --quiet
@@ -70,6 +77,9 @@ if ! gcloud tasks queues describe "$QUEUE" --location "$REGION" --project "$PROJ
   gcloud tasks queues create "$QUEUE" --location "$REGION" --project "$PROJECT_ID" \
     --max-dispatches-per-second 2 --max-concurrent-dispatches 2
 fi
+if ! gcloud pubsub topics describe "$BUDGET_TOPIC" --project "$PROJECT_ID" >/dev/null 2>&1; then
+  gcloud pubsub topics create "$BUDGET_TOPIC" --project "$PROJECT_ID"
+fi
 
 KMS_KEY_NAME="projects/$PROJECT_ID/locations/$REGION/keyRings/$KEYRING/cryptoKeys/$KEY"
 cat <<EOF
@@ -78,5 +88,8 @@ cat <<EOF
   CLOUD_RUN_RUNTIME_SERVICE_ACCOUNT=$RUNTIME_EMAIL
   CLOUD_RUN_TASK_SERVICE_ACCOUNT=$CALLER_EMAIL
   CLOUD_RUN_KMS_KEY_NAME=$KMS_KEY_NAME
+
+Cloud Billing 예산 표시 이름을 autoworks-development-monthly-50000 으로 만들고
+projects/$PROJECT_ID/topics/$BUDGET_TOPIC 을 프로그램 알림 topic으로 연결하세요.
 EOF
 

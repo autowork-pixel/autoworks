@@ -49,9 +49,12 @@ export function readRuntimeConfig(env = process.env) {
   if (Boolean(tossClientKey) !== Boolean(tossSecretKey) || /[\r\n]/.test(tossClientKey + tossSecretKey) || tossClientKey.length > 200 || tossSecretKey.length > 200) {
     throw new Error("Invalid runtime configuration: TOSS_BILLING_KEYS");
   }
+  const budgetDisplayName = String(env.BUDGET_DISPLAY_NAME || "").trim();
+  if (budgetDisplayName.length > 120 || /[\r\n]/.test(budgetDisplayName)) throw new Error("Invalid runtime configuration: BUDGET_DISPLAY_NAME");
   return {
     projectId, location, queue, serviceUrl, workerAudience: httpsOrigin(env.WORKER_AUDIENCE || serviceUrl, "WORKER_AUDIENCE"),
     serviceAccountEmail, keyName, allowedOrigins: [...new Set(origins)], oauthProviders, openAiModel,
-    tossBilling: tossClientKey ? { clientKey: tossClientKey, secretKey: tossSecretKey } : null
+    tossBilling: tossClientKey ? { clientKey: tossClientKey, secretKey: tossSecretKey } : null,
+    budgetDisplayName: budgetDisplayName || null
   };
 }

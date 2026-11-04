@@ -9,6 +9,7 @@
 - Cloud Run 서비스 1개: 공개 고객 API, OIDC 작업자, OIDC 복구 엔드포인트를 같은 이미지에서 제공한다.
 - Cloud Tasks 큐 1개: 브랜드 검색량 실행을 결정적 작업명으로 등록한다.
 - Cloud Scheduler 작업 1개: `/internal/v1/recovery:run`을 주기적으로 호출한다.
+- Pub/Sub topic·push subscription 각 1개: Cloud Billing 예산 알림을 OIDC로 내부 수신한다.
 - Cloud KMS 대칭 키 1개: 고객 제공자 자격정보의 데이터 키만 감싼다.
 - 전용 서비스 계정 1개 이상: Tasks/Scheduler 호출 신원과 Cloud Run 실행 신원을 분리하는 것을 권장한다.
 
@@ -24,6 +25,7 @@
 | `TASK_SERVICE_ACCOUNT_EMAIL` | 전용 서비스 계정 | Tasks/Scheduler OIDC 신원 |
 | `KMS_KEY_NAME` | `projects/.../cryptoKeys/...` | 자격정보 데이터 키를 감싸는 키 |
 | `WEB_ORIGINS` | Hosting 도메인 2개 | 브라우저 CORS 허용 목록 |
+| `BUDGET_DISPLAY_NAME` | `autoworks-development-monthly-50000` | 다른 예산 알림을 거부하는 정확한 표시 이름 |
 | `NAVER_OAUTH_CLIENT_ID`, `NAVER_OAUTH_CLIENT_SECRET` | 네이버 앱 값 | 네이버 앱이 준비된 경우에만 둘 다 설정 |
 | `KAKAO_OAUTH_CLIENT_ID`, `KAKAO_OAUTH_CLIENT_SECRET` | 카카오 앱 값 | 카카오 앱이 준비된 경우에만 둘 다 설정 |
 
@@ -42,7 +44,7 @@
 2. KMS 키링·키, Tasks 큐, 서비스 계정을 만들고 최소 IAM을 적용한다.
 3. `server/Dockerfile` 이미지로 Cloud Run을 배포하고 필수 환경변수를 설정한다.
 4. Cloud Run URL을 `SERVICE_URL`·`WORKER_AUDIENCE`에 고정하고 새 revision을 배포한다.
-5. Scheduler가 OIDC로 복구 엔드포인트를 호출하도록 연결한다.
+5. Scheduler가 OIDC로 복구 엔드포인트를 호출하고 Pub/Sub push subscription이 같은 전용 호출 신원으로 예산 알림 엔드포인트를 호출하도록 연결한다.
 6. `public/runtime-config.js`의 `AUTOWORKS_API_BASE`를 Cloud Run HTTPS origin으로 설정하고 Hosting을 배포한다. 이 파일에는 URL 외 비밀정보를 넣지 않는다.
 7. `/healthz`, CORS 사전 요청, 로그인 고객 예약, Tasks 작업자, 결과 CSV, 취소, 재시도 복구를 순서대로 검증한다.
 
@@ -52,7 +54,7 @@
 - `CLOUD_RUN_TASK_SERVICE_ACCOUNT`
 - `CLOUD_RUN_KMS_KEY_NAME`
 
-워크플로는 먼저 전체 서버·런타임·컨테이너 검사를 실행한다. 최초 revision은 임시 HTTPS audience로 기동한 뒤 실제 Cloud Run URL을 조회해 `SERVICE_URL`과 `WORKER_AUDIENCE`를 즉시 고정한다. 공개 `/healthz` 성공과 무인증 내부 복구 경로의 401 거부를 확인한 뒤 빌드 산출물의 `runtime-config.js`에 공개 API URL만 기록해 Hosting·Firestore Rules를 배포하고 공개 Hosting을 재검증한다. OAuth·토스 비밀값은 이 기본 배포에 포함하지 않고 Secret Manager 연결 퀘스트에서 별도로 주입한다.
+워크플로는 먼저 전체 서버·런타임·컨테이너 검사를 실행한다. 최초 revision은 임시 HTTPS audience로 기동한 뒤 실제 Cloud Run URL을 조회해 `SERVICE_URL`과 `WORKER_AUDIENCE`를 즉시 고정한다. 공개 `/healthz` 성공과 무인증 내부 복구·예산 경로의 401 거부를 확인한 뒤 빌드 산출물의 `runtime-config.js`에 공개 API URL만 기록해 Hosting·Firestore Rules를 배포하고 공개 Hosting을 재검증한다. OAuth·토스 비밀값은 이 기본 배포에 포함하지 않고 Secret Manager 연결 퀘스트에서 별도로 주입한다.
 
 `smoke:development-api`는 배포 URL의 healthz, 허용 Hosting origin CORS, P1~P8 핵심 고객 API의 무인증 401, 내부 복구 경로의 무인증 401을 확인한다. 실제 고객 토큰·외부 제공자 키·결제는 사용하지 않는다.
 
@@ -70,7 +72,9 @@ npm run smoke:authenticated-api
 
 이 스모크는 `GET`만 사용해 제공자 호출·사용량 예약·결제를 발생시키지 않는다. 증빙에는 API origin, 시각, 검사명, HTTP 상태만 기록하고 토큰·workspace ID·응답 본문은 남기지 않는다.
 
-결제 연결 뒤 Cloud Shell에서 `bash scripts/bootstrap-cloud-dev.sh APPLY_DEV`를 실행하면 필요한 API, 분리된 실행·호출 계정, 서울 리전 KMS 키와 Tasks 큐를 멱등하게 준비한다. 인자를 생략하면 생성 없이 대상만 출력하며 서비스 계정 키 파일은 만들지 않는다. 배포 워크플로는 성공 후 호출 계정에 해당 서비스의 invoker만 부여하고 5분 주기 복구 Scheduler를 같은 OIDC 신원으로 생성·갱신한다.
+결제 연결 뒤 Cloud Shell에서 `bash scripts/bootstrap-cloud-dev.sh APPLY_DEV`를 실행하면 필요한 API, 분리된 실행·호출 계정, 서울 리전 KMS 키, Tasks 큐와 예산 Pub/Sub topic을 멱등하게 준비한다. 인자를 생략하면 생성 없이 대상만 출력하며 서비스 계정 키 파일은 만들지 않는다. 배포 워크플로는 성공 후 호출 계정에 해당 서비스의 invoker만 부여하고 5분 주기 복구 Scheduler와 OIDC 예산 push subscription을 생성·갱신한다. Cloud Billing 예산 화면에서는 표시 이름을 정확히 `autoworks-development-monthly-50000`으로 지정하고 생성된 topic을 프로그램 알림으로 연결해야 한다.
+
+예산 알림은 공식 schema `1.0`의 base64 JSON만 허용한다. 누적 비용 또는 실제비용 경고 기준이 100% 이상이면 `systemControls/automation.blocked=true`를 멱등 기록해 신규 실행을 막는다. Pub/Sub은 중복·역순 전달될 수 있으므로 100% 미만 알림은 자동 해제하지 않으며, 운영자가 비용 원인을 확인한 뒤 별도 승인으로만 재개한다. 예산 알림은 비용 반영이 지연될 수 있어 절대 지출 상한으로 간주하지 않는다.
 
 ## 중지 조건
 

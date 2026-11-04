@@ -37,5 +37,6 @@ for (const path of [
   });
 }
 await expectStatus("/internal/v1/recovery:run", 401, { method: "POST" });
+await expectStatus("/internal/v1/budget-alerts:receive", 401, { method: "POST" });
 console.log("개발 API healthz·CORS·고객 인증·내부 OIDC 차단 스모크 테스트 통과");
 

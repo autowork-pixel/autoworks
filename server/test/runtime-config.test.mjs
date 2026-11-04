@@ -8,6 +8,7 @@ const env = {
   KMS_KEY_NAME: "projects/autoworks-c9a6a/locations/asia-northeast3/keyRings/autoworks/cryptoKeys/provider-credentials",
   WEB_ORIGINS: "https://autoworks-c9a6a.web.app,https://autoworks-c9a6a.firebaseapp.com"
 };
+const budgetName = "autoworks-development-monthly-50000";
 
 test("배포 런타임 설정을 정규화하고 작업 audience를 서비스 URL로 고정한다", () => {
   assert.deepEqual(readRuntimeConfig(env), {
@@ -15,7 +16,7 @@ test("배포 런타임 설정을 정규화하고 작업 audience를 서비스 UR
     serviceUrl: "https://api-example.run.app", workerAudience: "https://api-example.run.app",
     serviceAccountEmail: "autoworks-task@autoworks-c9a6a.iam.gserviceaccount.com",
     keyName: env.KMS_KEY_NAME,
-    allowedOrigins: ["https://autoworks-c9a6a.web.app", "https://autoworks-c9a6a.firebaseapp.com"], oauthProviders: {}, openAiModel: "gpt-6-astra", tossBilling: null
+    allowedOrigins: ["https://autoworks-c9a6a.web.app", "https://autoworks-c9a6a.firebaseapp.com"], oauthProviders: {}, openAiModel: "gpt-6-astra", tossBilling: null, budgetDisplayName: null
   });
 });
 
@@ -26,6 +27,11 @@ test("필수 설정 누락과 다른 프로젝트 KMS 키를 시작 전에 거�
   assert.throws(() => readRuntimeConfig({ ...env, NAVER_OAUTH_CLIENT_ID: "client" }), /NAVER_OAUTH/);
   assert.throws(() => readRuntimeConfig({ ...env, OPENAI_TEXT_MODEL: "bad model" }), /OPENAI_TEXT_MODEL/);
   assert.throws(() => readRuntimeConfig({ ...env, TOSS_BILLING_CLIENT_KEY: "client-only" }), /TOSS_BILLING_KEYS/);
+  assert.throws(() => readRuntimeConfig({ ...env, BUDGET_DISPLAY_NAME: "bad\nname" }), /BUDGET_DISPLAY_NAME/);
+});
+
+test("예산 자동중지는 정확한 예산 표시 이름을 선택적으로 고정한다", () => {
+  assert.equal(readRuntimeConfig({ ...env, BUDGET_DISPLAY_NAME: budgetName }).budgetDisplayName, budgetName);
 });
 
 test("토스 빌링 키는 두 키가 모두 있을 때만 서버 설정에 포함한다", () => {
