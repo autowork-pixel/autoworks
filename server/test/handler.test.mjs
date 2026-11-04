@@ -105,6 +105,22 @@ test("협업 Instagram 실행은 인증과 공식 게시물 URL 검증 뒤에만
   });
 });
 
+test("화제 콘텐츠 수집은 인증과 제한된 조건 검증 뒤에만 호출한다", async () => {
+  let received;
+  await withServer({ verifyIdToken: async () => ({ uid: "user-a" }), repository: {}, contentReferenceService: { run: async value => {
+    received = value; return { runId: "run-a", status: "succeeded", rows: [{ title: "영상" }] };
+  } } }, async base => {
+    const url = `${base}/v1/workspaces/workspace-a/content-reference-runs`, body = { projectId: "project-a", brand: "오토웍스", category: "마케팅", keywords: ["자동화"], target: "담당자", strengths: [], periodDays: 28, collectCount: 5, idempotencyKey: "random-request-key-0001" };
+    assert.equal((await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) })).status, 401);
+    assert.equal((await fetch(url, { method: "POST", headers: { "content-type": "application/json", authorization: "Bearer token" }, body: JSON.stringify({ ...body, collectCount: 100 }) })).status, 400);
+    const response = await fetch(url, { method: "POST", headers: { "content-type": "application/json", authorization: "Bearer token" }, body: JSON.stringify(body) });
+    assert.equal(response.status, 201);
+    assert.equal((await response.json()).rows[0].title, "영상");
+    assert.equal(received.uid, "user-a");
+    assert.deepEqual(received.input.keywords, ["자동화"]);
+  });
+});
+
 test("프로젝트 생성은 인증과 입력 정규화 뒤 서버 저장소에 전달한다", async () => {
   let received;
   await withServer({
