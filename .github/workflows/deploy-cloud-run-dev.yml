@@ -75,7 +75,9 @@ jobs:
             --source server \
             --service-account "$RUNTIME_SERVICE_ACCOUNT" \
             --allow-unauthenticated \
-            --set-env-vars "^:^GOOGLE_CLOUD_PROJECT=$PROJECT_ID:TASKS_LOCATION=$REGION:TASKS_QUEUE=$TASKS_QUEUE:SERVICE_URL=https://bootstrap.invalid:WORKER_AUDIENCE=https://bootstrap.invalid:TASK_SERVICE_ACCOUNT_EMAIL=$TASK_SERVICE_ACCOUNT:KMS_KEY_NAME=$KMS_KEY_NAME:WEB_ORIGINS=$WEB_ORIGINS:BUDGET_DISPLAY_NAME=$BUDGET_DISPLAY_NAME" \
+            --no-invoker-iam-check \
+            --min-instances 0 --max-instances 1 \
+            --set-env-vars "^|^GOOGLE_CLOUD_PROJECT=$PROJECT_ID|TASKS_LOCATION=$REGION|TASKS_QUEUE=$TASKS_QUEUE|SERVICE_URL=https://bootstrap.invalid|WORKER_AUDIENCE=https://bootstrap.invalid|TASK_SERVICE_ACCOUNT_EMAIL=$TASK_SERVICE_ACCOUNT|KMS_KEY_NAME=$KMS_KEY_NAME|WEB_ORIGINS=$WEB_ORIGINS|BUDGET_DISPLAY_NAME=$BUDGET_DISPLAY_NAME" \
             --quiet
       - name: Pin worker audience to deployed service URL
         shell: bash
@@ -86,7 +88,7 @@ jobs:
           gcloud run services update "$SERVICE" \
             --project "$PROJECT_ID" \
             --region "$REGION" \
-            --update-env-vars "^:^SERVICE_URL=$SERVICE_URL:WORKER_AUDIENCE=$SERVICE_URL" \
+            --update-env-vars "^|^SERVICE_URL=$SERVICE_URL|WORKER_AUDIENCE=$SERVICE_URL" \
             --quiet
           echo "service_url=$SERVICE_URL" >> "$GITHUB_OUTPUT"
         id: service
@@ -142,4 +144,5 @@ jobs:
             sleep 5
           done
           exit 1
+
 
