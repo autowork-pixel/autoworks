@@ -3,6 +3,7 @@ import { normalizeWeeklyAdReport } from "./weekly-ad-report.mjs";
 import { normalizeCollabYouTubeInput } from "./collab-youtube.mjs";
 import { normalizeCollabInstagramInput } from "./collab-instagram.mjs";
 import { normalizeContentReferenceInput } from "./content-reference.mjs";
+import { normalizeInfluencerCandidateInput } from "./influencer-candidate.mjs";
 
 const maximumBodyBytes = 64 * 1024;
 
@@ -60,7 +61,7 @@ function bearer(request) {
   return match[1];
 }
 
-export function createHandler({ verifyIdToken, repository, credentialService, collabYouTubeService, collabInstagramService, contentReferenceService, taskDispatcher, logger = console }) {
+export function createHandler({ verifyIdToken, repository, credentialService, collabYouTubeService, collabInstagramService, contentReferenceService, influencerCandidateService, taskDispatcher, logger = console }) {
   return async function handler(request, response) {
     const requestId = newRequestId();
     try {
@@ -135,6 +136,17 @@ export function createHandler({ verifyIdToken, repository, credentialService, co
         if (!decoded?.uid) throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401);
         const input = normalizeContentReferenceInput(await readJson(request));
         const result = await contentReferenceService.run({ workspaceId: referenceMatch[1], uid: decoded.uid, input });
+        return json(response, result.reused ? 200 : 201, { ...result, requestId }, requestId);
+      }
+      const influencerMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/influencer-candidate-runs$/);
+      if (request.method === "POST" && influencerMatch && influencerCandidateService) {
+        if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("application/json")) throw new ApiError("INVALID_INPUT", "Content-Type은 application/json이어야 합니다.", 415);
+        let decoded;
+        try { decoded = await verifyIdToken(bearer(request)); }
+        catch { throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401); }
+        if (!decoded?.uid) throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401);
+        const input = normalizeInfluencerCandidateInput(await readJson(request));
+        const result = await influencerCandidateService.run({ workspaceId: influencerMatch[1], uid: decoded.uid, input });
         return json(response, result.reused ? 200 : 201, { ...result, requestId }, requestId);
       }
       const credentialMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/provider-credentials\/(naver-searchad|youtube|apify)$/);

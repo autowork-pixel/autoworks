@@ -1,0 +1,8 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { influencerCandidateDigest, normalizeInfluencerCandidateInput, searchInfluencerCandidates } from "../src/influencer-candidate.mjs";
+
+const input=normalizeInfluencerCandidateInput({projectId:"project-a",brand:"오토웍스",keywords:["마케팅"],subscriberMin:1000,subscriberMax:100000,candidateCount:5,idempotencyKey:"random-request-key-0001"});
+test("후보 조건을 정규화하고 멱등키를 제외한 해시를 만든다",()=>{assert.equal(input.subscriberMin,1000);assert.match(influencerCandidateDigest(input),/^[a-f0-9]{64}$/);assert.throws(()=>normalizeInfluencerCandidateInput({...input,subscriberMax:10}),{code:"INVALID_INPUT"})});
+test("공개 채널을 구독자 범위로 거르고 연락처를 추정하지 않는다",async()=>{let call=0;const result=await searchInfluencerCandidates({input,apiKey:"secret",now:()=>new Date("2026-11-04T00:00:00Z"),fetchImpl:async()=>{call+=1;if(call===1)return{ok:true,json:async()=>({items:[{id:{channelId:"channel-a"}},{id:{channelId:"channel-hidden"}}]})};return{ok:true,json:async()=>({items:[{id:"channel-a",snippet:{title:"채널",description:"소개",thumbnails:{}},statistics:{subscriberCount:"12000",videoCount:"30",viewCount:"900000"}},{id:"channel-hidden",snippet:{title:"숨김",thumbnails:{}},statistics:{hiddenSubscriberCount:true,videoCount:"5",viewCount:"20"}}]})}}});assert.equal(result.rows.length,1);assert.equal(result.rows[0].subscriberCount,12000);assert.equal(result.rows[0].contactStatus.includes("이메일"),true);assert.equal(JSON.stringify(result).includes("@"),false)});
+test("제공자 인증 오류에 키나 응답 원문을 노출하지 않는다",async()=>{await assert.rejects(()=>searchInfluencerCandidates({input,apiKey:"private-key",fetchImpl:async()=>({ok:false,status:403})}),error=>error.code==="PROVIDER_AUTH_FAILED"&&!error.message.includes("private-key"))});

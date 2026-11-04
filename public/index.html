@@ -69,7 +69,7 @@ const tools=[
  ["⌖","네이버 SEO 점유 현황","통합검색 노출 위치와 순위 분석","웹 개발 필요"],
  ["▧","콘텐츠 자동 제작","콘텐츠 제작 워크플로","기능 확인 필요"]
 ];
-document.getElementById("toolGrid").innerHTML=tools.map(t=>'<article class="tool" '+(t[1]==="브랜드 검색량 추이"?'data-trend':t[1]==="주간 광고 분석"?'data-weekly':t[1]==="협업 게시물 성과 조회"?'data-collab':t[1]==="화제 콘텐츠 레퍼런스"?'data-reference':'data-toast')+'><span class="tool-ico">'+t[0]+'</span><span><b>'+t[1]+'</b><small>'+t[2]+'</small></span><span class="state">'+t[3]+'</span></article>').join("");
+document.getElementById("toolGrid").innerHTML=tools.map(t=>'<article class="tool" '+(t[1]==="브랜드 검색량 추이"?'data-trend':t[1]==="주간 광고 분석"?'data-weekly':t[1]==="협업 게시물 성과 조회"?'data-collab':t[1]==="화제 콘텐츠 레퍼런스"?'data-reference':t[1]==="인플루언서 후보 찾기"?'data-influencer':'data-toast')+'><span class="tool-ico">'+t[0]+'</span><span><b>'+t[1]+'</b><small>'+t[2]+'</small></span><span class="state">'+t[3]+'</span></article>').join("");
 const toast=document.getElementById("toast");let timer;
 function showToast(msg){toast.textContent=msg;toast.classList.add("show");clearTimeout(timer);timer=setTimeout(()=>toast.classList.remove("show"),2400)}
 document.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("[data-mode]").forEach(x=>x.classList.toggle("active",x===b));showToast(b.dataset.mode==="ai"?"AI 제안은 API 연결 후 사용할 수 있어요.":"키워드 입력 방식으로 바뀌었어요.")}));
@@ -88,6 +88,7 @@ document.querySelectorAll("[data-trend]").forEach(b=>b.addEventListener("click",
 document.querySelector("[data-weekly]").addEventListener("click",()=>{window.location.href="./weekly-ad.html"});
 document.querySelector("[data-collab]").addEventListener("click",()=>{window.location.href="./collab-post.html"});
 document.querySelector("[data-reference]").addEventListener("click",()=>{window.location.href="./content-reference.html"});
+document.querySelector("[data-influencer]").addEventListener("click",()=>{window.location.href="./influencer-candidates.html"});
 document.querySelectorAll("#trendUnits button").forEach(b=>b.addEventListener("click",()=>drawTrend(b.dataset.unit)));
 document.getElementById("trendClose").addEventListener("click",()=>trendModal.classList.remove("open"));
 trendModal.addEventListener("click",e=>{if(e.target===trendModal)trendModal.classList.remove("open")});

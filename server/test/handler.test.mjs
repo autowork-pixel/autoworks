@@ -121,6 +121,8 @@ test("화제 콘텐츠 수집은 인증과 제한된 조건 검증 뒤에만 호
   });
 });
 
+test("인플루언서 후보 검색은 인증과 구독자 범위 검증 뒤에만 호출한다",async()=>{let received;await withServer({verifyIdToken:async()=>({uid:"user-a"}),repository:{},influencerCandidateService:{run:async value=>{received=value;return{runId:"run-a",status:"succeeded",rows:[{channelTitle:"채널"}]}}}},async base=>{const url=`${base}/v1/workspaces/workspace-a/influencer-candidate-runs`,body={projectId:"project-a",brand:"오토웍스",keywords:["마케팅"],subscriberMin:1000,subscriberMax:100000,candidateCount:5,idempotencyKey:"random-request-key-0001"};assert.equal((await fetch(url,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)})).status,401);assert.equal((await fetch(url,{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer token"},body:JSON.stringify({...body,subscriberMax:10})})).status,400);const response=await fetch(url,{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer token"},body:JSON.stringify(body)});assert.equal(response.status,201);assert.equal((await response.json()).rows[0].channelTitle,"채널");assert.equal(received.uid,"user-a")})});
+
 test("프로젝트 생성은 인증과 입력 정규화 뒤 서버 저장소에 전달한다", async () => {
   let received;
   await withServer({
