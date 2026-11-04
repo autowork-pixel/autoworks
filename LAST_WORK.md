@@ -7,7 +7,7 @@
 - 사용자 승인 후 `autoworks-c9a6a` 결제 계정에 월 50,000원 예산(50%·80%·100% 이메일 알림, `autoworks-budget-alerts` Pub/Sub 연결)을 만들었다. 예산은 비용 알림이며 지출 상한은 아니다.
 - 서울 리전에 개발용 KMS 키, Tasks 큐, Pub/Sub topic, 분리된 실행·호출 서비스 계정을 만들었다. Cloud Run `autoworks-api-dev`를 최소 인스턴스 0·최대 1로 공개 배포하고 `SERVICE_URL`·`WORKER_AUDIENCE`를 `https://autoworks-api-dev-beh42zoxia-du.a.run.app`으로 설정했다. Cloud Shell 서버 테스트 201개 통과.
 - 네이버·카카오 개발자 콘솔에 각각 `/v1/auth/naver/callback`, `/v1/auth/kakao/callback`을 위 URL로 등록하고 다시 읽어 저장을 확인했다.
-- **차단 중:** Cloud Run은 Ready/공개 접근 상태이나 두 기본 `run.app` 주소의 `/healthz`가 Google 404를 반환한다. 따라서 로그인, Hosting API 연결, Scheduler·예산 push 구독, 실제 고객 API 실행은 아직 완료하지 않았다. OAuth 비밀값도 서버에 주입하지 않았다. 다음 작업은 Cloud Run 라우팅 404 해결과 `/healthz` 200 확인이다.
+- **차단 중:** Cloud Run은 Ready/공개 접근 상태이나 두 기본 `run.app` 주소의 `/healthz`가 Google 404를 반환한다. 기본 URL을 껐다 다시 켜고 다른 네트워크에서 확인해도 동일했다. Hosting 재배포 시도는 Firebase 업로드 재시도 소진으로 실패했고 기존 공개 웹은 HTTP 200으로 유지된다. 따라서 로그인, Hosting API 연결, Scheduler·예산 push 구독, 실제 고객 API 실행은 아직 완료하지 않았다. OAuth 비밀값도 서버에 주입하지 않았다. 다음 작업은 Cloud Run 라우팅 404 해결과 `/healthz` 200 확인이다.
 
 ## 마지막 기능 작업
 
