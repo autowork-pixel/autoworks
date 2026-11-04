@@ -21,6 +21,17 @@ test("전역 자동화 조회는 안전한 상태 필드만 반환한다", async
   assert.deepEqual(await repository.getAutomationControl(),{blocked:true,reason:"예산 100% 도달",source:"cloud-billing-budget",updatedAt:"server-time"});
 });
 
+test("전역 감사 기록은 안전한 필드만 최신순 쿼리한다", async () => {
+  let order,requestedLimit;
+  const documents=[{id:"audit-a",data:()=>({action:"automation.resumed",actorUid:"admin-a",reason:"예산 검토 완료",beforeSummary:{blocked:true,secret:"x"},afterSummary:{blocked:false},createdAt:"server-time",requestId:"private"})}];
+  const query={orderBy(field,direction){order=[field,direction];return this},limit(value){requestedLimit=value;return this},async get(){return{docs:documents}}};
+  const database={doc:()=>({collection:()=>query})},repository=createAdminRepository({database,serverTimestamp:()=>"server-time"});
+  const result=await repository.listAutomationAudits({limit:10});
+  assert.deepEqual(order,["createdAt","desc"]);assert.equal(requestedLimit,10);
+  assert.deepEqual(result,[{id:"audit-a",action:"automation.resumed",actorUid:"admin-a",reason:"예산 검토 완료",beforeSummary:{blocked:true},afterSummary:{blocked:false},createdAt:"server-time"}]);
+  assert.equal(JSON.stringify(result).includes("requestId"),false);assert.equal(JSON.stringify(result).includes("secret"),false);
+});
+
 test("고객 차단과 감사 기록을 같은 트랜잭션에 남기고 반복 요청은 재사용한다", async () => {
   const fake=fakeDatabase({"workspaces/workspace-a":{ownerUid:"user-a"}}),repository=createAdminRepository({database:fake.database,serverTimestamp:()=>"server-time"});
   const input={workspaceId:"workspace-a",blocked:true,reason:"비정상 사용량 확인",actorUid:"admin-a",requestId:"request-a"};

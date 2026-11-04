@@ -15,11 +15,13 @@ export function createAdminHandler({ verifyIdToken, repository, logger = console
   return async (request, response) => {
     const requestId = newRequestId();
     try {
+      const parsedUrl = new URL(request.url || "/", "http://localhost");
       const accessMatch = request.url?.match(/^\/v1\/admin\/workspaces\/([A-Za-z0-9_-]{1,128})\/access$/);
       const inquiryMatch = request.url?.match(/^\/v1\/admin\/workspaces\/([A-Za-z0-9_-]{1,128})\/inquiries\/([A-Za-z0-9_-]{1,128}):answer$/);
       const inquiryStatusMatch = request.url?.match(/^\/v1\/admin\/workspaces\/([A-Za-z0-9_-]{1,128})\/inquiries\/([A-Za-z0-9_-]{1,128}):status$/);
-      const automationMatch = request.url === "/v1/admin/system/automation";
-      const validGet = request.method === "GET" && automationMatch;
+      const automationMatch = parsedUrl.pathname === "/v1/admin/system/automation" && !parsedUrl.search;
+      const automationAuditMatch = parsedUrl.pathname === "/v1/admin/system/automation/audit-logs";
+      const validGet = request.method === "GET" && (automationMatch || automationAuditMatch);
       const validPut = request.method === "PUT" && (accessMatch || inquiryMatch || inquiryStatusMatch || automationMatch);
       if (!validGet && !validPut) throw new ApiError("NOT_FOUND", "요청 경로를 찾을 수 없습니다.", 404);
       const bearer = String(request.headers.authorization || "").match(/^Bearer\s+(.+)$/i);
@@ -27,6 +29,12 @@ export function createAdminHandler({ verifyIdToken, repository, logger = console
       let decoded; try { decoded = await verifyIdToken(bearer[1]); } catch { throw new ApiError("AUTH_REQUIRED", "관리자 로그인을 다시 확인해주세요.", 401); }
       if (!decoded?.uid || decoded.admin !== true) throw new ApiError("AUTH_REQUIRED", "관리자 권한이 필요합니다.", 403);
       if (validGet) {
+        if (automationAuditMatch) {
+          const rawLimit = parsedUrl.searchParams.get("limit");
+          const limit = rawLimit === null ? 20 : Number(rawLimit);
+          if (!Number.isInteger(limit) || limit < 1 || limit > 50) throw new ApiError("INVALID_INPUT", "감사 기록 개수는 1~50이어야 합니다.");
+          return json(response, 200, { audits: await repository.listAutomationAudits({ limit }), requestId }, requestId);
+        }
         const result = await repository.getAutomationControl();
         return json(response, 200, { blocked: result.blocked, reason: result.reason, source: result.source, updatedAt: result.updatedAt, requestId }, requestId);
       }

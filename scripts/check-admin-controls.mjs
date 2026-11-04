@@ -10,6 +10,7 @@ assert.match(source, /inquiries\/\$\{encodeURIComponent\(item\.id\)\}:answer/, "
 assert.match(source, /inquiries\/\$\{encodeURIComponent\(inquiryId\)\}:status/, "문의 확인·종료 상태도 서버 API로만 변경해야 합니다.");
 assert.match(source, /\/v1\/admin\/system\/automation/, "전역 자동화 조치도 관리자 서버 API를 사용해야 합니다.");
 assert.match(source, /RESUME_AUTOMATION/, "예산 차단 재개는 정확한 확인 문구를 요구해야 합니다.");
+assert.match(source, /system\/automation\/audit-logs\?limit=10/, "전역 자동화 감사 기록은 제한된 관리자 API로 조회해야 합니다.");
 assert.match(source, /body:JSON\.stringify\(\{blocked,confirmation,reason:reason\.trim\(\)\}\)/, "전역 조치는 상태·확인 문구·사유만 전달해야 합니다.");
 assert.equal(source.includes("updateDoc("), false, "운영 화면에서 Firestore 문서를 직접 변경하면 안 됩니다.");
 assert.equal(source.includes("providerCredentials"), false, "운영 화면에서 고객 API 자격정보를 조회하면 안 됩니다.");

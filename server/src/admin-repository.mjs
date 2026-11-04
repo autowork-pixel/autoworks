@@ -11,6 +11,22 @@ export function createAdminRepository({ database, serverTimestamp }) {
       });
     },
 
+    async listAutomationAudits({ limit = 20 }) {
+      const snapshot = await database.doc("systemControls/automation").collection("auditLogs").orderBy("createdAt", "desc").limit(limit).get();
+      return snapshot.docs.map(document => {
+        const data = document.data();
+        return {
+          id: document.id,
+          action: typeof data.action === "string" ? data.action : "automation.unknown",
+          actorUid: typeof data.actorUid === "string" ? data.actorUid : null,
+          reason: typeof data.reason === "string" ? data.reason : null,
+          beforeSummary: { blocked: data.beforeSummary?.blocked === true },
+          afterSummary: { blocked: data.afterSummary?.blocked === true },
+          createdAt: data.createdAt || null
+        };
+      });
+    },
+
     async setAutomationBlocked({ blocked, reason, actorUid, requestId }) {
       const control = database.doc("systemControls/automation"), audit = control.collection("auditLogs").doc();
       return database.runTransaction(async transaction => {
