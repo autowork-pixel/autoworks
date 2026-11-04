@@ -4,10 +4,25 @@ const project = document.getElementById("project"), history = document.getElemen
 const lookup = document.getElementById("lookup"), lookupStatus = document.getElementById("lookupStatus");
 const accountStatus = document.getElementById("accountStatus"), postUrl = document.getElementById("postUrl");
 const platform = document.getElementById("platform"), credentialGuide = document.getElementById("credentialGuide");
+const addCompare = document.getElementById("addCompare"), downloadCurrent = document.getElementById("downloadCurrent");
+const downloadCompare = document.getElementById("downloadCompare"), clearCompare = document.getElementById("clearCompare");
+const compareBody = document.getElementById("compareBody"), compareCount = document.getElementById("compareCount");
 let user = null, workspaceId = null, database, auth, generation = 0, reportById = new Map(), requestKey = null;
+let currentPost = null, comparePosts = [];
 const displayCount = value => value == null ? "미제공" : Number(value).toLocaleString("ko-KR");
 function updateAvailability() { lookup.disabled = !apiBase || !user || !workspaceId || !project.value || !postUrl.value.trim(); }
-function clearResult() { document.getElementById("result").hidden = true; }
+function safeCell(value) {
+  const text = value == null ? "" : String(value), protectedText = /^[=+\-@]/.test(text) ? `'${text}` : text;
+  return `"${protectedText.replaceAll('"', '""')}"`;
+}
+function download(content, type, name) {
+  const url = URL.createObjectURL(new Blob([content], { type })), link = document.createElement("a");
+  link.href = url; link.download = name; link.click(); setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+function clearResult() {
+  currentPost = null; addCompare.disabled = true; downloadCurrent.disabled = true;
+  document.getElementById("result").hidden = true;
+}
 function showResult(post) {
   const valid = post?.platform === "YouTube"
     ? /^https:\/\/www\.youtube\.com\/watch\?v=[A-Za-z0-9_-]{11}$/.test(post.url || "")
@@ -18,7 +33,23 @@ function showResult(post) {
   for (const key of ["views", "likes", "comments"]) document.getElementById(key).textContent = displayCount(post[key]);
   document.getElementById("postLink").href = post.url;
   document.getElementById("postLink").textContent = `${post.platform} 게시물 열기 ↗`;
+  currentPost = post; addCompare.disabled = false; downloadCurrent.disabled = false;
   document.getElementById("result").hidden = false;
+}
+function renderComparison() {
+  compareBody.replaceChildren();
+  compareCount.textContent = `${comparePosts.length}/4`;
+  downloadCompare.disabled = !comparePosts.length; clearCompare.disabled = !comparePosts.length;
+  if (!comparePosts.length) {
+    const row = compareBody.insertRow(), cell = row.insertCell();
+    cell.colSpan = 5; cell.textContent = "비교할 결과를 추가해 주세요.";
+    return;
+  }
+  for (const post of comparePosts) {
+    const row = compareBody.insertRow();
+    const values = [`${post.platform} · ${post.title || "제목 미제공"}`, displayCount(post.views), displayCount(post.likes), displayCount(post.comments), new Date(post.capturedAt).toLocaleString("ko-KR")];
+    values.forEach(value => { const cell = row.insertCell(); cell.textContent = value; });
+  }
 }
 postUrl.addEventListener("input", () => { requestKey = null; updateAvailability(); });
 project.addEventListener("change", () => { requestKey = null; updateAvailability(); });
@@ -32,6 +63,25 @@ platform.addEventListener("change", () => {
   updateAvailability();
 });
 history.addEventListener("change", () => { const report = reportById.get(history.value); if (report) showResult(report.post); });
+addCompare.addEventListener("click", () => {
+  if (!currentPost) return;
+  if (comparePosts.some(post => post.url === currentPost.url && post.capturedAt === currentPost.capturedAt)) {
+    lookupStatus.textContent = "이미 비교함에 있는 결과입니다."; return;
+  }
+  if (comparePosts.length >= 4) { lookupStatus.textContent = "비교함에는 최대 4개까지 추가할 수 있습니다."; return; }
+  comparePosts.push(currentPost); renderComparison();
+});
+downloadCurrent.addEventListener("click", () => {
+  if (!currentPost) return;
+  download(JSON.stringify({ exportedAt: new Date().toISOString(), post: currentPost }, null, 2), "application/json;charset=utf-8", `collab-post-${new Date().toISOString().slice(0, 10)}.json`);
+});
+downloadCompare.addEventListener("click", () => {
+  if (!comparePosts.length) return;
+  const headers = ["플랫폼", "제목", "URL", "조회수", "좋아요", "댓글", "조회 시각"];
+  const lines = [headers.map(safeCell).join(","), ...comparePosts.map(post => [post.platform, post.title, post.url, post.views, post.likes, post.comments, post.capturedAt].map(safeCell).join(","))];
+  download("\uFEFF" + lines.join("\r\n"), "text/csv;charset=utf-8", `collab-compare-${new Date().toISOString().slice(0, 10)}.csv`);
+});
+clearCompare.addEventListener("click", () => { comparePosts = []; renderComparison(); });
 
 async function loadHistory(getDocs, collection, query, orderBy, limit) {
   const currentUser = user, currentWorkspace = workspaceId;
@@ -60,7 +110,7 @@ async function initialize() {
     .catch(() => { accountStatus.textContent = "로그인하지 못했습니다."; }));
   onAuthStateChanged(auth, async signedIn => {
     const current = ++generation;
-    user = signedIn; workspaceId = null; requestKey = null; reportById.clear(); clearResult();
+    user = signedIn; workspaceId = null; requestKey = null; reportById.clear(); comparePosts = []; renderComparison(); clearResult();
     document.getElementById("login").hidden = Boolean(user);
     project.replaceChildren(new Option(user ? "프로젝트 불러오는 중" : "로그인 후 프로젝트 선택", "")); project.disabled = true;
     history.replaceChildren(new Option(user ? "저장된 결과 불러오는 중" : "로그인 후 결과 조회", "")); history.disabled = true;
@@ -107,4 +157,5 @@ async function initialize() {
   });
   lookupStatus.textContent = apiBase ? "프로젝트와 YouTube URL을 입력해 주세요." : "서버 연결 전에는 실제 조회할 수 없습니다.";
 }
+renderComparison();
 initialize().catch(() => { accountStatus.textContent = "계정 화면을 준비하지 못했습니다."; });
