@@ -78,6 +78,22 @@ for (const file of scriptFiles) {
   }
 }
 
+const home = readFileSync(resolve(root, "index.html"), "utf8");
+const expectedApiKey = home.match(/apiKey\s*:\s*["'](AIza[0-9A-Za-z_-]+)["']/)?.[1];
+const expectedAppId = home.match(/appId\s*:\s*["']([^"']+)["']/)?.[1];
+if (!expectedApiKey || !expectedAppId) errors.push("index.html: Firebase 앱 설정을 찾을 수 없습니다.");
+for (const file of [...htmlFiles, ...scriptFiles]) {
+  const source = readFileSync(resolve(root, file), "utf8");
+  for (const match of source.matchAll(/\b(apiKey|appId)\s*:\s*["']([^"']+)["']/g)) {
+    if (match[1] === "apiKey" && match[2].startsWith("AIza") && match[2] !== expectedApiKey) {
+      errors.push(`${file}: 홈 화면과 다른 Firebase API 키입니다.`);
+    }
+    if (match[1] === "appId" && match[2].startsWith("1:") && match[2] !== expectedAppId) {
+      errors.push(`${file}: 홈 화면과 다른 Firebase 앱 ID입니다.`);
+    }
+  }
+}
+
 const apiGuide = readFileSync(resolve(root, "api-guide.html"), "utf8");
 if (!apiGuide.includes('?"password":"text"') || !/autocomplete=["']off["']/.test(apiGuide)) {
   errors.push("api-guide.html: 비밀정보 입력은 password 형식과 autocomplete=off를 유지해야 합니다.");

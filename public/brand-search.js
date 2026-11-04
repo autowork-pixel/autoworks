@@ -1,4 +1,4 @@
-const firebaseConfig={apiKey:"AIzaSyBHcgYeZM8-n_PPSLbsazSfGx32BMDnB2M",authDomain:"autoworks-c9a6a.firebaseapp.com",projectId:"autoworks-c9a6a",storageBucket:"autoworks-c9a6a.firebasestorage.app",messagingSenderId:"576193408775",appId:"1:576193408775:web:fae402ea7b94045d21ba1f"};
+const firebaseConfig={apiKey:"AIzaSyC4j2aelRB3uEyGmZJbvW0OGNL5-Oi2uvA",authDomain:"autoworks-c9a6a.firebaseapp.com",projectId:"autoworks-c9a6a",storageBucket:"autoworks-c9a6a.firebasestorage.app",messagingSenderId:"823085494995",appId:"1:823085494995:web:3be4bdd40fe0519bc59a26"};
 const allowedHosts=new Set(["localhost","127.0.0.1","autoworks-c9a6a.web.app","autoworks-c9a6a.firebaseapp.com"]);
 const apiBase=String(window.AUTOWORKS_API_BASE||"").replace(/\/$/,"");
 const elements=Object.fromEntries(["searchForm","login","project","brand","competitors","keywords","period","rounding","submit","cancel","download","status","runStatus","successCount","failureCount","resultHelp","runHistory","compareRuns","trendStatus","trendBody"].map(id=>[id,document.getElementById(id)]));

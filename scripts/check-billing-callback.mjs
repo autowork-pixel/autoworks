@@ -5,6 +5,9 @@ const success=await readFile(new URL("../public/billing-success.html",import.met
 assert.match(service,/workspaceId=\$\{encodeURIComponent\(workspaceId\)\}/,"결제 반환 URL은 완료 API의 워크스페이스를 포함해야 합니다.");
 assert.match(success,/history\.replaceState\(null,"",location\.pathname\)/,"일회용 결제 결과는 주소창에서 즉시 제거해야 합니다.");
 assert.match(success,/auth\.currentUser|onAuthStateChanged/,"결제 완료 API는 로그인 계정을 확인한 뒤 호출해야 합니다.");
+assert.match(success,/signInWithPopup\(auth,new GoogleAuthProvider\(\)\)/,"결제 반환 화면에서 로그인을 다시 진행할 수 있어야 합니다.");
+assert.match(success,/signInWithCustomToken\(auth,event\.data\.customToken\)/,"네이버·카카오 로그인도 결제 반환 화면에서 복구할 수 있어야 합니다.");
+assert.match(success,/retry\.addEventListener\("click"/,"결제 확인 실패 뒤 같은 화면에서 다시 시도할 수 있어야 합니다.");
 assert.match(success,/billing-sessions\/\$\{encodeURIComponent\(sessionId\)\}:complete/,"결제 완료는 검증된 세션 완료 API만 호출해야 합니다.");
 assert.match(success,/authorization:`Bearer \$\{await user\.getIdToken\(\)\}`/,"결제 완료 API에 Firebase ID token을 전달해야 합니다.");
 assert.doesNotMatch(success,/localStorage|sessionStorage/,"일회용 결제 결과를 브라우저 저장소에 남기면 안 됩니다.");

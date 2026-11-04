@@ -102,9 +102,9 @@ async function initialize() {
     import("https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js"),
     import("https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js")
   ]);
-  const app = getApps()[0] || initializeApp({ apiKey: "AIzaSyBHcgYeZM8-n_PPSLbsazSfGx32BMDnB2M",
+  const app = getApps()[0] || initializeApp({ apiKey: "AIzaSyC4j2aelRB3uEyGmZJbvW0OGNL5-Oi2uvA",
     authDomain: "autoworks-c9a6a.firebaseapp.com", projectId: "autoworks-c9a6a",
-    appId: "1:576193408775:web:fae402ea7b94045d21ba1f" });
+    appId: "1:823085494995:web:3be4bdd40fe0519bc59a26" });
   auth = getAuth(app); database = getFirestore(app);
   document.getElementById("login").addEventListener("click", () => signInWithPopup(auth, new GoogleAuthProvider())
     .catch(() => { accountStatus.textContent = "로그인하지 못했습니다."; }));
