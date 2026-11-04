@@ -18,6 +18,7 @@
 - 100% Pub/Sub 알림은 `systemControls/automation.blocked=true`로 새 자동화 실행을 중지한다. 청구 데이터에는 지연이 있으므로 이를 실시간 비용 상한으로 약속하지 않는다.
 - 예산이 다음 달 초기화되어도 자동 해제하지 않는다. 운영자가 비용 원인을 확인하고 감사 기록과 함께 수동 해제한다.
 - 재개는 admin claim으로 `PUT /v1/admin/system/automation`을 호출하고 `blocked:false`, 확인 문구 `RESUME_AUTOMATION`, 10자 이상의 원인·조치 사유를 함께 제출한다. 서버는 상태 변경과 `automation.resumed` 감사 기록을 한 트랜잭션에 저장한다. Firestore 콘솔 직접 수정은 정상 재개 절차로 사용하지 않는다.
+- 운영자 화면의 **전역 자동화 제어 → 검토 후 재개**도 같은 API를 사용한다. 표시 상태만 보고 재개하지 말고 Cloud Billing 비용·최근 제공자 호출·오류 로그를 먼저 확인한다.
 
 - 5분 동안 핵심 API 5xx 비율 5% 이상
 - P95 응답 10초 이상 또는 queued 상태 10분 이상
