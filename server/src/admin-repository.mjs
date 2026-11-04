@@ -2,6 +2,15 @@ import { ApiError } from "./domain.mjs";
 
 export function createAdminRepository({ database, serverTimestamp }) {
   return {
+    async getAutomationControl() {
+      const control = database.doc("systemControls/automation");
+      return database.runTransaction(async transaction => {
+        const snapshot = await transaction.get(control);
+        const data = snapshot.exists ? snapshot.data() : {};
+        return { blocked: data.blocked === true, reason: typeof data.reason === "string" ? data.reason : null, source: typeof data.source === "string" ? data.source : null, updatedAt: data.updatedAt || null };
+      });
+    },
+
     async setAutomationBlocked({ blocked, reason, actorUid, requestId }) {
       const control = database.doc("systemControls/automation"), audit = control.collection("auditLogs").doc();
       return database.runTransaction(async transaction => {

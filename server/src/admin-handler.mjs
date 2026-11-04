@@ -19,12 +19,18 @@ export function createAdminHandler({ verifyIdToken, repository, logger = console
       const inquiryMatch = request.url?.match(/^\/v1\/admin\/workspaces\/([A-Za-z0-9_-]{1,128})\/inquiries\/([A-Za-z0-9_-]{1,128}):answer$/);
       const inquiryStatusMatch = request.url?.match(/^\/v1\/admin\/workspaces\/([A-Za-z0-9_-]{1,128})\/inquiries\/([A-Za-z0-9_-]{1,128}):status$/);
       const automationMatch = request.url === "/v1/admin/system/automation";
-      if (request.method !== "PUT" || (!accessMatch && !inquiryMatch && !inquiryStatusMatch && !automationMatch)) throw new ApiError("NOT_FOUND", "요청 경로를 찾을 수 없습니다.", 404);
-      if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("application/json")) throw new ApiError("INVALID_INPUT", "Content-Type은 application/json이어야 합니다.", 415);
+      const validGet = request.method === "GET" && automationMatch;
+      const validPut = request.method === "PUT" && (accessMatch || inquiryMatch || inquiryStatusMatch || automationMatch);
+      if (!validGet && !validPut) throw new ApiError("NOT_FOUND", "요청 경로를 찾을 수 없습니다.", 404);
       const bearer = String(request.headers.authorization || "").match(/^Bearer\s+(.+)$/i);
       if (!bearer) throw new ApiError("AUTH_REQUIRED", "관리자 로그인이 필요합니다.", 401);
       let decoded; try { decoded = await verifyIdToken(bearer[1]); } catch { throw new ApiError("AUTH_REQUIRED", "관리자 로그인을 다시 확인해주세요.", 401); }
       if (!decoded?.uid || decoded.admin !== true) throw new ApiError("AUTH_REQUIRED", "관리자 권한이 필요합니다.", 403);
+      if (validGet) {
+        const result = await repository.getAutomationControl();
+        return json(response, 200, { blocked: result.blocked, reason: result.reason, source: result.source, updatedAt: result.updatedAt, requestId }, requestId);
+      }
+      if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("application/json")) throw new ApiError("INVALID_INPUT", "Content-Type은 application/json이어야 합니다.", 415);
       const input = await body(request);
       if (automationMatch) {
         const reason = typeof input.reason === "string" ? input.reason.trim() : "";

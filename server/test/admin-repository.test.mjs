@@ -16,6 +16,11 @@ test("관리자 전역 재개는 차단 상태와 비민감 감사 기록을 한
   const writes=fake.writes.length;assert.deepEqual(await repository.setAutomationBlocked(input),{blocked:false,reused:true});assert.equal(fake.writes.length,writes);
 });
 
+test("전역 자동화 조회는 안전한 상태 필드만 반환한다", async () => {
+  const fake=fakeDatabase({"systemControls/automation":{blocked:true,reason:"예산 100% 도달",source:"cloud-billing-budget",updatedAt:"server-time",billingAccountId:"secret"}}),repository=createAdminRepository({database:fake.database,serverTimestamp:()=>"server-time"});
+  assert.deepEqual(await repository.getAutomationControl(),{blocked:true,reason:"예산 100% 도달",source:"cloud-billing-budget",updatedAt:"server-time"});
+});
+
 test("고객 차단과 감사 기록을 같은 트랜잭션에 남기고 반복 요청은 재사용한다", async () => {
   const fake=fakeDatabase({"workspaces/workspace-a":{ownerUid:"user-a"}}),repository=createAdminRepository({database:fake.database,serverTimestamp:()=>"server-time"});
   const input={workspaceId:"workspace-a",blocked:true,reason:"비정상 사용량 확인",actorUid:"admin-a",requestId:"request-a"};
