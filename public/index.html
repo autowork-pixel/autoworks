@@ -60,16 +60,16 @@
 <script src="./runtime-config.js"></script>
 <script>
 const tools=[
- ["⌕","인플루언서 후보 찾기","YouTube·Instagram 공개 프로필 후보","로컬 코드 있음"],
- ["◉","화제 콘텐츠 레퍼런스","공개 게시물 수집과 콘텐츠 분석","로컬 코드 있음"],
- ["▤","협업 게시물 성과 조회","YouTube 공개 영상 성과 조회","입력 화면 준비"],
- ["↗","브랜드 검색량 추이","브랜드 일별 검색 데이터 확인","로컬 코드 있음"],
- ["▥","주간 광고 분석","Excel 광고 지표 분석","브라우저 분석 가능"],
- ["✦","AI 블로그 스튜디오","사실 기반 검토용 원고 작성과 다듬기","로컬 코드 있음"],
- ["⌖","네이버 검색 노출 점검","공식 블로그·웹문서 API 결과 확인","로컬 코드 있음"],
- ["▧","콘텐츠 자동 제작","채널별 검토용 콘텐츠 묶음","로컬 코드 있음"]
+ ["⌕","인플루언서 후보 찾기","YouTube 공개 프로필 후보","P1 · 실행 화면"],
+ ["◉","화제 콘텐츠 레퍼런스","공개 게시물 수집과 콘텐츠 분석","P2 · 실행 화면"],
+ ["▤","협업 게시물 성과 조회","YouTube·Instagram 공개 지표","P3 · 실행 화면"],
+ ["↗","브랜드 검색량 추이","브랜드 검색량 스냅샷 확인","P4 · 실행 화면"],
+ ["▥","주간 광고 분석","Excel 광고 지표 분석","P5 · 브라우저 실행"],
+ ["✦","AI 블로그 스튜디오","사실 기반 검토용 원고 작성과 다듬기","P6 · 실행 화면"],
+ ["⌖","네이버 검색 노출 점검","공식 블로그·웹문서 API 결과 확인","P7 · 실행 화면"],
+ ["▧","콘텐츠 자동 제작","채널별 검토용 콘텐츠 묶음","P8 · 실행 화면"]
 ];
-document.getElementById("toolGrid").innerHTML=tools.map(t=>'<article class="tool" '+(t[1]==="브랜드 검색량 추이"?'data-trend':t[1]==="주간 광고 분석"?'data-weekly':t[1]==="협업 게시물 성과 조회"?'data-collab':t[1]==="화제 콘텐츠 레퍼런스"?'data-reference':t[1]==="인플루언서 후보 찾기"?'data-influencer':t[1]==="AI 블로그 스튜디오"?'data-ai-blog':t[1]==="네이버 검색 노출 점검"?'data-naver-visibility':t[1]==="콘텐츠 자동 제작"?'data-content-pack':'data-toast')+'><span class="tool-ico">'+t[0]+'</span><span><b>'+t[1]+'</b><small>'+t[2]+'</small></span><span class="state">'+t[3]+'</span></article>').join("");
+document.getElementById("toolGrid").innerHTML=tools.map(t=>'<article class="tool" role="button" tabindex="0" '+(t[1]==="브랜드 검색량 추이"?'data-trend':t[1]==="주간 광고 분석"?'data-weekly':t[1]==="협업 게시물 성과 조회"?'data-collab':t[1]==="화제 콘텐츠 레퍼런스"?'data-reference':t[1]==="인플루언서 후보 찾기"?'data-influencer':t[1]==="AI 블로그 스튜디오"?'data-ai-blog':t[1]==="네이버 검색 노출 점검"?'data-naver-visibility':t[1]==="콘텐츠 자동 제작"?'data-content-pack':'data-toast')+'><span class="tool-ico">'+t[0]+'</span><span><b>'+t[1]+'</b><small>'+t[2]+'</small></span><span class="state">'+t[3]+'</span></article>').join("");
 const toast=document.getElementById("toast");let timer;
 function showToast(msg){toast.textContent=msg;toast.classList.add("show");clearTimeout(timer);timer=setTimeout(()=>toast.classList.remove("show"),2400)}
 document.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("[data-mode]").forEach(x=>x.classList.toggle("active",x===b));showToast(b.dataset.mode==="ai"?"AI 제안은 API 연결 후 사용할 수 있어요.":"키워드 입력 방식으로 바뀌었어요.")}));
@@ -92,6 +92,7 @@ document.querySelector("[data-influencer]").addEventListener("click",()=>{window
 document.querySelector("[data-ai-blog]").addEventListener("click",()=>{window.location.href="./ai-blog.html"});
 document.querySelector("[data-naver-visibility]").addEventListener("click",()=>{window.location.href="./naver-visibility.html"});
 document.querySelector("[data-content-pack]").addEventListener("click",()=>{window.location.href="./content-pack.html"});
+document.getElementById("toolGrid").addEventListener("keydown",event=>{if((event.key==="Enter"||event.key===" ")&&event.target.matches(".tool")){event.preventDefault();event.target.click()}});
 document.querySelectorAll("#trendUnits button").forEach(b=>b.addEventListener("click",()=>drawTrend(b.dataset.unit)));
 document.getElementById("trendClose").addEventListener("click",()=>trendModal.classList.remove("open"));
 trendModal.addEventListener("click",e=>{if(e.target===trendModal)trendModal.classList.remove("open")});
