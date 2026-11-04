@@ -2,6 +2,22 @@ import { ApiError } from "./domain.mjs";
 
 export function createAdminRepository({ database, serverTimestamp }) {
   return {
+    async setAutomationBlocked({ blocked, reason, actorUid, requestId }) {
+      const control = database.doc("systemControls/automation"), audit = control.collection("auditLogs").doc();
+      return database.runTransaction(async transaction => {
+        const snapshot = await transaction.get(control);
+        const before = snapshot.exists && snapshot.data().blocked === true;
+        if (before === blocked) return { blocked, reused: true };
+        const timestamp = serverTimestamp();
+        transaction.set(control, { blocked, reason, source: "admin", updatedBy: actorUid, updatedAt: timestamp }, { merge: true });
+        transaction.set(audit, {
+          action: blocked ? "automation.blocked" : "automation.resumed", actorUid, actorRole: "admin", targetType: "system", targetId: "automation",
+          reason, requestId, beforeSummary: { blocked: before }, afterSummary: { blocked }, createdAt: timestamp
+        });
+        return { blocked, reused: false };
+      });
+    },
+
     async setWorkspaceBlocked({ workspaceId, blocked, reason, actorUid, requestId }) {
       const workspace = database.doc(`workspaces/${workspaceId}`), access = workspace.collection("serverControls").doc("access"), audit = workspace.collection("auditLogs").doc();
       return database.runTransaction(async transaction => {

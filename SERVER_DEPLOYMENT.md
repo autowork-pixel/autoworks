@@ -76,6 +76,8 @@ npm run smoke:authenticated-api
 
 예산 알림은 공식 schema `1.0`의 base64 JSON만 허용한다. 누적 비용 또는 실제비용 경고 기준이 100% 이상이면 `systemControls/automation.blocked=true`를 멱등 기록해 신규 실행을 막는다. Pub/Sub은 중복·역순 전달될 수 있으므로 100% 미만 알림은 자동 해제하지 않으며, 운영자가 비용 원인을 확인한 뒤 별도 승인으로만 재개한다. 예산 알림은 비용 반영이 지연될 수 있어 절대 지출 상한으로 간주하지 않는다.
 
+재개 API는 관리자 claim, 정확한 `RESUME_AUTOMATION` 확인 문구와 10~500자의 사유를 요구한다. 상태와 비민감 감사 기록을 한 트랜잭션에 남기며, 이미 같은 상태인 요청은 재사용 처리한다.
+
 ## 중지 조건
 
 - 다른 workspace 문서를 읽거나 수정할 수 있음

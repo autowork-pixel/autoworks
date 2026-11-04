@@ -6,6 +6,16 @@ class Ref { constructor(database,path){this.database=database;this.path=path} co
 class Collection { constructor(database,path){this.database=database;this.path=path} doc(id=`auto-${++this.database.sequence}`){return new Ref(this.database,`${this.path}/${id}`)} }
 function fakeDatabase(seed={}) { const values=new Map(Object.entries(seed)),writes=[];const database={sequence:0,doc:path=>new Ref(database,path),runTransaction:callback=>callback({get:async ref=>({exists:values.has(ref.path),data:()=>values.get(ref.path)}),set:(ref,value,options)=>{values.set(ref.path,options?.merge?{...(values.get(ref.path)||{}),...value}:value);writes.push([ref.path,value,options])}})};return{database,values,writes}; }
 
+test("관리자 전역 재개는 차단 상태와 비민감 감사 기록을 한 트랜잭션에 남긴다", async () => {
+  const fake=fakeDatabase({"systemControls/automation":{blocked:true,source:"cloud-billing-budget"}}),repository=createAdminRepository({database:fake.database,serverTimestamp:()=>"server-time"});
+  const input={blocked:false,reason:"예산 원인 확인 및 운영자 재개 승인",actorUid:"admin-a",requestId:"request-a"};
+  assert.deepEqual(await repository.setAutomationBlocked(input),{blocked:false,reused:false});
+  assert.equal(fake.values.get("systemControls/automation").blocked,false);
+  const audit=[...fake.values.entries()].find(([path,value])=>path.includes("/auditLogs/")&&value.action==="automation.resumed")[1];
+  assert.equal(audit.actorUid,"admin-a");assert.deepEqual(audit.beforeSummary,{blocked:true});assert.deepEqual(audit.afterSummary,{blocked:false});
+  const writes=fake.writes.length;assert.deepEqual(await repository.setAutomationBlocked(input),{blocked:false,reused:true});assert.equal(fake.writes.length,writes);
+});
+
 test("고객 차단과 감사 기록을 같은 트랜잭션에 남기고 반복 요청은 재사용한다", async () => {
   const fake=fakeDatabase({"workspaces/workspace-a":{ownerUid:"user-a"}}),repository=createAdminRepository({database:fake.database,serverTimestamp:()=>"server-time"});
   const input={workspaceId:"workspace-a",blocked:true,reason:"비정상 사용량 확인",actorUid:"admin-a",requestId:"request-a"};
