@@ -15,6 +15,7 @@
     "test:billing-boundary": "node scripts/check-billing-boundary.mjs",
     "test:container": "node scripts/check-container.mjs",
     "test:cloud-bootstrap": "node scripts/check-cloud-bootstrap.mjs",
+    "smoke:development-api": "node scripts/smoke-development-api.mjs",
     "test:server": "node --test server/test/*.test.mjs",
     "verify:hosting": "node scripts/verify-hosting.mjs"
   },

@@ -93,8 +93,7 @@ jobs:
           SERVICE_URL: ${{ steps.service.outputs.service_url }}
         run: |
           set -euo pipefail
-          curl --fail --silent --show-error "$SERVICE_URL/healthz"
-          test "$(curl --silent --output /dev/null --write-out '%{http_code}' -X POST "$SERVICE_URL/internal/v1/recovery:run")" = "401"
+          AUTOWORKS_API_BASE="$SERVICE_URL" npm run smoke:development-api
       - name: Grant only the caller identity and configure recovery schedule
         shell: bash
         env:

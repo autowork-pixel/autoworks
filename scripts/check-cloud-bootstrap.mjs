@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 const script = fs.readFileSync(new URL("./bootstrap-cloud-dev.sh", import.meta.url), "utf8");
 const workflow = fs.readFileSync(new URL("../.github/workflows/deploy-cloud-run-dev.yml", import.meta.url), "utf8");
+const smoke = fs.readFileSync(new URL("./smoke-development-api.mjs", import.meta.url), "utf8");
 
 for (const value of [
   "autoworks-c9a6a", "asia-northeast3", "autoworks-api-runtime",
@@ -20,5 +21,9 @@ assert.match(workflow, /CLOUD_RUN_KMS_KEY_NAME/);
 assert.match(workflow, /printf 'window\.AUTOWORKS_API_BASE/);
 assert.match(workflow, /firebase-tools@15\.34\.2 deploy/);
 assert.match(workflow, /npm run verify:hosting/);
+assert.match(workflow, /npm run smoke:development-api/);
+assert.match(smoke, /access-control-allow-origin/);
+assert.match(smoke, /\/internal\/v1\/recovery:run/);
+assert.match(smoke, /expected \$\{status\}/);
 console.log("개발 Cloud Run 부트스트랩의 결제 확인·무키 파일·최소 분리 계정 경계를 확인");
 
