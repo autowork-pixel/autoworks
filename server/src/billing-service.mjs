@@ -42,6 +42,7 @@ export function createBillingService({ repository, provider, keyManager, clientK
         try { const envelope=encryptCredentialPayload({credentials:{billingKey,customerKey:session.customerKey},plaintextDataKey:generated.plaintextDataKey,encryptedDataKey:generated.encryptedDataKey,keyVersion:generated.keyVersion,provider:"toss-billing"}); return await repository.complete({workspaceId,uid,sessionId,plan,envelope,payment}); }
         finally { generated.plaintextDataKey.fill(0); }
       } catch(error) { await repository.fail({workspaceId,uid,sessionId,errorCode:error?.code||"INTERNAL_ERROR"}); throw error; }
-    }
+    },
+    cancel({workspaceId,uid}) { return repository.cancelSubscription({workspaceId,uid}); }
   };
 }
