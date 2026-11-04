@@ -67,22 +67,446 @@ const tools=[
  ["â–¥","ì£¼ê°„ ê´‘ê³  ë¶„ì„","Excel ê´‘ê³  ì§€í‘œ ë¶„ì„","ë¸Œë¼ìš°ì € ë¶„ì„ ê°€ëŠ¥"],
  ["âœ¦","AI ë¸”ë¡œê·¸ ìŠ¤íŠœë””ì˜¤","ì‚¬ì‹¤ ê¸°ë°˜ ê²€í† ìš© ì›ê³  ì‘ì„±ê³¼ ë‹¤ë“¬ê¸°","ë¡œì»¬ ì½”ë“œ ìˆìŒ"],
  ["âŒ–","ë„¤ì´ë²„ ê²€ìƒ‰ ë…¸ì¶œ ì ê²€","ê³µì‹ ë¸”ë¡œê·¸Â·ì›¹ë¬¸ì„œ API ê²°ê³¼ í™•ì¸","ë¡œì»¬ ì½”ë“œ ìˆìŒ"],
- ["â–§","ì½˜í…ì¸  ìë™ ì œì‘","ì½˜í…ì¸  ì œì‘ ì›Œí¬í”Œë¡œ","ê¸°ëŠ¥ í™•ì¸ í•„ìš”"]
+ ["â–§","ì½˜í…ì¸  ìë™ ì œì‘","ì±„ë„ë³„ ê²€í† ìš© ì½˜í…ì¸  ë¬¶ìŒ","ë¡œì»¬ ì½”ë“œ ìˆìŒ"]
 ];
-document.getElementById("toolGrid").innerHTML=tools.map(t=>'<article class="tool" '+(t[1]==="ë¸Œëœë“œ ê²€ìƒ‰ëŸ‰ ì¶”ì´"?'data-trend':t[1]==="ì£¼ê°„ ê´‘ê³  ë¶„ì„"?'data-weekly':t[1]==="í˜‘ì—… ê²Œì‹œë¬¼ ì„±ê³¼ ì¡°íšŒ"?'data-collab':t[1]==="í™”ì œ ì½˜í…ì¸  ë ˆí¼ëŸ°ìŠ¤"?'data-reference':t[1]==="ì¸í”Œë£¨ì–¸ì„œ í›„ë³´ ì°¾ê¸°"?'data-influencer':t[1]==="AI ë¸”ë¡œê·¸ ìŠ¤íŠœë””ì˜¤"?'data-ai-blog':t[1]==="ë„¤ì´ë²„ ê²€ìƒ‰ ë…¸ì¶œ ì ê²€"?'data-naver-visibility':'data-toast')+'><span class="tool-ico">'+t[0]+'</span><span><b>'+t[1]+'</b><small>'+t[2]+'</small></span><span class="state">'+t[3]+'</span></article>').join("");
+document.getElementById("toolGrid").innerHTML=tools.map(t=>'<article class="tool" '+(t[1]==="ë¸Œëœë“œ ê²€ìƒ‰ëŸ‰ ì¶”ì´"?'data-trend':t[1]==="ì£¼ê°„ ê´‘ê³  ë¶„ì„"?'data-weekly':t[1]==="í˜‘ì—… ê²Œì‹œë¬¼ ì„±ê³¼ ì¡°íšŒ"?'data-collab':t[1]==="í™”ì œ ì½˜í…ì¸  ë ˆí¼ëŸ°ìŠ¤"?'data-reference':t[1]==="ì¸í”Œë£¨ì–¸ì„œ í›„ë³´ ì°¾ê¸°"?'data-influencer':t[1]==="AI ë¸”ë¡œê·¸ ìŠ¤íŠœë””ì˜¤"?'data-ai-blog':t[1]==="ë„¤ì´ë²„ ê²€ìƒ‰ ë…¸ì¶œ ì ê²€"?'data-naver-visibility':t[1]==="ì½˜í…ì¸  ìë™ ì œì‘"?'data-content-pack':'data-toast')+'><span class="tool-ico">'+t[0]+'</span><span><b>'+t[1]+'</b><small>'+t[2]+'</small></span><span class="state">'+t[3]+'</span></article>').join("");
 const toast=document.getElementById("toast");let timer;
 function showToast(msg){toast.textContent=msg;toast.classList.add("show");clearTimeout(timer);timer=setTimeout(()=>toast.classList.remove("show"),2400)}
 document.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("[data-mode]").forEach(x=>x.classList.toggle("active",x===b));showToast(b.dataset.mode==="ai"?"AI ì œì•ˆì€ API ì—°ê²° í›„ ì‚¬ìš©í•  ìˆ˜ ìˆì–´ìš”.":"í‚¤ì›Œë“œ ì…ë ¥ ë°©ì‹ìœ¼ë¡œ ë°”ë€Œì—ˆì–´ìš”.")}));
 document.querySelectorAll(".channel").forEach(b=>b.addEventListener("click",()=>b.classList.toggle("selected")));
 document.getElementById("addCompare").addEventListener("click",()=>{const f=document.getElementById("compare");if(f.hidden){f.hidden=false;f.focus();document.getElementById("addCompare").textContent="ë¹„êµ ë‹¨ì–´";document.getElementById("compareCount").textContent="1 / 1"}});
-document.querySelectorAll("[data-topic]").forEach(b=>b.addEveï]=¶‰ËkºwµçV–BÀĞ¢æÖS¢.¸+BÉ¸ÎØÎÈªNØéÉÛNÈªB"ÀĞ¢7&VFVDC¢6W'fW%F–ÖW7F×‚’ÀĞ¢WFFVDC¢6W'fW%F–ÖW7F×‚Ğ¢Ò“°Ğ¢&WGW&â7&VFVBæ–C°Ğ¢Ò’‚’“°Ğ¢ĞĞ¢G'’°Ğ¢&WGW&âv—Bv÷&·76U6WGW2ævWB‡W6W"çV–B“°Ğ¢Ò6F6‚†W'&÷"’°Ğ¢v÷&·76U6WGW2æFVÆWFR‡W6W"çV–B“°Ğ¢F‡&÷rW'&÷#°Ğ¢ĞĞ¢ĞĞ¢7–æ2gVæ7F–öâÆöDFVÆWF–öå7FGW2‡W6W"Âv÷&·76T–BÂ—47W'&VçBÒ‚’ÓâG'VR’°Ğ¢–b‚”&6R’&WGW&ã°Ğ¢6öç7B7V&Ö—BÒFö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFVÆWF–öå7V&Ö—B"’Â7FFRÒFö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFVÆWF–öå7FFR"“°Ğ¢G'’°Ğ¢6öç7BFö¶VâÒv—BW6W"ævWD–EFö¶Vâ‚“°Ğ¢6öç7B&W7öç6RÒv—BfWF6‚†G¶”&6WÒ÷cö66÷VçBÖFVÆWF–öâ×&WVW7G2òG¶Væ6öFUU$”6ö×öæVçB‡v÷&·76T–B—ÖÂ²†VFW'3§²WF†÷&—¦F–öã¦&V&W"G·Fö¶VçÖÒÒ“°Ğ¢6öç7B&W7VÇBÒv—B&W7öç6Ræ§6öâ‚’æ6F6‚‚‚’Óâ‡·Ò’“°Ğ¢–b‚&W7öç6Ræö²’F‡&÷ræWrW'&÷"‡&W7VÇBæW'&÷#òæÖW76vRÇÂ'&WVW7BÖf–ÆVB"“°Ğ¢–b‚—47W'&VçB‚’’&WGW&ã°Ğ¢–b‡&W7VÇBç7FGW2ÓÓÒ'VæF–ær"ÇÂ&W7VÇBç7FGW2ÓÓÒ&6ö×ÆWFVB"’°Ğ¢7V&Ö—BæF—6&ÆVBÒG'VS²7V&Ö—BçFW‡D6öçFVçBÒ&W7VÇBç7FGW2ÓÓÒ&6ö×ÆWFVB"ò.Ø8Ø{BË)ºjÎ¹
-‚"¢.É©NË*ÒÊ	È‰¹
-‚#°Ğ¢7FFRçFW‡D6öçFVçBÒ&W7VÇBç7FGW2ÓÓÒ&6ö×ÆWFVB"ò.Ø8Ø{BË)ºjÎ«É˜Nº8Î¹	ÉxÈ«^¸¸¸ºBâ"¢.Ø8Ø{BÉ©NË*ŞÉÛBÊ	È‰¹	ÉkBÈ8‚Éé¸ùÙ™BÈºNÙhÉÛBÊI¸º¹	ÉxÈ«^¸¸¸ºBâ#°Ğ¢ĞĞ¢Ò6F6‚†W'&÷"’°Ğ¢–b‚—47W'&VçB‚’’&WGW&ã°Ğ¢7FFRçFW‡D6öçFVçBÒ.Ø8Ø{BÉ©NË*ÒÈ8Ø9Îº[ÂÙ™^ÉÛÙYÊxº«¾ÙhÈ«^¸¸¸ºBâÉêÈ¹ÂÙ¸B¸ºNÈ¹ÂÈ¹Î¸øNÙ[BÊ;ÎÈKÉ©Bâ#°Ğ¢6öç6öÆRæW'&÷"‚.«8NÊ	RØ8Ø{BÈ8Ø9ÂÊÙ¨ÂÈºNØÊ‚"ÂW'&÷"æÖW76vR“°Ğ¢ĞĞ¢ĞĞ¢öäWF…7FFT6†ævVB†WF‚Â7–æ2W6W"Óâ°Ğ¢6öç7BvVæW&F–öâÒ²¶WF„vVæW&F–öã°Ğ¢6öç7B6–væVD–âÒ&ööÆVâ‡W6W"“°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&WF…&÷f–FW'2"’æ†–FFVâÒ6–væVD–ã°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&WF„66÷VçB"’æ†–FFVâÒ6–væVD–ã°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&WF…W6W""’çFW‡D6öçFVçBÒ6–væVD–àĞ¢ò‡W6W"æF—7Æ”æÖRÇÂW6W"æVÖ–ÂÇÂ.ºÎ«{ÉÛ‚È*ÎÉªÉé"Ğ¢¢"#°Ğ¢WF„ÖW76vRçFW‡D6öçFVçBÒ6–væVD–âò.ºÎ«{ÉÛ‚«8NÊ	^ÉÙ‚ÉéÉxR«;^«NÉØBÙ™^ÉÛÙY«:ÉèÈ«^¸¸¸ºBâ"¢.ºÎ«{ÉÛ‚Ê	Î«;^Ééº[ÂÈJØ9ŞÙ[BÊ;ÎÈKÉ©Bâ#°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&Æöv–ä'WGFöâ"’çFW‡D6öçFVçBÒ6–væVD–âò.¸+B«8NÊ	R"¢.ºÎ«{ÉÛ‚#°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚'v÷&·76R"’æ6Æ74Æ—7BçFövvÆR‚'f—6–&ÆR"Â6–væVD–â“°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDæb"’æ6Æ74Æ—7BçFövvÆR‚'f—6–&ÆR"Â6–væVD–â“°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFF"’æ6Æ74Æ—7BçFövvÆR‚'f—6–&ÆR"Â6–væVD–â“°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&–çV—&–W2"’æ6Æ74Æ—7BçFövvÆR‚'f—6–&ÆR"Â6–væVD–â“°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFVÆWF–öâ"’æ6Æ74Æ—7BçFövvÆR‚'f—6–&ÆR"Â6–væVD–â“°Ğ¢–b‚6–væVD–â’&W6WD66÷VçEV’‚“°Ğ¢–b‡6–væVD–â’°Ğ¢G'’°Ğ¢6öç7Bv÷&·76T–BÒv—BVç7W&Uv÷&·76R‡W6W"“°Ğ¢6öç7B—47W'&VçBÒ‚’ÓâvVæW&F–öâÓÓÒWF„vVæW&F–öâbbWF‚æ7W'&VçEW6W#òçV–BÓÓÒW6W"çV–C°Ğ¢–b‚—47W'&VçB‚’’&WGW&ã°Ğ¢v–æF÷ræWF÷v÷&·5v÷&·76T–BÒv÷&·76T–C°Ğ¢v—B&öÖ—6RæÆÂ…¶ÆöE&ö¦V7G2‡v÷&·76T–BÂ—47W'&VçB’ÂÆöEv÷&·76TFF‡v÷&·76T–BÂ—47W'&VçB’ÂÆöDFVÆWF–öå7FGW2‡W6W"Âv÷&·76T–BÂ—47W'&VçB•Ò“°Ğ¢–b‚—47W'&VçB‚’’&WGW&ã°Ğ¢WF„ÖW76vRçFW‡D6öçFVçBÒ.ºÎ«{ÉÛ‚»ò«	ÎÉÛ‚ÉéÉxR«;^«NÉÛBÊH»˜N¹	ÉxÈ«^¸¸¸ºBâ#°Ğ¢–b†WF„ÖöFÂæ6Æ74Æ—7Bæ6öçF–ç2‚&÷Vâ"’’6WEF–ÖV÷WB††–FTWF‚Âs“°Ğ¢Ò6F6‚†W'&÷"’°Ğ¢–b†vVæW&F–öâÓÒWF„vVæW&F–öâÇÂWF‚æ7W'&VçEW6W#òçV–BÓÒW6W"çV–B’&WGW&ã°Ğ¢WF„ÖW76vRçFW‡D6öçFVçBÒ.ºÎ«{ÉÛÙhÊxºxÂ«	ÎÉÛ‚ÉéÉxR«;^«NÉØBÊH»˜NÙYÊxº«¾ÙhÈ«^¸¸¸ºBâ¸ºNÈ¹ÂÈ¹Î¸øNÙ[BÊ;ÎÈKÉ©Bâ#°Ğ¢6öç6öÆRæW'&÷"‚.É¸ÎØÎÈªNØéÉÛNÈªBÊH»˜BÈºNØÊ‚"ÂW'&÷"æ6öFR“°Ğ¢ĞĞ¢ĞĞ¢Ò“°Ğ¢Fö7VÖVçBçVW'•6VÆV7F÷$ÆÂ‚%¶FFÖWF‚×&÷f–FW%Ò"’æf÷$V6‚†'WGFöâÓâ°Ğ¢'WGFöâæFDWfVçDÆ—7FVæW"‚&6Æ–6²"Â7–æ2‚’Óâ°Ğ¢–b†'WGFöâæFF6WBæWF…&÷f–FW"ÓÒ&vöövÆR"’°Ğ¢–b‚”&6R’°Ğ¢WF„ÖW76vRçFW‡D6öçFVçBÒ.¸JNÉÛN»(L+~Ë›NË›NÉŠBºÎ«{ÉÛ‚ÈIÎ»(B»ØúÂÊNÉÛN¹ÛÂÉXNÊxÈ*ÎÉªÙZÈ‰‚ÉxnÈ«^¸¸¸ºBâ#°Ğ¢&WGW&ã°Ğ¢ĞĞ¢6öç7B&÷f–FW$æÖRÒ'WGFöâæFF6WBæWF…&÷f–FW#°Ğ¢6öç7B÷WÒv–æF÷ræ÷Vâ†G¶”&6WÒ÷cöWF‚òG¶Væ6öFUU$”6ö×öæVçB‡&÷f–FW$æÖR—Ò÷7F'C÷&WGW&ä÷&–v–ãÒG¶Væ6öFUU$”6ö×öæVçB†Æö6F–öâæ÷&–v–â—ÖÂ&WF÷v÷&·2ÖöWF‚"Â'÷WÇv–GFƒÓS#Æ†V–v‡CÓs#"“°Ğ¢WF„ÖW76vRçFW‡D6öçFVçBÒ÷Wò.ºÎ«{ÉÛ‚Ê	Î«;^ÉéÙ™Nº›NÉyÈIÂ«8NÈhŞÙ[BÊ;ÎÈKÉ©Bâ"¢.ºÎ«{ÉÛ‚ØÉŞÉx^ÉÛBË
-¸º¹	ÉxÈ«^¸¸¸ºBâØÉŞÉx^ÉØBÙxÉªÙ[BÊ;ÎÈKÉ©Bâ#°Ğ¢&WGW&ã°Ğ¢ĞĞ¢WF„ÖW76vRçFW‡D6öçFVçBÒ.ºÎ«{ÉÛ‚É{«+ÉØBÙ™^ÉÛÙY«:ÉèÈ«^¸¸¸ºBâ#°Ğ¢6öç7B&÷f–FW"ÒæWrvöövÆTWF…&÷f–FW"‚“°Ğ¢G'’°Ğ¢v—B6–vä–åv—F…÷W†WF‚Â&÷f–FW"“°Ğ¢WF„ÖW76vRçFW‡D6öçFVçBÒ.ºÎ«{ÉÛ¹	ÉxÈ«^¸¸¸ºBâ«	ÎÉÛ‚ÉéÉxR«;^«NÉØBÙ™^ÉÛÙY«:ÉèÈ«^¸¸¸ºBâ#°Ğ¢Ò6F6‚†W'&÷"’°Ğ¢6öç7BÖW76vW2Ò°Ğ¢&WF‚ö÷W&F–öâÖæ÷BÖÆÆ÷vVB#¢.ÉÛBºÎ«{ÉÛ‚Ê	Î«;^Éé¸©Bf—&V&6^ÉyÈIÂÉXNÊxÈJNÊ	^¹	ÊxÉX®ÉYÈ«^¸¸¸ºBâ"ÀĞ¢&WF‚ö66÷VçBÖW†—7G2×v—F‚ÖF–ffW&VçBÖ7&VFVçF–Â#¢.ÉÛBÉÛNº™NÉÛÎÉØ¸ºNº[‚ºÎ«{ÉÛ‚»
-È¹ŞÉËÎºÂ«Éè^¹	ÉkBÉèÈ«^¸¸¸ºBâ«‹ÊB»
-È¹ŞÉËÎºÂºÎ«{ÉÛÙ[BÊ;ÎÈKÉ©Bâ"ÀĞ¢&WF‚÷÷WÖ&Æö6¶VB#¢.»ˆÎ¹ÛÎÉ«Ê«ºÎ«{ÉÛ‚ËŞÉØBË
-¸ºÙhÈ«^¸¸¸ºBâØÉŞÉxRÙxÉª’Ù¸B¸ºNÈ¹ÂÈ¹Î¸øNÙ[BÊ;ÎÈKÉ©Bâ Ğ¢Ó°Ğ¢WF„ÖW76vRçFW‡D6öçFVçBÒÖW76vW5¶W'&÷"æ6öFUÒÇÂ.ºÎ«{ÉÛÉyÈºNØÊÙhÈ«^¸¸¸ºBâÉêÈ¹ÂÙ¸B¸ºNÈ¹ÂÈ¹Î¸øNÙ[BÊ;ÎÈKÉ©Bâ#°Ğ¢6öç6öÆRæW'&÷"‚$f—&V&6RºÎ«{ÉÛ‚ÈºNØÊ‚"ÂW'&÷"æ6öFR“°Ğ¢ĞĞ¢Ò“°Ğ¢Ò“°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&WF…6–vä÷WB"’æFDWfVçDÆ—7FVæW"‚&6Æ–6²"Â7–æ2‚’Óâ°Ğ¢G'’°Ğ¢v—B6–vä÷WB†WF‚“°Ğ¢Ò6F6‚†W'&÷"’°Ğ¢WF„ÖW76vRçFW‡D6öçFVçBÒ.ºÎ«{ÉXNÉ¸>ÙYÊxº«¾ÙhÈ«^¸¸¸ºBâ¸ºNÈ¹ÂÈ¹Î¸øNÙ[BÊ;ÎÈKÉ©Bâ#°Ğ¢6öç6öÆRæW'&÷"‚$f—&V&6RºÎ«{ÉXNÉ¸2ÈºNØÊ‚"ÂW'&÷"æ6öFR“°Ğ¢ĞĞ¢Ò“°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFVÆWF–öå7V&Ö—B"’æF—6&ÆVBÒ”&6S°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFVÆWF–öå7FFR"’çFW‡D6öçFVçBÒ”&6Rò$DTÄUD^º[ÂÊ	^Ù™^Ùè‚Éè^º
-^Ù[NÉ[ÂÊ	È‰¹
-¸¸¸ºBâ"¢.ÈIÎ»(N«É{«+¹	ÂÙ™«+ŞÉyÈIÎºxÂÉ©NË*ŞÙZÈ‰‚ÉèÈ«^¸¸¸ºBâ#°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFVÆWF–öäf÷&Ò"’æFDWfVçDÆ—7FVæW"‚'7V&Ö—B"Â7–æ2WfVçBÓâ°Ğ¢WfVçBç&WfVçDFVfVÇB‚“°Ğ¢6öç7BW6W"ÒWF‚æ7W'&VçEW6W"Âv÷&·76T–BÒv–æF÷ræWF÷v÷&·5v÷&·76T–C°Ğ¢6öç7B6öæf—&ÖF–öâÒFö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFVÆWF–öä6öæf—&ÖF–öâ"’çfÇVRçG&–Ò‚“°Ğ¢6öç7B7V&Ö—BÒFö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFVÆWF–öå7V&Ö—B"’Â7FFRÒFö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFVÆWF–öå7FFR"“°Ğ¢–b‚”&6RÇÂW6W"ÇÂv÷&·76T–B’²7FFRçFW‡D6öçFVçBÒ.ºÎ«{ÉÛ«;ÂÈIÎ»(BÉ{«+ÉØBÙ™^ÉÛÙ[BÊ;ÎÈKÉ©Bâ#²&WGW&ã²ĞĞ¢–b†6öæf—&ÖF–öâÓÒ$DTÄUDR"’²7FFRçFW‡D6öçFVçBÒ.Ù™^ÉÛ‚ºË«ZÂDTÄUD^º[ÂÊ	^Ù™^Ùè‚Éè^º
-^Ù[BÊ;ÎÈKÉ©Bâ#²&WGW&ã²ĞĞ¢7V&Ö—BæF—6&ÆVBÒG'VS²7V&Ö—BçFW‡D6öçFVçBÒ.É©NË*ÒÊI#°Ğ¢G'’°Ğ¢6öç7BFö¶VâÒv—BW6W"ævWD–EFö¶Vâ‚“°Ğ¢6öç7B&W7öç6RÒv—BfWF6‚†G¶”&6WÒ÷cö66÷VçBÖFVÆWF–öâ×&WVW7G6Â²ÖWF†öC¢%õ5B"Â†VFW'3§²WF†÷&—¦F–öã¦&V&W"G·Fö¶VçÖÂ&6öçFVçB×G—R#¢&Æ–6F–öâö§6öâ"ÒÂ&öG“¤¥4ôâç7G&–æv–g’‡²v÷&·76T–BÂ6öæf—&ÖF–öâÒ’Ò“°Ğ¢6öç7B&W7VÇBÒv—B&W7öç6Ræ§6öâ‚’æ6F6‚‚‚’Óâ‡·Ò’“°Ğ¢–b‚&W7öç6Ræö²’F‡&÷ræWrW'&÷"‡&W7VÇBæW'&÷#òæÖW76vRÇÂ'&WVW7BÖf–ÆVB"“°Ğ¢WfVçBæ7W'&VçEF&vWBç&W6WB‚“²7FFRçFW‡D6öçFVçBÒ.Ø8Ø{BÉ©NË*ŞÉØBÊ	È‰ÙhÈ«^¸¸¸ºBâÈ8‚Éé¸ùÙ™BÈºNÙhÉØÊI¸º¹	º›ÂË)ºjÂÈ8Ø9Î¸©B«:«	ŞÈKÎØKº[ÂØk^Ù[BÙ™^ÉÛÙZÈ‰‚ÉèÈ«^¸¸¸ºBâ#²7V&Ö—BçFW‡D6öçFVçBÒ.É©NË*ÒÊ	È‰¹
-‚#°Ğ¢Ò6F6‚†W'&÷"’°Ğ¢7FFRçFW‡D6öçFVçBÒ.Ø8Ø{BÉ©NË*ŞÉØBÊ	È‰ÙYÊxº«¾ÙhÈ«^¸¸¸ºBâÉêÈ¹ÂÙ¸B¸ºNÈ¹ÂÈ¹Î¸øNÙY«¸)‚«:«	ŞÈKÎØKºÂºËÉÙÙ[BÊ;ÎÈKÉ©Bâ#°Ğ¢7V&Ö—BæF—6&ÆVBÒfÇ6S²7V&Ö—BçFW‡D6öçFVçBÒ.Ø8Ø{BÉ©NË*Ò#°Ğ¢6öç6öÆRæW'&÷"‚.«8NÊ	RØ8Ø{BÉ©NË*ÒÈºNØÊ‚"ÂW'&÷"æÖW76vR“°Ğ¢ĞĞ¢Ò“°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚'&ö¦V7DFB"’æFDWfVçDÆ—7FVæW"‚&6Æ–6²"Â‚’Óâ°Ğ¢6öç7Bf÷&ÒÒFö7VÖVçBævWDVÆVÖVçD'”–B‚'&ö¦V7Df÷&Ò"“°Ğ¢f÷&Òæ6Æ74Æ—7BçFövvÆR‚&÷Vâ"“°Ğ¢–b†f÷&Òæ6Æ74Æ—7Bæ6öçF–ç2‚&÷Vâ"’’Fö7VÖVçBævWDVÆVÖVçD'”–B‚'&ö¦V7DæÖR"’æfö7W2‚“°Ğ¢Ò“°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚'&ö¦V7Df÷&Ò"’æFDWfVçDÆ—7FVæW"‚'7V&Ö—B"Â7–æ2WfVçBÓâ°Ğ¢WfVçBç&WfVçDFVfVÇB‚“°Ğ¢6öç7Bv÷&·76T–BÒv–æF÷ræWF÷v÷&·5v÷&·76T–C°Ğ¢6öç7BæÖRÒFö7VÖVçBævWDVÆVÖVçD'”–B‚'&ö¦V7DæÖR"’çfÇVRçG&–Ò‚“°Ğ¢6öç7B'&æDæÖRÒFö7VÖVçBævWDVÆVÖVçD'”–B‚'&ö¦V7D'&æB"’çfÇVRçG&–Ò‚“°Ğ¢6öç7B¶W—v÷&G2Ò²ââææWr6WB†Fö7VÖVçBævWDVÆVÖVçD'”–B‚'&ö¦V7D¶W—v÷&G2"’çfÇVRç7Æ—B‚"Â"’æÖ‡fÇVRÓâfÇVRçG&–Ò‚’’æf–ÇFW"„&ööÆVâ’•Òç6Æ–6RƒÂ#“°Ğ¢–b‚v÷&·76T–BÇÂæÖRÇÂ'&æDæÖR’&WGW&ã°Ğ¢6öç7Bf÷&ÒÒWfVçBæ7W'&VçEF&vWC°Ğ¢6öç7B7V&Ö—BÒf÷&ÒçVW'•6VÆV7F÷"‚&'WGFöå·G—S×7V&Ö—EÒ"“°Ğ¢7V&Ö—BæF—6&ÆVBÒG'VS°Ğ¢7V&Ö—BçFW‡D6öçFVçBÒ.ÊÉêRÊI#°Ğ¢G'’°Ğ¢–b‚”&6R’F‡&÷ræWrW'&÷"‚&’Öæ÷BÖ6öæf–wW&VB"“°Ğ¢6öç7BW6W"ÒWF‚æ7W'&VçEW6W#°Ğ¢–b‚W6W"’F‡&÷ræWrW'&÷"‚&WF‚×&WV—&VB"“°Ğ¢6öç7B&W7öç6RÒv—BfWF6‚†G¶”&6WÒ÷c÷v÷&·76W2òG¶Væ6öFUU$”6ö×öæVçB‡v÷&·76T–B—Ò÷&ö¦V7G6Â°Ğ¢ÖWF†öC¢%õ5B"ÀĞ¢†VFW'3§²WF†÷&—¦F–öã¦&V&W"G¶v—BW6W"ævWD–EFö¶Vâ‚—ÖÂ&6öçFVçB×G—R#¢&Æ–6F–öâö§6öâ"ÒÀĞ¢&öG“¤¥4ôâç7G&–æv–g’‡²æÖRÂ'&æDæÖRÂ¶W—v÷&G2ÒĞ¢Ò“°Ğ¢6öç7B&W7VÇBÒv—B&W7öç6Ræ§6öâ‚’æ6F6‚‚‚’Óâ‡·Ò’“°Ğ¢–b‚&W7öç6Ræö²’F‡&÷ræWrW'&÷"‡&W7VÇBæW'&÷#òæÖW76vRÇÂ'&ö¦V7BÖ7&VFRÖf–ÆVB"“°Ğ¢f÷&Òç&W6WB‚“°Ğ¢f÷&Òæ6Æ74Æ—7Bç&VÖ÷fR‚&÷Vâ"“°Ğ¢v—BÆöE&ö¦V7G2‡v÷&·76T–B“°Ğ¢6†÷uFö7B‚.ÙHNºÎÊ	ŞØ«º[ÂÊÉê^ÙhÈ«^¸¸¸ºBâ"“°Ğ¢Ò6F6‚†W'&÷"’°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚'&ö¦V7E7FFR"’çFW‡D6öçFVçBÒW'&÷"æÖW76vRÓÓÒ&’Öæ÷BÖ6öæf–wW&VB Ğ¢ò.ÙHNºÎÊ	ŞØ«‚È9ŞÈKÈIÎ»(N«ÉXNÊxÉ{«+¹	ÊxÉX®ÉYÈ«^¸¸¸ºBâ Ğ¢¢W'&÷"æÖW76vRÇÂ.ÊÉê^ÙYÊxº«¾ÙhÈ«^¸¸¸ºBâºÎ«{ÉÛ‚È8Ø9ÎÉ˜É{«+ÉØBÙ™^ÉÛÙ[BÊ;ÎÈKÉ©Bâ#°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚'&ö¦V7E7FFR"’æ†–FFVâÒfÇ6S°Ğ¢6öç6öÆRæW'&÷"‚.ÙHNºÎÊ	ŞØ«‚ÊÉêRÈºNØÊ‚"ÂW'&÷"æ6öFR“°Ğ¢Òf–æÆÇ’°Ğ¢7V&Ö—BæF—6&ÆVBÒfÇ6S°Ğ¢7V&Ö—BçFW‡D6öçFVçBÒ.ÊÉêR#°Ğ¢ĞĞ¢Ò“°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&–çV—'”f÷&Ò"’æFDWfVçDÆ—7FVæW"‚'7V&Ö—B"Â7–æ2WfVçBÓâ°Ğ¢WfVçBç&WfVçDFVfVÇB‚“°Ğ¢6öç7Bv÷&·76T–BÒv–æF÷ræWF÷v÷&·5v÷&·76T–C°Ğ¢6öç7B7V&¦V7BÒFö7VÖVçBævWDVÆVÖVçD'”–B‚&–çV—'•7V&¦V7B"’çfÇVRçG&–Ò‚“°Ğ¢6öç7BÖW76vRÒFö7VÖVçBævWDVÆVÖVçD'”–B‚&–çV—'”ÖW76vR"’çfÇVRçG&–Ò‚“°Ğ¢–b‚v÷&·76T–BÇÂ7V&¦V7BÇÂÖW76vR’&WGW&ã°Ğ¢6öç7Bf÷&ÒÒWfVçBæ7W'&VçEF&vWBÂ7V&Ö—BÒf÷&ÒçVW'•6VÆV7F÷"‚&'WGFöå·G—S×7V&Ö—EÒ"“°Ğ¢7V&Ö—BæF—6&ÆVBÒG'VS²7V&Ö—BçFW‡D6öçFVçBÒ.Ê	È‰‚ÊI#°Ğ¢G'’°Ğ¢v—BFDFö2‡v÷&·76T6öÆÆV7F–öâ‡v÷&·76T–BÂ&–çV—&–W2"’Â°Ğ¢7V&¦V7BÀĞ¢ÖW76vRÀĞ¢7FGW3¢&÷Vâ"ÀĞ¢7&VFVDC¢6W'fW%F–ÖW7F×‚’ÀĞ¢WFFVDC¢6W'fW%F–ÖW7F×‚Ğ¢Ò“°Ğ¢f÷&Òç&W6WB‚“°Ğ¢&VæFW$–çV—&–W2†v—BvWDFö72‡VW'’‡v÷&·76T6öÆÆV7F–öâ‡v÷&·76T–BÂ&–çV—&–W2"’Â÷&FW$'’‚&7&VFVDB"Â&FW62"’ÂÆ–Ö—BƒR’’’“°Ğ¢6†÷uFö7B‚.ºËÉÙº[ÂÊ	È‰ÙhÈ«^¸¸¸ºBâ"“°Ğ¢Ò6F6‚†W'&÷"’°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&–çV—'•7FFR"’æ†–FFVâÒfÇ6S°Ğ¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&–çV—'•7FFR"’çFW‡D6öçFVçBÒ.ºËÉÙº[ÂÊ	È‰ÙYÊxº«¾ÙhÈ«^¸¸¸ºBâºÎ«{ÉÛ‚È8Ø9ÎÉ˜É{«+ÉØBÙ™^ÉÛÙ[BÊ;ÎÈKÉ©Bâ#°Ğ¢6öç6öÆRæW'&÷"‚.ºËÉÙ‚Ê	È‰‚ÈºNØÊ‚"ÂW'&÷"æ6öFR“°Ğ¢Òf–æÆÇ’°Ğ¢7V&Ö—BæF—6&ÆVBÒfÇ6S²7V&Ö—BçFW‡D6öçFVçBÒ.ºËÉÙ‚Ê	È‰‚#°Ğ¢ĞĞ¢Ò“°Ğ¢Ò6F6‚†W'&÷"’°Ğ¢6öç7BÖW76vRÒFö7VÖVçBævWDVÆVÖVçD'”–B‚&WF„ÖW76vR"“°Ğ¢–b†ÖW76vR’ÖW76vRçFW‡D6öçFVçBÒ$f—&V&6RÉÛÊiÒÉ{«+ÉØBÊH»˜NÙYÊxº«¾ÙhÈ«^¸¸¸ºBâÉêÈ¹ÂÙ¸B¸ºNÈ¹ÂÈ¹Î¸øNÙ[BÊ;ÎÈKÉ©Bâ#°Ğ¢6öç6öÆRæW'&÷"‚$f—&V&6RËH«‹Ù™BÈºNØÊ‚"ÂW'&÷"“°Ğ¢ĞĞ¢ĞĞ¢Â÷67&—CàĞ£Âö&öG“àĞ£Âö‡FÖÃàĞ Ğ Ğ Ğ Ğ Ğ
+document.querySelectorAll("[data-topic]").forEach(b=>b.addEventListener("click",()=>{document.getElementById("topic").value=b.dataset.topic;document.getElementById("topic").focus();window.scrollTo({top:0,behavior:"smooth"})}));
+document.getElementById("period").addEventListener("click",()=>showToast("ê¸°ê°„ ì„ íƒì€ ë¶„ì„ ê¸°ëŠ¥ ì—°ê²° í›„ í™œì„±í™”ë©ë‹ˆë‹¤."));
+document.getElementById("analyze").addEventListener("click",()=>{const topic=document.getElementById("topic").value.trim();if(!topic){document.getElementById("topic").focus();showToast("ë¶„ì„í•  ë¸Œëœë“œë‚˜ ì£¼ì œì–´ë¥¼ ì…ë ¥í•´ ì£¼ì„¸ìš”.");return}showToast("ì‹¤ì œ ë¶„ì„ì€ APIì™€ íšŒì› ê³„ì • ì—°ê²° í›„ ì´ìš©í•  ìˆ˜ ìˆì–´ìš”.")});
+document.getElementById("menu").addEventListener("click",()=>document.getElementById("drawer").classList.add("open"));
+document.getElementById("apiGuide").addEventListener("click",()=>{window.location.href="./api-guide.html"});
+document.getElementById("drawer").addEventListener("click",e=>{if(e.target.id==="drawer")e.currentTarget.classList.remove("open")});
+document.querySelectorAll("[data-tools]").forEach(b=>b.addEventListener("click",()=>{document.getElementById("toolSection").scrollIntoView({behavior:"smooth"});document.getElementById("drawer").classList.remove("open")}));
+const trendModal=document.getElementById("trendModal"),trendSeries={day:{labels:["10/18","10/19","10/20","10/21","10/22","10/23","10/24"],values:[6200,8100,8100,7200,7600,6200,5800],period:"ìµœê·¼ 7ì¼"},week:{labels:["9/7","9/14","9/21","9/28","10/5","10/12","10/19"],values:[5700,6100,6400,6200,7400,7100,8100],period:"ìµœê·¼ 7ì£¼"},month:{labels:["5ì›”","6ì›”","7ì›”","8ì›”","9ì›”","10ì›”"],values:[5300,5700,6100,6400,7200,8100],period:"ìµœê·¼ 6ê°œì›”"}};
+function drawTrend(unit){const d=trendSeries[unit],w=760,h=220,left=34,right=12,top=16,bottom=28,uw=w-left-right,uh=h-top-bottom,max=Math.max(...d.values)*1.12,pts=d.values.map((v,i)=>[left+i*uw/(d.values.length-1),top+(max-v)*uh/max]),line=pts.map(p=>p.join(",")).join(" "),area=left+","+h+" "+line+" "+(left+uw)+","+h;document.getElementById("trendChart").innerHTML='<line class="trend-axis" x1="'+left+'" y1="'+(top+uh)+'" x2="'+(w-right)+'" y2="'+(top+uh)+'"/><line class="trend-axis" x1="'+left+'" y1="'+(top+uh*.66)+'" x2="'+(w-right)+'" y2="'+(top+uh*.66)+'"/><line class="trend-axis" x1="'+left+'" y1="'+(top+uh*.33)+'" x2="'+(w-right)+'" y2="'+(top+uh*.33)+'"/><polygon class="trend-area" points="'+area+'"/><polyline class="trend-line" points="'+line+'"/>'+pts.map(p=>'<circle class="trend-point" cx="'+p[0]+'" cy="'+p[1]+'" r="4"/>').join("");document.getElementById("trendLabels").innerHTML=d.labels.map(x=>"<span>"+x+"</span>").join("");document.getElementById("trendPeriod").textContent=d.period+" Â· í‚¤ì›Œë“œë„êµ¬ ì›”ê°„ ê²€ìƒ‰ëŸ‰ ê¸°ë¡";document.querySelectorAll("#trendUnits button").forEach(b=>b.classList.toggle("active",b.dataset.unit===unit))}
+document.querySelectorAll("[data-trend]").forEach(b=>b.addEventListener("click",()=>{document.getElementById("trendKeyword").textContent=(document.getElementById("topic").value.trim()||"ë¸Œëœë“œ")+" Â· PC+ëª¨ë°”ì¼ ì›”ê°„ í‰ê· ";trendModal.classList.add("open");drawTrend("day")}));
+document.querySelector("[data-weekly]").addEventListener("click",()=>{window.location.href="./weekly-ad.html"});
+document.querySelector("[data-collab]").addEventListener("click",()=>{window.location.href="./collab-post.html"});
+document.querySelector("[data-reference]").addEventListener("click",()=>{window.location.href="./content-reference.html"});
+document.querySelector("[data-influencer]").addEventListener("click",()=>{window.location.href="./influencer-candidates.html"});
+document.querySelector("[data-ai-blog]").addEventListener("click",()=>{window.location.href="./ai-blog.html"});
+document.querySelector("[data-naver-visibility]").addEventListener("click",()=>{window.location.href="./naver-visibility.html"});
+document.querySelector("[data-content-pack]").addEventListener("click",()=>{window.location.href="./content-pack.html"});
+document.querySelectorAll("#trendUnits button").forEach(b=>b.addEventListener("click",()=>drawTrend(b.dataset.unit)));
+document.getElementById("trendClose").addEventListener("click",()=>trendModal.classList.remove("open"));
+trendModal.addEventListener("click",e=>{if(e.target===trendModal)trendModal.classList.remove("open")});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")trendModal.classList.remove("open")});
+const authModal=document.getElementById("authModal"),authMessage=document.getElementById("authMessage");
+function showAuth(){authModal.classList.add("open");document.getElementById("authClose").focus()}
+function hideAuth(){authModal.classList.remove("open")}
+document.getElementById("loginButton").addEventListener("click",showAuth);
+document.getElementById("authClose").addEventListener("click",hideAuth);
+authModal.addEventListener("click",e=>{if(e.target===authModal)hideAuth()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")hideAuth()});
+document.querySelectorAll("[data-auth-provider]").forEach(b=>b.addEventListener("click",()=>{if(!window.autoworksFirebaseApp)authMessage.textContent="ë¡œê·¸ì¸ì€ Firebase Hosting ë„ë©”ì¸ì—ì„œ ì—°ê²°í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤. ì´ ë¡œì»¬ ë¯¸ë¦¬ë³´ê¸°ì—ì„œëŠ” ë¡œê·¸ì¸ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤."}));
+document.querySelectorAll("[data-toast]").forEach(b=>b.addEventListener("click",()=>showToast("ë¡œê·¸ì¸ê³¼ ë„êµ¬ ì—°ê²°ì„ ì¤€ë¹„ ì¤‘ì…ë‹ˆë‹¤.")));
+document.getElementById("closePromo").addEventListener("click",()=>document.getElementById("promo").remove());
+</script>
+ <script type="module">
+  const firebaseHosts = new Set(["localhost", "127.0.0.1", "autoworks-c9a6a.web.app", "autoworks-c9a6a.firebaseapp.com"]);
+  const apiBase = String(window.AUTOWORKS_API_BASE || "").replace(/\/$/, "");
+  if (firebaseHosts.has(location.hostname)) {
+    try {
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js");
+      window.autoworksFirebaseApp = initializeApp({
+        apiKey: "AIzaSyC4j2aelRB3uEyGmZJbvW0OGNL5-Oi2uvA",
+        authDomain: "autoworks-c9a6a.firebaseapp.com",
+        projectId: "autoworks-c9a6a",
+        appId: "1:823085494995:web:3be4bdd40fe0519bc59a26"
+      });
+      const { getAuth, GoogleAuthProvider, signInWithPopup, signInWithCustomToken, onAuthStateChanged, signOut } =
+        await import("https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js");
+      const { getFirestore, collection, query, where, orderBy, limit, getDocs, getDoc, doc, addDoc, serverTimestamp } =
+        await import("https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js");
+      const auth = getAuth(window.autoworksFirebaseApp);
+      const db = getFirestore(window.autoworksFirebaseApp);
+      const workspaceSetups = new Map();
+      let authGeneration = 0;
+      const projectCollection = workspaceId => collection(db, "workspaces", workspaceId, "projects");
+      const workspaceCollection = (workspaceId, name) => collection(db, "workspaces", workspaceId, name);
+      const formatDate = value => value?.toDate?.().toLocaleString("ko-KR", { dateStyle: "short", timeStyle: "short" }) || "ì‹œê°„ í™•ì¸ ì¤‘";
+      window.addEventListener("message", async event => {
+        if (!apiBase || event.origin !== new URL(apiBase).origin || event.data?.type !== "autoworks-oauth" || typeof event.data.customToken !== "string") return;
+        try {
+          await signInWithCustomToken(auth, event.data.customToken);
+        } catch (error) {
+          authMessage.textContent = "ì™¸ë¶€ ë¡œê·¸ì¸ ì •ë³´ë¥¼ Firebase ê³„ì •ìœ¼ë¡œ ì—°ê²°í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.";
+          console.error("Firebase custom token ë¡œê·¸ì¸ ì‹¤íŒ¨", error.code);
+        }
+      });
+      function renderProjects(snapshot) {
+        const table = document.getElementById("projectTable");
+        const state = document.getElementById("projectState");
+        const rows = document.getElementById("projectRows");
+        rows.replaceChildren();
+        const projects = snapshot.docs.map(item => item.data());
+        projects.sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0));
+        table.hidden = projects.length === 0;
+        state.hidden = projects.length > 0;
+        state.textContent = projects.length ? "" : "ì €ì¥ëœ í”„ë¡œì íŠ¸ê°€ ì—†ìŠµë‹ˆë‹¤. ë¸Œëœë“œ í”„ë¡œì íŠ¸ë¥¼ ì¶”ê°€í•´ ì‹œì‘í•˜ì„¸ìš”.";
+        for (const project of projects) {
+          const row = document.createElement("tr");
+          const values = [project.name, project.brandName, (project.keywords || []).join(", "), project.updatedAt?.toDate?.().toLocaleDateString("ko-KR") || "ë°©ê¸ˆ ì €ì¥"];
+          values.forEach((value, index) => {
+            const cell = document.createElement("td");
+            cell.textContent = value || "-";
+            if (index === 2) cell.className = "project-keywords";
+            row.append(cell);
+          });
+          rows.append(row);
+        }
+      }
+      async function loadProjects(workspaceId, isCurrent = () => true) {
+        document.getElementById("projectState").hidden = false;
+        document.getElementById("projectState").textContent = "ì €ì¥ëœ í”„ë¡œì íŠ¸ë¥¼ ë¶ˆëŸ¬ì˜¤ëŠ” ì¤‘ì…ë‹ˆë‹¤.";
+        document.getElementById("projectTable").hidden = true;
+        try {
+          const snapshot = await getDocs(projectCollection(workspaceId));
+          if (isCurrent()) renderProjects(snapshot);
+        } catch (error) {
+          if (!isCurrent()) return;
+          document.getElementById("projectState").textContent = "í”„ë¡œì íŠ¸ë¥¼ ë¶ˆëŸ¬ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ì ì‹œ í›„ ë‹¤ì‹œ ì‹œë„í•´ ì£¼ì„¸ìš”.";
+          console.error("í”„ë¡œì íŠ¸ ì¡°íšŒ ì‹¤íŒ¨", error.code);
+        }
+      }
+      function renderRuns(snapshot) {
+        const list = document.getElementById("runList"), state = document.getElementById("runState");
+        list.replaceChildren();
+        state.hidden = !snapshot.empty; list.hidden = snapshot.empty;
+        state.textContent = "ì•„ì§ ì‹¤í–‰ ê¸°ë¡ì´ ì—†ìŠµë‹ˆë‹¤. ìë™í™” ì„œë²„ê°€ ì—°ê²°ë˜ë©´ ì´ê³³ì— í‘œì‹œë©ë‹ˆë‹¤.";
+        for (const item of snapshot.docs) {
+          const run = item.data(), row = document.createElement("li"), title = document.createElement("b"), status = document.createElement("span"), detail = document.createElement("p");
+          row.className = "run-item"; title.textContent = run.toolLabel || run.tool || "ìë™í™” ì‹¤í–‰";
+          status.className = "run-status" + (run.status === "failed" ? " failed" : "");
+          status.textContent = ({ queued:"ëŒ€ê¸°", validating:"ê²€ì¦ ì¤‘", running:"ì‹¤í–‰ ì¤‘", retrying:"ì¬ì‹œë„ ì¤‘", succeeded:"ì™„ë£Œ", failed:"ì‹¤íŒ¨", canceled:"ì·¨ì†Œ" })[run.status] || "ìƒíƒœ í™•ì¸";
+          detail.textContent = [run.inputSummary || "ì…ë ¥ ìš”ì•½ ì—†ìŒ", run.status === "failed" ? (run.errorMessage || run.errorCode || "ì‹¤í–‰ ì˜¤ë¥˜") : null, formatDate(run.createdAt)].filter(Boolean).join(" Â· ");
+          row.append(title, status, detail); list.append(row);
+        }
+      }
+      function renderReports(snapshot) {
+        const list = document.getElementById("reportList"), state = document.getElementById("reportState");
+        list.replaceChildren(); state.hidden = !snapshot.empty; list.hidden = snapshot.empty;
+        state.textContent = "ì•„ì§ ì €ì¥ëœ ê²°ê³¼ê°€ ì—†ìŠµë‹ˆë‹¤.";
+        for (const item of snapshot.docs) {
+          const report = item.data(), row = document.createElement("li"), title = document.createElement("b"), status = document.createElement("span"), detail = document.createElement("p");
+          row.className = "report-item"; title.textContent = report.title || "ë¶„ì„ ê²°ê³¼"; status.className = "run-status"; status.textContent = report.status === "ready" ? "ê²°ê³¼ ì¤€ë¹„" : "ì²˜ë¦¬ ì¤‘";
+          detail.textContent = [report.summary || "ê²°ê³¼ ìš”ì•½ ì¤€ë¹„ ì¤‘", formatDate(report.createdAt)].join(" Â· ");
+          row.append(title, status, detail); list.append(row);
+        }
+      }
+      function renderUsage(snapshot, period, subscriptionSnapshot) {
+        document.getElementById("usagePeriod").textContent = period;
+        const state = document.getElementById("usageState"), grid = document.getElementById("usageGrid");
+        state.hidden = snapshot.exists(); grid.hidden = !snapshot.exists();
+        if (!snapshot.exists()) { state.textContent = "ì´ë²ˆ ë‹¬ ì‚¬ìš©ëŸ‰ ê¸°ë¡ì´ ì—†ìŠµë‹ˆë‹¤."; return; }
+        const usage = snapshot.data();
+        const safeCount = value => { const number = Number(value ?? 0); return Number.isSafeInteger(number) && number >= 0 ? number : null; };
+        const runs = safeCount(usage.runs), runsReserved = safeCount(usage.runsReserved), lookups = safeCount(usage.keywordLookups), lookupsReserved = safeCount(usage.keywordLookupsReserved);
+        document.getElementById("usageRuns").textContent = runs === null ? "-" : runs.toLocaleString();
+        document.getElementById("usageLookups").textContent = lookups === null ? "-" : lookups.toLocaleString();
+        document.getElementById("usageSuccess").textContent = safeCount(usage.succeeded) === null ? "-" : safeCount(usage.succeeded).toLocaleString();
+        document.getElementById("usageFailed").textContent = safeCount(usage.failed) === null ? "-" : safeCount(usage.failed).toLocaleString();
+        const subscription = subscriptionSnapshot.exists() ? subscriptionSnapshot.data() : { runLimit: 30, keywordLookupLimit: 300 };
+        const runsUsed = runs === null || runsReserved === null ? null : runs + runsReserved;
+        const lookupsUsed = lookups === null || lookupsReserved === null ? null : lookups + lookupsReserved;
+        document.getElementById("usageRunsRemaining").textContent = runsUsed !== null && Number.isSafeInteger(subscription.runLimit) && subscription.runLimit >= 0 ? Math.max(0, subscription.runLimit - runsUsed).toLocaleString() : "-";
+        document.getElementById("usageLookupsRemaining").textContent = lookupsUsed !== null && Number.isSafeInteger(subscription.keywordLookupLimit) && subscription.keywordLookupLimit >= 0 ? Math.max(0, subscription.keywordLookupLimit - lookupsUsed).toLocaleString() : "-";
+      }
+      function renderSubscription(snapshot) {
+        const state = document.getElementById("subscriptionState");
+        if (!snapshot.exists()) { state.textContent = "ê²€ìƒ‰ëŸ‰ ë¬´ë£Œ Â· ì›” 30íšŒ Â· í‚¤ì›Œë“œ 300ê°œ"; return; }
+        const data = snapshot.data(), labels = { pending: "ì‹œì‘ ëŒ€ê¸°", trialing: "ë² íƒ€ ì´ìš© ì¤‘", active: "ì´ìš© ì¤‘", past_due: "ê²°ì œ í™•ì¸ í•„ìš”", canceled: "í•´ì§€ë¨", expired: "ë§Œë£Œë¨" };
+        const endDate = data.periodEnd?.toDate?.();
+        const validEnd = endDate instanceof Date && Number.isFinite(endDate.getTime());
+        const usableStatus = ["trialing", "active", "canceled"].includes(data.status);
+        const label = usableStatus && !validEnd ? "ê¸°ê°„ í™•ì¸ í•„ìš”" : usableStatus && endDate <= new Date() ? "ë§Œë£Œë¨" : labels[data.status] || "ìƒíƒœ í™•ì¸ ì¤‘";
+        const end = validEnd ? endDate.toLocaleDateString("ko-KR") : "ê¸°ê°„ ë¯¸ì •";
+        const limit = Number.isFinite(data.runLimit) ? `ì›” ${Number(data.runLimit).toLocaleString()}íšŒ` : "ì‹¤í–‰ í•œë„ ê²€ì¦ ì¤‘";
+        const projects = Number.isFinite(data.projectLimit) ? `ë¸Œëœë“œ ${Number(data.projectLimit).toLocaleString()}ê°œ` : "ë¸Œëœë“œ í•œë„ í™•ì¸ ì¤‘";
+        const renewal = data.autoRenew === false ? "ìë™ê²°ì œ í•´ì§€" : data.autoRenew === true ? "ìë™ê²°ì œ ë™ì˜" : "ìë™ê²°ì œ ë¯¸ì„¤ì •";
+        state.textContent = `${data.planLabel || "ìš”ê¸ˆì œ"} Â· ${label} Â· ${end}ê¹Œì§€ Â· ${projects} Â· ${limit} Â· ${renewal}`;
+      }
+      function renderPayment(snapshot) {
+        const state = document.getElementById("paymentState");
+        if (!snapshot.exists()) { state.textContent = "ê²°ì œ ë‚´ì—­ì´ ì—†ìŠµë‹ˆë‹¤. ì •ê¸°ê²°ì œëŠ” í…ŒìŠ¤íŠ¸ ì „ì…ë‹ˆë‹¤."; return; }
+        const data = snapshot.data(), paidAt = data.paidAt?.toDate?.().toLocaleDateString("ko-KR") || "ì²˜ë¦¬ì¼ í™•ì¸ ì¤‘", nextBilling = data.nextBillingAt?.toDate?.().toLocaleDateString("ko-KR") || "ë‹¤ìŒ ê²°ì œì¼ ì—†ìŒ";
+        state.textContent = `${paidAt} Â· ${Number(data.amount || 0).toLocaleString()}ì› Â· ${data.status || "ìƒíƒœ í™•ì¸ ì¤‘"} Â· ë‹¤ìŒ ê²°ì œ ${nextBilling}`;
+      }
+      function renderInquiries(snapshot) {
+        const list = document.getElementById("inquiryList"), state = document.getElementById("inquiryState");
+        list.replaceChildren(); state.hidden = !snapshot.empty; list.hidden = snapshot.empty;
+        state.textContent = "ë“±ë¡ëœ ë¬¸ì˜ê°€ ì—†ìŠµë‹ˆë‹¤.";
+        const labels = { open:"ì ‘ìˆ˜", reviewing:"í™•ì¸ ì¤‘", answered:"ë‹µë³€ ì™„ë£Œ", closed:"ì¢…ë£Œ" };
+        for (const item of snapshot.docs) {
+          const inquiry = item.data(), row = document.createElement("li"), title = document.createElement("b"), status = document.createElement("span"), detail = document.createElement("p");
+          row.className = "inquiry-item"; title.textContent = inquiry.subject || "ë¬¸ì˜"; status.textContent = labels[inquiry.status] || "ìƒíƒœ í™•ì¸";
+          detail.textContent = [inquiry.reply || inquiry.message || "ë‚´ìš© ì—†ìŒ", formatDate(inquiry.updatedAt || inquiry.createdAt)].join(" Â· ");
+          row.append(title, status, detail); list.append(row);
+        }
+      }
+      async function loadWorkspaceData(workspaceId, isCurrent = () => true) {
+        const period = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit" }).format(new Date());
+        try {
+          const [runs, reports, usage, inquiries, subscription, payment] = await Promise.all([
+            getDocs(query(workspaceCollection(workspaceId, "runs"), orderBy("createdAt", "desc"), limit(5))),
+            getDocs(query(workspaceCollection(workspaceId, "reports"), orderBy("createdAt", "desc"), limit(5))),
+            getDoc(doc(db, "workspaces", workspaceId, "usage", period)),
+            getDocs(query(workspaceCollection(workspaceId, "inquiries"), orderBy("createdAt", "desc"), limit(5))),
+            getDoc(doc(db, "workspaces", workspaceId, "subscriptions", "current")),
+            getDoc(doc(db, "workspaces", workspaceId, "paymentSummaries", "current"))
+          ]);
+          if (!isCurrent()) return;
+          renderRuns(runs); renderReports(reports); renderUsage(usage, period, subscription); renderInquiries(inquiries); renderSubscription(subscription); renderPayment(payment);
+        } catch (error) {
+          if (!isCurrent()) return;
+          document.getElementById("runState").textContent = "ì‹¤í–‰ ë°ì´í„°ë¥¼ ë¶ˆëŸ¬ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.";
+          document.getElementById("reportState").textContent = "ê²°ê³¼ ë°ì´í„°ë¥¼ ë¶ˆëŸ¬ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.";
+          document.getElementById("usageState").textContent = "ì‚¬ìš©ëŸ‰ ë°ì´í„°ë¥¼ ë¶ˆëŸ¬ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.";
+          document.getElementById("inquiryState").textContent = "ë¬¸ì˜ ë‚´ì—­ì„ ë¶ˆëŸ¬ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.";
+          document.getElementById("subscriptionState").textContent = "êµ¬ë… ìƒíƒœë¥¼ ë¶ˆëŸ¬ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.";
+          document.getElementById("paymentState").textContent = "ê²°ì œ ë‚´ì—­ì„ ë¶ˆëŸ¬ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.";
+          console.error("ì›Œí¬ìŠ¤í˜ì´ìŠ¤ ì‹¤í–‰ ë°ì´í„° ì¡°íšŒ ì‹¤íŒ¨", error.code);
+        }
+      }
+      function resetAccountUi() {
+        window.autoworksWorkspaceId = null;
+        document.getElementById("projectForm").reset();
+        document.getElementById("projectForm").classList.remove("open");
+        document.getElementById("projectRows").replaceChildren();
+        document.getElementById("projectTable").hidden = true;
+        document.getElementById("projectState").hidden = false;
+        document.getElementById("projectState").textContent = "ë¡œê·¸ì¸ í›„ í”„ë¡œì íŠ¸ë¥¼ í™•ì¸í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.";
+        for (const id of ["runList", "reportList", "inquiryList"]) document.getElementById(id).replaceChildren();
+        for (const id of ["runState", "reportState", "usageState", "inquiryState", "subscriptionState", "paymentState"]) {
+          const node = document.getElementById(id); node.hidden = false; node.textContent = "ë¡œê·¸ì¸ í›„ í™•ì¸í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.";
+        }
+        document.getElementById("usageGrid").hidden = true;
+        document.getElementById("inquiryForm").reset();
+        document.getElementById("accountDeletionForm").reset();
+        document.getElementById("accountDeletionSubmit").disabled = !apiBase;
+        document.getElementById("accountDeletionState").textContent = apiBase ? "DELETEë¥¼ ì •í™•íˆ ì…ë ¥í•´ì•¼ ì ‘ìˆ˜ë©ë‹ˆë‹¤." : "ì„œë²„ê°€ ì—°ê²°ëœ í™˜ê²½ì—ì„œë§Œ ìš”ì²­í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.";
+      }
+      async function ensureWorkspace(user) {
+        if (!workspaceSetups.has(user.uid)) {
+          workspaceSetups.set(user.uid, (async () => {
+            const owned = query(
+              collection(db, "workspaces"),
+              where("ownerUid", "==", user.uid),
+              limit(1)
+            );
+            const existing = await getDocs(owned);
+            if (!existing.empty) return existing.docs[0].id;
+            const created = await addDoc(collection(db, "workspaces"), {
+              ownerUid: user.uid,
+              name: "ë‚´ ì›Œí¬ìŠ¤í˜ì´ìŠ¤",
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp()
+            });
+            return created.id;
+          })());
+        }
+        try {
+          return await workspaceSetups.get(user.uid);
+        } catch (error) {
+          workspaceSetups.delete(user.uid);
+          throw error;
+        }
+      }
+      async function loadDeletionStatus(user, workspaceId, isCurrent = () => true) {
+        if (!apiBase) return;
+        const submit = document.getElementById("accountDeletionSubmit"), state = document.getElementById("accountDeletionState");
+        try {
+          const token = await user.getIdToken();
+          const response = await fetch(`${apiBase}/v1/account-deletion-requests/${encodeURIComponent(workspaceId)}`, { headers:{ authorization:`Bearer ${token}` } });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(result.error?.message || "request-failed");
+          if (!isCurrent()) return;
+          if (result.status === "pending" || result.status === "completed") {
+            submit.disabled = true; submit.textContent = result.status === "completed" ? "íƒˆí‡´ ì²˜ë¦¬ë¨" : "ìš”ì²­ ì ‘ìˆ˜ë¨";
+            state.textContent = result.status === "completed" ? "íƒˆí‡´ ì²˜ë¦¬ê°€ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤." : "íƒˆí‡´ ìš”ì²­ì´ ì ‘ìˆ˜ë˜ì–´ ìƒˆ ìë™í™” ì‹¤í–‰ì´ ì¤‘ë‹¨ë˜ì—ˆìŠµë‹ˆë‹¤.";
+          }
+        } catch (error) {
+          if (!isCurrent()) return;
+          state.textContent = "íƒˆí‡´ ìš”ì²­ ìƒíƒœë¥¼ í™•ì¸í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ì ì‹œ í›„ ë‹¤ì‹œ ì‹œë„í•´ ì£¼ì„¸ìš”.";
+          console.error("ê³„ì • íƒˆí‡´ ìƒíƒœ ì¡°íšŒ ì‹¤íŒ¨", error.message);
+        }
+      }
+      onAuthStateChanged(auth, async user => {
+        const generation = ++authGeneration;
+        const signedIn = Boolean(user);
+        document.getElementById("authProviders").hidden = signedIn;
+        document.getElementById("authAccount").hidden = !signedIn;
+        document.getElementById("authUser").textContent = signedIn
+          ? (user.displayName || user.email || "ë¡œê·¸ì¸ ì‚¬ìš©ì")
+          : "";
+        authMessage.textContent = signedIn ? "ë¡œê·¸ì¸ ê³„ì •ì˜ ì‘ì—… ê³µê°„ì„ í™•ì¸í•˜ê³  ìˆìŠµë‹ˆë‹¤." : "ë¡œê·¸ì¸ ì œê³µìë¥¼ ì„ íƒí•´ ì£¼ì„¸ìš”.";
+        document.getElementById("loginButton").textContent = signedIn ? "ë‚´ ê³„ì •" : "ë¡œê·¸ì¸";
+        document.getElementById("workspace").classList.toggle("visible", signedIn);
+        document.getElementById("accountNav").classList.toggle("visible", signedIn);
+        document.getElementById("accountData").classList.toggle("visible", signedIn);
+        document.getElementById("inquiries").classList.toggle("visible", signedIn);
+        document.getElementById("accountDeletion").classList.toggle("visible", signedIn);
+        if (!signedIn) resetAccountUi();
+        if (signedIn) {
+          try {
+            const workspaceId = await ensureWorkspace(user);
+            const isCurrent = () => generation === authGeneration && auth.currentUser?.uid === user.uid;
+            if (!isCurrent()) return;
+            window.autoworksWorkspaceId = workspaceId;
+            await Promise.all([loadProjects(workspaceId, isCurrent), loadWorkspaceData(workspaceId, isCurrent), loadDeletionStatus(user, workspaceId, isCurrent)]);
+            if (!isCurrent()) return;
+            authMessage.textContent = "ë¡œê·¸ì¸ ë° ê°œì¸ ì‘ì—… ê³µê°„ì´ ì¤€ë¹„ë˜ì—ˆìŠµë‹ˆë‹¤.";
+            if (authModal.classList.contains("open")) setTimeout(hideAuth, 700);
+          } catch (error) {
+            if (generation !== authGeneration || auth.currentUser?.uid !== user.uid) return;
+            authMessage.textContent = "ë¡œê·¸ì¸í–ˆì§€ë§Œ ê°œì¸ ì‘ì—… ê³µê°„ì„ ì¤€ë¹„í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ë‹¤ì‹œ ì‹œë„í•´ ì£¼ì„¸ìš”.";
+            console.error("ì›Œí¬ìŠ¤í˜ì´ìŠ¤ ì¤€ë¹„ ì‹¤íŒ¨", error.code);
+          }
+        }
+      });
+      document.querySelectorAll("[data-auth-provider]").forEach(button => {
+        button.addEventListener("click", async () => {
+          if (button.dataset.authProvider !== "google") {
+            if (!apiBase) {
+              authMessage.textContent = "ë„¤ì´ë²„Â·ì¹´ì¹´ì˜¤ ë¡œê·¸ì¸ ì„œë²„ ë°°í¬ ì „ì´ë¼ ì•„ì§ ì‚¬ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.";
+              return;
+            }
+            const providerName = button.dataset.authProvider;
+            const popup = window.open(`${apiBase}/v1/auth/${encodeURIComponent(providerName)}/start?returnOrigin=${encodeURIComponent(location.origin)}`, "autoworks-oauth", "popup,width=520,height=720");
+            authMessage.textContent = popup ? "ë¡œê·¸ì¸ ì œê³µì í™”ë©´ì—ì„œ ê³„ì†í•´ ì£¼ì„¸ìš”." : "ë¡œê·¸ì¸ íŒì—…ì´ ì°¨ë‹¨ë˜ì—ˆìŠµë‹ˆë‹¤. íŒì—…ì„ í—ˆìš©í•´ ì£¼ì„¸ìš”.";
+            return;
+          }
+          authMessage.textContent = "ë¡œê·¸ì¸ ì—°ê²°ì„ í™•ì¸í•˜ê³  ìˆìŠµë‹ˆë‹¤.";
+          const provider = new GoogleAuthProvider();
+          try {
+            await signInWithPopup(auth, provider);
+            authMessage.textContent = "ë¡œê·¸ì¸ë˜ì—ˆìŠµë‹ˆë‹¤. ê°œì¸ ì‘ì—… ê³µê°„ì„ í™•ì¸í•˜ê³  ìˆìŠµë‹ˆë‹¤.";
+          } catch (error) {
+            const messages = {
+              "auth/operation-not-allowed": "ì´ ë¡œê·¸ì¸ ì œê³µìëŠ” Firebaseì—ì„œ ì•„ì§ ì„¤ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.",
+              "auth/account-exists-with-different-credential": "ì´ ì´ë©”ì¼ì€ ë‹¤ë¥¸ ë¡œê·¸ì¸ ë°©ì‹ìœ¼ë¡œ ê°€ì…ë˜ì–´ ìˆìŠµë‹ˆë‹¤. ê¸°ì¡´ ë°©ì‹ìœ¼ë¡œ ë¡œê·¸ì¸í•´ ì£¼ì„¸ìš”.",
+              "auth/popup-blocked": "ë¸Œë¼ìš°ì €ê°€ ë¡œê·¸ì¸ ì°½ì„ ì°¨ë‹¨í–ˆìŠµë‹ˆë‹¤. íŒì—… í—ˆìš© í›„ ë‹¤ì‹œ ì‹œë„í•´ ì£¼ì„¸ìš”."
+            };
+            authMessage.textContent = messages[error.code] || "ë¡œê·¸ì¸ì— ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤. ì ì‹œ í›„ ë‹¤ì‹œ ì‹œë„í•´ ì£¼ì„¸ìš”.";
+            console.error("Firebase ë¡œê·¸ì¸ ì‹¤íŒ¨", error.code);
+          }
+        });
+      });
+      document.getElementById("authSignOut").addEventListener("click", async () => {
+        try {
+          await signOut(auth);
+        } catch (error) {
+          authMessage.textContent = "ë¡œê·¸ì•„ì›ƒí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ë‹¤ì‹œ ì‹œë„í•´ ì£¼ì„¸ìš”.";
+          console.error("Firebase ë¡œê·¸ì•„ì›ƒ ì‹¤íŒ¨", error.code);
+        }
+      });
+      document.getElementById("accountDeletionSubmit").disabled = !apiBase;
+      document.getElementById("accountDeletionState").textContent = apiBase ? "DELETEë¥¼ ì •í™•íˆ ì…ë ¥í•´ì•¼ ì ‘ìˆ˜ë©ë‹ˆë‹¤." : "ì„œë²„ê°€ ì—°ê²°ëœ í™˜ê²½ì—ì„œë§Œ ìš”ì²­í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.";
+      document.getElementById("accountDeletionForm").addEventListener("submit", async event => {
+        event.preventDefault();
+        const user = auth.currentUser, workspaceId = window.autoworksWorkspaceId;
+        const confirmation = document.getElementById("accountDeletionConfirmation").value.trim();
+        const submit = document.getElementById("accountDeletionSubmit"), state = document.getElementById("accountDeletionState");
+        if (!apiBase || !user || !workspaceId) { state.textContent = "ë¡œê·¸ì¸ê³¼ ì„œë²„ ì—°ê²°ì„ í™•ì¸í•´ ì£¼ì„¸ìš”."; return; }
+        if (confirmation !== "DELETE") { state.textContent = "í™•ì¸ ë¬¸êµ¬ DELETEë¥¼ ì •í™•íˆ ì…ë ¥í•´ ì£¼ì„¸ìš”."; return; }
+        submit.disabled = true; submit.textContent = "ìš”ì²­ ì¤‘";
+        try {
+          const token = await user.getIdToken();
+          const response = await fetch(`${apiBase}/v1/account-deletion-requests`, { method:"POST", headers:{ authorization:`Bearer ${token}`, "content-type":"application/json" }, body:JSON.stringify({ workspaceId, confirmation }) });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(result.error?.message || "request-failed");
+          event.currentTarget.reset(); state.textContent = "íƒˆí‡´ ìš”ì²­ì„ ì ‘ìˆ˜í–ˆìŠµë‹ˆë‹¤. ìƒˆ ìë™í™” ì‹¤í–‰ì€ ì¤‘ë‹¨ë˜ë©°, ì²˜ë¦¬ ìƒíƒœëŠ” ê³ ê°ì„¼í„°ë¥¼ í†µí•´ í™•ì¸í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤."; submit.textContent = "ìš”ì²­ ì ‘ìˆ˜ë¨";
+        } catch (error) {
+          state.textContent = "íƒˆí‡´ ìš”ì²­ì„ ì ‘ìˆ˜í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ì ì‹œ í›„ ë‹¤ì‹œ ì‹œë„í•˜ê±°ë‚˜ ê³ ê°ì„¼í„°ë¡œ ë¬¸ì˜í•´ ì£¼ì„¸ìš”.";
+          submit.disabled = false; submit.textContent = "íƒˆí‡´ ìš”ì²­";
+          console.error("ê³„ì • íƒˆí‡´ ìš”ì²­ ì‹¤íŒ¨", error.message);
+        }
+      });
+      document.getElementById("projectAdd").addEventListener("click", () => {
+        const form = document.getElementById("projectForm");
+        form.classList.toggle("open");
+        if (form.classList.contains("open")) document.getElementById("projectName").focus();
+      });
+      document.getElementById("projectForm").addEventListener("submit", async event => {
+        event.preventDefault();
+        const workspaceId = window.autoworksWorkspaceId;
+        const name = document.getElementById("projectName").value.trim();
+        const brandName = document.getElementById("projectBrand").value.trim();
+        const keywords = [...new Set(document.getElementById("projectKeywords").value.split(",").map(value => value.trim()).filter(Boolean))].slice(0, 20);
+        if (!workspaceId || !name || !brandName) return;
+        const form = event.currentTarget;
+        const submit = form.querySelector("button[type=submit]");
+        submit.disabled = true;
+        submit.textContent = "ì €ì¥ ì¤‘";
+        try {
+          if (!apiBase) throw new Error("api-not-configured");
+          const user = auth.currentUser;
+          if (!user) throw new Error("auth-required");
+          const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(workspaceId)}/projects`, {
+            method:"POST",
+            headers:{ authorization:`Bearer ${await user.getIdToken()}`, "content-type":"application/json" },
+            body:JSON.stringify({ name, brandName, keywords })
+          });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(result.error?.message || "project-create-failed");
+          form.reset();
+          form.classList.remove("open");
+          await loadProjects(workspaceId);
+          showToast("í”„ë¡œì íŠ¸ë¥¼ ì €ì¥í–ˆìŠµë‹ˆë‹¤.");
+        } catch (error) {
+          document.getElementById("projectState").textContent = error.message === "api-not-configured"
+            ? "í”„ë¡œì íŠ¸ ìƒì„± ì„œë²„ê°€ ì•„ì§ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤."
+            : error.message || "ì €ì¥í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ë¡œê·¸ì¸ ìƒíƒœì™€ ì—°ê²°ì„ í™•ì¸í•´ ì£¼ì„¸ìš”.";
+          document.getElementById("projectState").hidden = false;
+          console.error("í”„ë¡œì íŠ¸ ì €ì¥ ì‹¤íŒ¨", error.code);
+        } finally {
+          submit.disabled = false;
+          submit.textContent = "ì €ì¥";
+        }
+      });
+      document.getElementById("inquiryForm").addEventListener("submit", async event => {
+        event.preventDefault();
+        const workspaceId = window.autoworksWorkspaceId;
+        const subject = document.getElementById("inquirySubject").value.trim();
+        const message = document.getElementById("inquiryMessage").value.trim();
+        if (!workspaceId || !subject || !message) return;
+        const form = event.currentTarget, submit = form.querySelector("button[type=submit]");
+        submit.disabled = true; submit.textContent = "ì ‘ìˆ˜ ì¤‘";
+        try {
+          await addDoc(workspaceCollection(workspaceId, "inquiries"), {
+            subject,
+            message,
+            status: "open",
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+          form.reset();
+          renderInquiries(await getDocs(query(workspaceCollection(workspaceId, "inquiries"), orderBy("createdAt", "desc"), limit(5))));
+          showToast("ë¬¸ì˜ë¥¼ ì ‘ìˆ˜í–ˆìŠµë‹ˆë‹¤.");
+        } catch (error) {
+          document.getElementById("inquiryState").hidden = false;
+          document.getElementById("inquiryState").textContent = "ë¬¸ì˜ë¥¼ ì ‘ìˆ˜í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ë¡œê·¸ì¸ ìƒíƒœì™€ ì—°ê²°ì„ í™•ì¸í•´ ì£¼ì„¸ìš”.";
+          console.error("ë¬¸ì˜ ì ‘ìˆ˜ ì‹¤íŒ¨", error.code);
+        } finally {
+          submit.disabled = false; submit.textContent = "ë¬¸ì˜ ì ‘ìˆ˜";
+        }
+      });
+    } catch (error) {
+      const message = document.getElementById("authMessage");
+      if (message) message.textContent = "Firebase ì¸ì¦ ì—°ê²°ì„ ì¤€ë¹„í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ì ì‹œ í›„ ë‹¤ì‹œ ì‹œë„í•´ ì£¼ì„¸ìš”.";
+      console.error("Firebase ì´ˆê¸°í™” ì‹¤íŒ¨", error);
+    }
+  }
+ </script>
+</body>
+</html>
+
+
+
+
+
