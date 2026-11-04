@@ -45,6 +45,7 @@ jobs:
       - run: npm run test:server
       - run: npm run test:runtime-config
       - run: npm run test:container
+      - run: npm run test:cloud-bootstrap
       - name: Validate deployment variables
         shell: bash
         run: |
@@ -94,4 +95,24 @@ jobs:
           set -euo pipefail
           curl --fail --silent --show-error "$SERVICE_URL/healthz"
           test "$(curl --silent --output /dev/null --write-out '%{http_code}' -X POST "$SERVICE_URL/internal/v1/recovery:run")" = "401"
+      - name: Grant only the caller identity and configure recovery schedule
+        shell: bash
+        env:
+          SERVICE_URL: ${{ steps.service.outputs.service_url }}
+        run: |
+          set -euo pipefail
+          gcloud run services add-iam-policy-binding "$SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --member "serviceAccount:$TASK_SERVICE_ACCOUNT" --role roles/run.invoker --quiet
+          if gcloud scheduler jobs describe autoworks-recovery-dev --project "$PROJECT_ID" --location "$REGION" >/dev/null 2>&1; then
+            ACTION=update
+          else
+            ACTION=create
+          fi
+          gcloud scheduler jobs "$ACTION" http autoworks-recovery-dev \
+            --project "$PROJECT_ID" --location "$REGION" \
+            --schedule "*/5 * * * *" --time-zone "Asia/Seoul" \
+            --uri "$SERVICE_URL/internal/v1/recovery:run" --http-method POST \
+            --oidc-service-account-email "$TASK_SERVICE_ACCOUNT" \
+            --oidc-token-audience "$SERVICE_URL" --quiet
 

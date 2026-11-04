@@ -39,6 +39,7 @@ jobs:
       - run: npm run test:runtime-config
       - run: npm run test:billing-boundary
       - run: npm run test:container
+      - run: npm run test:cloud-bootstrap
       - run: docker build --tag autoworks-api:test ./server
       - run: npm run test:server
       - name: Test Firestore security rules

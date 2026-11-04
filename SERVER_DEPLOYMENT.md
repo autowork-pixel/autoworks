@@ -54,6 +54,8 @@
 
 워크플로는 먼저 전체 서버·런타임·컨테이너 검사를 실행한다. 최초 revision은 임시 HTTPS audience로 기동한 뒤 실제 Cloud Run URL을 조회해 `SERVICE_URL`과 `WORKER_AUDIENCE`를 즉시 고정한다. 마지막에 공개 `/healthz` 성공과 무인증 내부 복구 경로의 401 거부를 확인한다. OAuth·토스 비밀값은 이 기본 배포에 포함하지 않고 Secret Manager 연결 퀘스트에서 별도로 주입한다.
 
+결제 연결 뒤 Cloud Shell에서 `bash scripts/bootstrap-cloud-dev.sh APPLY_DEV`를 실행하면 필요한 API, 분리된 실행·호출 계정, 서울 리전 KMS 키와 Tasks 큐를 멱등하게 준비한다. 인자를 생략하면 생성 없이 대상만 출력하며 서비스 계정 키 파일은 만들지 않는다. 배포 워크플로는 성공 후 호출 계정에 해당 서비스의 invoker만 부여하고 5분 주기 복구 Scheduler를 같은 OIDC 신원으로 생성·갱신한다.
+
 ## 중지 조건
 
 - 다른 workspace 문서를 읽거나 수정할 수 있음
