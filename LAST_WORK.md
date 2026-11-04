@@ -13,14 +13,15 @@
 - GitHub 코드에는 Q5-3A~G 기능과 토스 정기결제 서버 코어가 포함된다. Hosting 배포 전까지 공개 화면에는 이전 버전이 보일 수 있다.
 - 서버 코드는 GitHub에 저장됐지만 Cloud Run은 배포되지 않았다. 현재 공개 웹의 API 주소는 비어 있어 고객 키 저장과 실제 외부 API 실행 버튼은 비활성이다.
 - Instagram 실제 Apify 응답·비용·계정 격리 검증은 Cloud Run 배포 후 진행한다.
-- 2026-11-04 콘솔 확인 결과 개발 프로젝트에는 Cloud Run 서비스와 전용 실행·호출 계정이 없고, 연결 가능한 활성 결제 계정도 없어 KMS·Cloud Run 자원을 만들 수 없다.
+- 2026-11-04 개발 프로젝트 `autoworks-c9a6a`에 `내 결제 계정 2`를 연결만 했고 총비용 0원을 확인했다. Cloud Run·KMS·Tasks 등 실제 과금 가능 자원은 생성하지 않았다.
+- 비용 가능 작업은 [Google Cloud 비용 안전 정책](BILLING_SAFETY.md)에 따라 사용자에게 범위와 비용 가능성을 설명하고 실행 직전 별도 승인을 받아야 한다.
 
 ## 다음 작업
 
-1. 폐쇄 상태가 아닌 활성 결제 계정을 준비해 개발 프로젝트 `autoworks-c9a6a`에 연결한다.
-2. 개발 Google Cloud에 실행 계정·호출 계정·KMS 키·Tasks 큐·예산 Pub/Sub topic을 준비하고 GitHub `development` 환경 변수 3개를 등록한다.
-3. 예산 표시 이름을 `autoworks-development-monthly-50000`으로 만들고 프로그램 알림 topic을 연결한다.
-4. **Deploy development Cloud Run API**를 수동 실행한 뒤 `smoke:development-api`와 두 테스트 계정의 `smoke:authenticated-api`를 실행한다. 외부 계정·비용·검색 품질 확인은 [검토 목록](USER_REVIEW.md)에서 순차 확인한다.
+1. 클라우드 유료 리소스를 만들지 않고 기능 개발·로컬 테스트·정적 검증을 계속한다.
+2. 클라우드 통합이 꼭 필요한 시점에 생성할 리소스와 예상 비용을 정리해 사용자 승인을 다시 받는다.
+3. 승인받은 경우에만 예산·비용 차단 장치를 먼저 구성한 뒤 최소 범위로 개발 리소스를 만든다.
+4. Cloud Run 배포도 별도 승인 전에는 실행하지 않는다.
 
 작업을 마칠 때마다 **마지막 기능 커밋, 배포 범위, 확인 결과, 다음 작업**을 이 파일에 갱신하고 GitHub `main`에 저장한다. 전체 진행 기록은 [퀘스트 로그](QUEST_LOG.md), 사용자 확인 사항은 [검토 목록](USER_REVIEW.md)에 남긴다. API 키와 비밀정보는 기록하지 않는다.
 
