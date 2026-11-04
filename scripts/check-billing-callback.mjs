@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const success=await readFile(new URL("../public/billing-success.html",import.meta.url),"utf8"),failure=await readFile(new URL("../public/billing-fail.html",import.meta.url),"utf8"),service=await readFile(new URL("../server/src/billing-service.mjs",import.meta.url),"utf8");
+const home=await readFile(new URL("../public/index.html",import.meta.url),"utf8"),success=await readFile(new URL("../public/billing-success.html",import.meta.url),"utf8"),failure=await readFile(new URL("../public/billing-fail.html",import.meta.url),"utf8"),service=await readFile(new URL("../server/src/billing-service.mjs",import.meta.url),"utf8");
+assert.match(home,/id="subscriptionStartArea" hidden/,"서버가 연결되기 전에는 결제 시작을 노출하지 않아야 합니다.");
+assert.match(home,/id="subscriptionConsent" type="checkbox"/,"월 자동결제에 대한 명시적 동의를 받아야 합니다.");
+assert.match(home,/billing-sessions`, \{ method:"POST"/,"고객 인증을 거쳐 서버 결제 세션을 발급해야 합니다.");
+assert.match(home,/result\.amount !== 19900/,"서버가 확정한 스타터 금액을 검증해야 합니다.");
+assert.match(home,/successUrl\.origin !== location\.origin \|\| failUrl\.origin !== location\.origin/,"결제 반환 URL은 현재 사이트로 제한해야 합니다.");
+assert.match(home,/script\.src = "https:\/\/js\.tosspayments\.com\/v2\/standard"/,"공식 토스페이먼츠 SDK 주소만 사용해야 합니다.");
+assert.match(home,/requestBillingAuth\(\{ method:"CARD", successUrl:successUrl\.href, failUrl:failUrl\.href \}\)/,"토스 자동결제 카드 등록창을 연결해야 합니다.");
 assert.match(service,/workspaceId=\$\{encodeURIComponent\(workspaceId\)\}/,"결제 반환 URL은 완료 API의 워크스페이스를 포함해야 합니다.");
 assert.match(success,/history\.replaceState\(null,"",location\.pathname\)/,"일회용 결제 결과는 주소창에서 즉시 제거해야 합니다.");
 assert.match(success,/auth\.currentUser|onAuthStateChanged/,"결제 완료 API는 로그인 계정을 확인한 뒤 호출해야 합니다.");

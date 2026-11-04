@@ -11,6 +11,6 @@ assert.match(source, /if \(generation !== authGeneration \|\| auth\.currentUser\
 for (const required of ["autoworksWorkspaceId = null", "projectRows", "runList", "reportList", "inquiryList", "usageGrid", "inquiryForm"]) {
   assert.equal(reset.includes(required), true, `로그아웃 초기화에 ${required} 처리가 필요합니다.`);
 }
-assert.match(source, /if \(!signedIn\) resetAccountUi\(\);/, "로그아웃 상태에서 고객 데이터를 즉시 초기화해야 합니다.");
+assert.match(source, /resetAccountUi\(\);\s*if \(signedIn\)/, "계정 상태가 바뀌면 이전 고객 데이터를 즉시 초기화해야 합니다.");
 
 console.log("로그아웃 DOM 초기화와 이전 계정 비동기 결과 차단 경계를 확인");
