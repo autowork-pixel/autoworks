@@ -14,4 +14,7 @@ assert.match(source, /system\/automation\/audit-logs\?limit=10/, "전역 자동�
 assert.match(source, /body:JSON\.stringify\(\{blocked,confirmation,reason:reason\.trim\(\)\}\)/, "전역 조치는 상태·확인 문구·사유만 전달해야 합니다.");
 assert.equal(source.includes("updateDoc("), false, "운영 화면에서 Firestore 문서를 직접 변경하면 안 됩니다.");
 assert.equal(source.includes("providerCredentials"), false, "운영 화면에서 고객 API 자격정보를 조회하면 안 됩니다.");
+assert.match(source, /collectionGroup\(db,"paymentSummaries"\)/, "관리자는 결제수단 원문이 아닌 공개 결제 요약만 조회해야 합니다.");
+assert.match(source, /data\.status==="FAILED"/, "결제 실패 상태를 운영자가 구분할 수 있어야 합니다.");
+assert.equal(source.includes("billingCredentials"), false, "운영 화면에서 빌링키 저장소를 조회하면 안 됩니다.");
 console.log("관리자 고객 접근 조치의 API 비활성화·ID token·대상 ID·비밀정보 경계를 확인");
