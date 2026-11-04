@@ -4,8 +4,8 @@
 
 ## 마지막 기능 작업
 
-- 커밋: `b2bfee0` — 개발 Google Cloud 부트스트랩 자동화
-- 내용: 결제 선확인, API·분리 계정·KMS·Tasks 멱등 준비, 배포 후 invoker·OIDC 복구 Scheduler 구성
+- 커밋: `58bf9bf` — Cloud Run부터 Hosting까지 개발 배포 연결
+- 내용: 인프라 부트스트랩, API 배포, 실제 audience 고정, OIDC 복구 Scheduler, runtime config와 Hosting 자동 배포
 - 확인: 부트스트랩 무키 파일·최소 분리 계정 검사와 런타임·컨테이너 검사 통과
 
 ## 지금 사용할 수 있는 범위
