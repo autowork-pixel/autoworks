@@ -1,7 +1,7 @@
 import { ApiError } from "./domain.mjs";
 import { encryptCredentialPayload } from "./credential-crypto.mjs";
 
-const supportedProviders = new Set(["naver-searchad", "youtube", "apify", "openai"]);
+const supportedProviders = new Set(["naver-searchad", "naver-search", "youtube", "apify", "openai"]);
 
 function providerName(value) {
   if (!supportedProviders.has(value)) throw new ApiError("INVALID_INPUT", "지원하지 않는 API 연결입니다.");
@@ -30,9 +30,9 @@ export function createCredentialService({ keyManager, repository, now = () => ne
           workspaceId,
           uid,
           provider: selectedProvider,
-          document: { ...envelope, apiKeyHint: keyHint(credentials.apiKey || credentials.token), status: "active", updatedAt: now() }
+          document: { ...envelope, apiKeyHint: keyHint(credentials.apiKey || credentials.token || credentials.clientId), status: "active", updatedAt: now() }
         });
-        return { provider: selectedProvider, status: "active", apiKeyHint: keyHint(credentials.apiKey || credentials.token) };
+        return { provider: selectedProvider, status: "active", apiKeyHint: keyHint(credentials.apiKey || credentials.token || credentials.clientId) };
       } finally {
         generated.plaintextDataKey.fill(0);
       }

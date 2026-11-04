@@ -30,355 +30,59 @@
  <nav class="account-nav" id="accountNav" aria-label="ë‚´ ê³„ì • ë°”ë¡œê°€ê¸°"><a class="account-link" href="./api-guide.html"><b>API ì—°ê²°</b><span>í•„ìš”í•œ í‚¤ì™€ ë°œê¸‰ ì•ˆë‚´</span></a><a class="account-link" href="#subscriptionCard"><b>êµ¬ë… ìƒíƒœ</b><span>ë² íƒ€ ìƒíƒœì™€ ê¸°ê°„ í™•ì¸</span></a><a class="account-link" href="#accountData"><b>ì‚¬ìš©ëŸ‰</b><span>ì´ë²ˆ ë‹¬ ì‹¤í–‰ í˜„í™©</span></a><a class="account-link" href="#paymentCard"><b>ê²°ì œ ë‚´ì—­</b><span>ìµœê·¼ ê²°ì œ ìš”ì•½</span></a></nav>
  <section class="account-data" id="accountData" aria-label="ë‚´ ì‹¤í–‰ ë°ì´í„°"><article class="data-card"><div class="data-head"><h2>ìµœê·¼ ì‹¤í–‰</h2><span>ë‚´ ì›Œí¬ìŠ¤íŽ˜ì´ìŠ¤ë§Œ í‘œì‹œ</span></div><div class="data-state" id="runState">ì‹¤í–‰ ê¸°ë¡ì„ ë¶ˆëŸ¬ì˜¤ëŠ” ì¤‘ìž…ë‹ˆë‹¤.</div><ul class="run-list" id="runList" hidden></ul></article><article class="data-card"><div class="data-head"><h2>ì´ë²ˆ ë‹¬ ì‚¬ìš©ëŸ‰</h2><span id="usagePeriod">-</span></div><div class="data-state" id="usageState">ì‚¬ìš©ëŸ‰ ê¸°ë¡ì´ ì—†ìŠµë‹ˆë‹¤.</div><div class="usage-grid" id="usageGrid" hidden><div><b id="usageRuns">0</b><span>ì‹¤í–‰</span></div><div><b id="usageLookups">0</b><span>í‚¤ì›Œë“œ ì¡°íšŒ</span></div><div><b id="usageRunsRemaining">-</b><span>ë‚¨ì€ ì‹¤í–‰</span></div><div><b id="usageLookupsRemaining">-</b><span>ë‚¨ì€ í‚¤ì›Œë“œ ì¡°íšŒ</span></div><div><b id="usageSuccess">0</b><span>ì„±ê³µ</span></div><div><b id="usageFailed">0</b><span>ì‹¤íŒ¨</span></div></div></article><article class="data-card wide" id="subscriptionCard"><div class="data-head"><h2>êµ¬ë… ìƒíƒœ</h2><span>ì„œë²„ê°€ í™•ì¸í•œ ìƒíƒœë§Œ í‘œì‹œ</span></div><div class="data-state" id="subscriptionState">í™œì„± êµ¬ë…ì´ ì—†ìŠµë‹ˆë‹¤.</div></article><article class="data-card wide" id="paymentCard"><div class="data-head"><h2>ìµœê·¼ ê²°ì œ</h2><span>ë¯¼ê° ê²°ì œì •ë³´ëŠ” í‘œì‹œí•˜ì§€ ì•ŠìŒ</span></div><div class="data-state" id="paymentState">ê²°ì œ ë‚´ì—­ì´ ì—†ìŠµë‹ˆë‹¤.</div></article><article class="data-card wide"><div class="data-head"><h2>ìµœê·¼ ê²°ê³¼</h2><span>ë‹¤ìš´ë¡œë“œëŠ” ì„œë²„ ê²€ì¦ ì—°ê²° í›„ ì œê³µ</span></div><div class="data-state" id="reportState">ì €ìž¥ëœ ê²°ê³¼ê°€ ì—†ìŠµë‹ˆë‹¤.</div><ul class="report-list" id="reportList" hidden></ul></article></section>
  <section class="inquiries" id="inquiries" aria-label="ë‚´ ë¬¸ì˜"><div class="inquiry-head"><h2>ë‚´ ë¬¸ì˜</h2><p>ë¬¸ì˜ì—ëŠ” API í‚¤Â·ë¹„ë°€ë²ˆí˜¸Â·ê²°ì œì •ë³´ë¥¼ ìž…ë ¥í•˜ì§€ ë§ˆì„¸ìš”. ìš´ì˜ ë‹µë³€ì€ ì´ ê³„ì •ì—ì„œ í™•ì¸í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.</p></div><form class="inquiry-form" id="inquiryForm"><input id="inquirySubject" maxlength="100" placeholder="ë¬¸ì˜ ì œëª©" aria-label="ë¬¸ì˜ ì œëª©" required><small>ì œëª© 100ìž Â· ë‚´ìš© 2,000ìž</small><textarea id="inquiryMessage" maxlength="2000" placeholder="ë¬¸ì˜ ë‚´ìš©ì„ ìž…ë ¥í•˜ì„¸ìš”" aria-label="ë¬¸ì˜ ë‚´ìš©" required></textarea><button type="submit">ë¬¸ì˜ ì ‘ìˆ˜</button></form><div class="inquiry-state" id="inquiryState">ë“±ë¡ëœ ë¬¸ì˜ê°€ ì—†ìŠµë‹ˆë‹¤.</div><ul class="inquiry-list" id="inquiryList" hidden></ul></section>
- <section class="account-deletion" id="accountDeletion" aria-label="ê³„ì • íƒˆí‡´ ìš”ì²­"><div class="account-deletion-head"><h2>ê³„ì • íƒˆí‡´ ìš”ì²­</h2><p>ìš”ì²­ ì¦‰ì‹œ ìƒˆ ìžë™í™” ì‹¤í–‰ì´ ì¤‘ë‹¨ë©ë‹ˆë‹¤. ì§„í–‰ ì¤‘ ìž‘ì—…Â·êµ¬ë…Â·ë²•ì • ë³´ì¡´ ê±°ëž˜ë¥¼ í™•ì¸í•œ ë’¤ ê³„ì • ìžë£Œë¥¼ ì‚­ì œí•˜ë©°, ìš”ì²­ë§Œìœ¼ë¡œ ê²°ì œê°€ ìžë™ í™˜ë¶ˆë˜ì§€ëŠ” ì•ŠìŠµë‹ˆë‹¤.</p></div><form class="account-deletion-form" id="accountDeletionForm"><input id="accountDeletionConfirmation" autocomplete="off" placeholder="í™•ì¸ì„ ìœ„í•´ DELETE ìž…ë ¥" aria-label="íƒˆí‡´ í™•ì¸ ë¬¸êµ¬" required><button type="submit" id="accountDeletionSubmit">íƒˆí‡´ ìš”ì²­</button><div class="account-deletion-stçÏz¶‰žËkºwµçJ          rows.append(row);
-        }
-      }
-      async function loadProjects(workspaceId, isCurrent = () => true) {
-        document.getElementById("projectState").hidden = false;
-        document.getElementById("projectState").textContent = "ì €ìž¥ëœ í”„ë¡œì íŠ¸ë¥¼ ë¶ˆëŸ¬ì˜¤ëŠ” ì¤‘ìž…ë‹ˆë‹¤.";
-        document.getElementById("projectTable").hidden = true;
-        try {
-          const snapshot = await getDocs(projectCollection(workspaceId));
-          if (isCurrent()) renderProjects(snapshot);
-        } catch (error) {
-          if (!isCurrent()) return;
-          document.getElementById("projectState").textContent = "í”„ë¡œì íŠ¸ë¥¼ ë¶ˆëŸ¬ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ìž ì‹œ í›„ ë‹¤ì‹œ ì‹œë„í•´ ì£¼ì„¸ìš”.";
-          console.error("í”„ë¡œì íŠ¸ ì¡°íšŒ ì‹¤íŒ¨", error.code);
-        }
-      }
-      function renderRuns(snapshot) {
-        const list = document.getElementById("runList"), state = document.getElementById("runState");
-        list.replaceChildren();
-        state.hidden = !snapshot.empty; list.hidden = snapshot.empty;
-        state.textContent = "ì•„ì§ ì‹¤í–‰ ê¸°ë¡ì´ ì—†ìŠµë‹ˆë‹¤. ìžë™í™” ì„œë²„ê°€ ì—°ê²°ë˜ë©´ ì´ê³³ì— í‘œì‹œë©ë‹ˆë‹¤.";
-        for (const item of snapshot.docs) {
-          const run = item.data(), row = document.createElement("li"), title = document.createElement("b"), status = document.createElement("span"), detail = document.createElement("p");
-          row.className = "run-item"; title.textContent = run.toolLabel || run.tool || "ìžë™í™” ì‹¤í–‰";
-          status.className = "run-status" + (run.status === "failed" ? " failed" : "");
-          status.textContent = ({ queued:"ëŒ€ê¸°", validating:"ê²€ì¦ ì¤‘", running:"ì‹¤í–‰ ì¤‘", retrying:"ìž¬ì‹œë„ ì¤‘", succeeded:"ì™„ë£Œ", failed:"ì‹¤íŒ¨", canceled:"ì·¨ì†Œ" })[run.status] || "ìƒíƒœ í™•ì¸";
-          detail.textContent = [run.inputSummary || "ìž…ë ¥ ìš”ì•½ ì—†ìŒ", run.status === "failed" ? (run.errorMessage || run.errorCode || "ì‹¤í–‰ ì˜¤ë¥˜") : null, formatDate(run.createdAt)].filter(Boolean).join(" Â· ");
-          row.append(title, status, detail); list.append(row);
-        }
-      }
-      function renderReports(snapshot) {
-        const list = document.getElementById("reportList"), state = document.getElementById("reportState");
-        list.replaceChildren(); state.hidden = !snapshot.empty; list.hidden = snapshot.empty;
-        state.textContent = "ì•„ì§ ì €ìž¥ëœ ê²°ê³¼ê°€ ì—†ìŠµë‹ˆë‹¤.";
-        for (const item of snapshot.docs) {
-          const report = item.data(), row = document.createElement("li"), title = document.createElement("b"), status = document.createElement("span"), detail = document.createElement("p");
-          row.className = "report-item"; title.textContent = report.title || "ë¶„ì„ ê²°ê³¼"; status.className = "run-status"; status.textContent = report.status === "ready" ? "ê²°ê³¼ ì¤€ë¹„" : "ì²˜ë¦¬ ì¤‘";
-          detail.textContent = [report.summary || "ê²°ê³¼ ìš”ì•½ ì¤€ë¹„ ì¤‘", formatDate(report.createdAt)].join(" Â· ");
-          row.append(title, status, detail); list.append(row);
-        }
-      }
-      function renderUsage(snapshot, period, subscriptionSnapshot) {
-        document.getElementById("usagePeriod").textContent = period;
-        const state = document.getElementById("usageState"), grid = document.getElementById("usageGrid");
-        state.hidden = snapshot.exists(); grid.hidden = !snapshot.exists();
-        if (!snapshot.exists()) { state.textContent = "ì´ë²ˆ ë‹¬ ì‚¬ìš©ëŸ‰ ê¸°ë¡ì´ ì—†ìŠµë‹ˆë‹¤."; return; }
-        const usage = snapshot.data();
-        const safeCount = value => { const number = Number(value ?? 0); return Number.isSafeInteger(number) && number >= 0 ? number : null; };
-        const runs = safeCount(usage.runs), runsReserved = safeCount(usage.runsReserved), lookups = safeCount(usage.keywordLookups), lookupsReserved = safeCount(usage.keywordLookupsReserved);
-        document.getElementById("usageRuns").textContent = runs === null ? "-" : runs.toLocaleString();
-        document.getElementById("usageLookups").textContent = lookups === null ? "-" : lookups.toLocaleString();
-        document.getElementById("usageSuccess").textContent = safeCount(usage.succeeded) === null ? "-" : safeCount(usage.succeeded).toLocaleString();
-        document.getElementById("usageFailed").textContent = safeCount(usage.failed) === null ? "-" : safeCount(usage.failed).toLocaleString();
-        const subscription = subscriptionSnapshot.exists() ? subscriptionSnapshot.data() : { runLimit: 30, keywordLookupLimit: 300 };
-        const runsUsed = runs === null || runsReserved === null ? null : runs + runsReserved;
-        const lookupsUsed = lookups === null || lookupsReserved === null ? null : lookups + lookupsReserved;
-        document.getElementById("usageRunsRemaining").textContent = runsUsed !== null && Number.isSafeInteger(subscription.runLimit) && subscription.runLimit >= 0 ? Math.max(0, subscription.runLimit - runsUsed).toLocaleString() : "-";
-        document.getElementById("usageLookupsRemaining").textContent = lookupsUsed !== null && Number.isSafeInteger(subscription.keywordLookupLimit) && subscription.keywordLookupLimit >= 0 ? Math.max(0, subscription.keywordLookupLimit - lookupsUsed).toLocaleString() : "-";
-      }
-      function renderSubscription(snapshot) {
-        const state = document.getElementById("subscriptionState");
-        if (!snapshot.exists()) { state.textContent = "ê²€ìƒ‰ëŸ‰ ë¬´ë£Œ Â· ì›” 30íšŒ Â· í‚¤ì›Œë“œ 300ê°œ"; return; }
-        const data = snapshot.data(), labels = { pending: "ì‹œìž‘ ëŒ€ê¸°", trialing: "ë² íƒ€ ì´ìš© ì¤‘", active: "ì´ìš© ì¤‘", past_due: "ê²°ì œ í™•ì¸ í•„ìš”", canceled: "í•´ì§€ë¨", expired: "ë§Œë£Œë¨" };
-        const endDate = data.periodEnd?.toDate?.();
-        const validEnd = endDate instanceof Date && Number.isFinite(endDate.getTime());
-        const usableStatus = ["trialing", "active", "canceled"].includes(data.status);
-        const label = usableStatus && !validEnd ? "ê¸°ê°„ í™•ì¸ í•„ìš”" : usableStatus && endDate <= new Date() ? "ë§Œë£Œë¨" : labels[data.status] || "ìƒíƒœ í™•ì¸ ì¤‘";
-        const end = validEnd ? endDate.toLocaleDateString("ko-KR") : "ê¸°ê°„ ë¯¸ì •";
-        const limit = Number.isFinite(data.runLimit) ? `ì›” ${Number(data.runLimit).toLocaleString()}íšŒ` : "ì‹¤í–‰ í•œë„ ê²€ì¦ ì¤‘";
-        const projects = Number.isFinite(data.projectLimit) ? `ë¸Œëžœë“œ ${Number(data.projectLimit).toLocaleString()}ê°œ` : "ë¸Œëžœë“œ í•œë„ í™•ì¸ ì¤‘";
-        const renewal = data.autoRenew === false ? "ìžë™ê²°ì œ í•´ì§€" : data.autoRenew === true ? "ìžë™ê²°ì œ ë™ì˜" : "ìžë™ê²°ì œ ë¯¸ì„¤ì •";
-        state.textContent = `${data.planLabel || "ìš”ê¸ˆì œ"} Â· ${label} Â· ${end}ê¹Œì§€ Â· ${projects} Â· ${limit} Â· ${renewal}`;
-      }
-      function renderPayment(snapshot) {
-        const state = document.getElementById("paymentState");
-        if (!snapshot.exists()) { state.textContent = "ê²°ì œ ë‚´ì—­ì´ ì—†ìŠµë‹ˆë‹¤. ì •ê¸°ê²°ì œëŠ” í…ŒìŠ¤íŠ¸ ì „ìž…ë‹ˆë‹¤."; return; }
-        const data = snapshot.data(), paidAt = data.paidAt?.toDate?.().toLocaleDateString("ko-KR") || "ì²˜ë¦¬ì¼ í™•ì¸ ì¤‘", nextBilling = data.nextBillingAt?.toDate?.().toLocaleDateString("ko-KR") || "ë‹¤ìŒ ê²°ì œì¼ ì—†ìŒ";
-        state.textContent = `${paidAt} Â· ${Number(data.amount || 0).toLocaleString()}ì› Â· ${data.status || "ìƒíƒœ í™•ì¸ ì¤‘"} Â· ë‹¤ìŒ ê²°ì œ ${nextBilling}`;
-      }
-      function renderInquiries(snapshot) {
-        const list = document.getElementById("inquiryList"), state = document.getElementById("inquiryState");
-        list.replaceChildren(); state.hidden = !snapshot.empty; list.hidden = snapshot.empty;
-        state.textContent = "ë“±ë¡ëœ ë¬¸ì˜ê°€ ì—†ìŠµë‹ˆë‹¤.";
-        const labels = { open:"ì ‘ìˆ˜", reviewing:"í™•ì¸ ì¤‘", answered:"ë‹µë³€ ì™„ë£Œ", closed:"ì¢…ë£Œ" };
-        for (const item of snapshot.docs) {
-          const inquiry = item.data(), row = document.createElement("li"), title = document.createElement("b"), status = document.createElement("span"), detail = document.createElement("p");
-          row.className = "inquiry-item"; title.textContent = inquiry.subject || "ë¬¸ì˜"; status.textContent = labels[inquiry.status] || "ìƒíƒœ í™•ì¸";
-          detail.textContent = [inquiry.reply || inquiry.message || "ë‚´ìš© ì—†ìŒ", formatDate(inquiry.updatedAt || inquiry.createdAt)].join(" Â· ");
-          row.append(title, status, detail); list.append(row);
-        }
-      }
-      async function loadWorkspaceData(workspaceId, isCurrent = () => true) {
-        const period = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit" }).format(new Date());
-        try {
-          const [runs, reports, usage, inquiries, subscription, payment] = await Promise.all([
-            getDocs(query(workspaceCollection(workspaceId, "runs"), orderBy("createdAt", "desc"), limit(5))),
-            getDocs(query(workspaceCollection(workspaceId, "reports"), orderBy("createdAt", "desc"), limit(5))),
-            getDoc(doc(db, "workspaces", workspaceId, "usage", period)),
-            getDocs(query(workspaceCollection(workspaceId, "inquiries"), orderBy("createdAt", "desc"), limit(5))),
-            getDoc(doc(db, "workspaces", workspaceId, "subscriptions", "current")),
-            getDoc(doc(db, "workspaces", workspaceId, "paymentSummaries", "current"))
-          ]);
-          if (!isCurrent()) return;
-          renderRuns(runs); renderReports(reports); renderUsage(usage, period, subscription); renderInquiries(inquiries); renderSubscription(subscription); renderPayment(payment);
-        } catch (error) {
-          if (!isCurrent()) return;
-          document.getElementById("runState").textContent = "ì‹¤í–‰ ë°ì´í„°ë¥¼ ë¶ˆëŸ¬ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.";
-          document.getElementById("reportState").textContent = "ê²°ê³¼ ë°ì´í„°ë¥¼ ë¶ˆëŸ¬ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.";
-          document.getElementById("usageState").textContent = "ì‚¬ìš©ëŸ‰ ë°ì´í„°ë¥¼ ë¶ˆëŸ¬ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.";
-          document.getElementById("inquiryState").textContent = "ë¬¸ì˜ ë‚´ì—­ì„ ë¶ˆëŸ¬ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.";
-          document.getElementById("subscriptionState").textContent = "êµ¬ë… ìƒíƒœë¥¼ ë¶ˆëŸ¬ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.";
-          document.getElementById("paymentState").textContent = "ê²°ì œ ë‚´ì—­ì„ ë¶ˆëŸ¬ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.";
-          console.error("ì›Œí¬ìŠ¤íŽ˜ì´ìŠ¤ ì‹¤í–‰ ë°ì´í„° ì¡°íšŒ ì‹¤íŒ¨", error.code);
-        }
-      }
-      function resetAccountUi() {
-        window.autoworksWorkspaceId = null;
-        document.getElementById("projectForm").reset();
-        document.getElementById("projectForm").classList.remove("open");
-        document.getElementById("projectRows").replaceChildren();
-        document.getElementById("projectTable").hidden = true;
-        document.getElementById("projectState").hidden = false;
-        document.getElementById("projectState").textContent = "ë¡œê·¸ì¸ í›„ í”„ë¡œì íŠ¸ë¥¼ í™•ì¸í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.";
-        for (const id of ["runList", "reportList", "inquiryList"]) document.getElementById(id).replaceChildren();
-        for (const id of ["runState", "reportState", "usageState", "inquiryState", "subscriptionState", "paymentState"]) {
-          const node = document.getElementById(id); node.hidden = false; node.textContent = "ë¡œê·¸ì¸ í›„ í™•ì¸í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.";
-        }
-        document.getElementById("usageGrid").hidden = true;
-        document.getElementById("inquiryForm").reset();
-        document.getElementById("accountDeletionForm").reset();
-        document.getElementById("accountDeletionSubmit").disabled = !apiBase;
-        document.getElementById("accountDeletionState").textContent = apiBase ? "DELETEë¥¼ ì •í™•ížˆ ìž…ë ¥í•´ì•¼ ì ‘ìˆ˜ë©ë‹ˆë‹¤." : "ì„œë²„ê°€ ì—°ê²°ëœ í™˜ê²½ì—ì„œë§Œ ìš”ì²­í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.";
-      }
-      async function ensureWorkspace(user) {
-        if (!workspaceSetups.has(user.uid)) {
-          workspaceSetups.set(user.uid, (async () => {
-            const owned = query(
-              collection(db, "workspaces"),
-              where("ownerUid", "==", user.uid),
-              limit(1)
-            );
-            const existing = await getDocs(owned);
-            if (!existing.empty) return existing.docs[0].id;
-            const created = await addDoc(collection(db, "workspaces"), {
-              ownerUid: user.uid,
-              name: "ë‚´ ì›Œí¬ìŠ¤íŽ˜ì´ìŠ¤",
-              createdAt: serverTimestamp(),
-              updatedAt: serverTimestamp()
-            });
-            return created.id;
-          })());
-        }
-        try {
-          return await workspaceSetups.get(user.uid);
-        } catch (error) {
-          workspaceSetups.delete(user.uid);
-          throw error;
-        }
-      }
-      async function loadDeletionStatus(user, workspaceId, isCurrent = () => true) {
-        if (!apiBase) return;
-        const submit = document.getElementById("accountDeletionSubmit"), state = document.getElementById("accountDeletionState");
-        try {
-          const token = await user.getIdToken();
-          const response = await fetch(`${apiBase}/v1/account-deletion-requests/${encodeURIComponent(workspaceId)}`, { headers:{ authorization:`Bearer ${token}` } });
-          const result = await response.json().catch(() => ({}));
-          if (!response.ok) throw new Error(result.error?.message || "request-failed");
-          if (!isCurrent()) return;
-          if (result.status === "pending" || result.status === "completed") {
-            submit.disabled = true; submit.textContent = result.status === "completed" ? "íƒˆí‡´ ì²˜ë¦¬ë¨" : "ìš”ì²­ ì ‘ìˆ˜ë¨";
-            state.textContent = result.status === "completed" ? "íƒˆí‡´ ì²˜ë¦¬ê°€ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤." : "íƒˆí‡´ ìš”ì²­ì´ ì ‘ìˆ˜ë˜ì–´ ìƒˆ ìžë™í™” ì‹¤í–‰ì´ ì¤‘ë‹¨ë˜ì—ˆìŠµë‹ˆë‹¤.";
-          }
-        } catch (error) {
-          if (!isCurrent()) return;
-          state.textContent = "íƒˆí‡´ ìš”ì²­ ìƒíƒœë¥¼ í™•ì¸í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ìž ì‹œ í›„ ë‹¤ì‹œ ì‹œë„í•´ ì£¼ì„¸ìš”.";
-          console.error("ê³„ì • íƒˆí‡´ ìƒíƒœ ì¡°íšŒ ì‹¤íŒ¨", error.message);
-        }
-      }
-      onAuthStateChanged(auth, async user => {
-        const generation = ++authGeneration;
-        const signedIn = Boolean(user);
-        document.getElementById("authProviders").hidden = signedIn;
-        document.getElementById("authAccount").hidden = !signedIn;
-        document.getElementById("authUser").textContent = signedIn
-          ? (user.displayName || user.email || "ë¡œê·¸ì¸ ì‚¬ìš©ìž")
-          : "";
-        authMessage.textContent = signedIn ? "ë¡œê·¸ì¸ ê³„ì •ì˜ ìž‘ì—… ê³µê°„ì„ í™•ì¸í•˜ê³  ìžˆìŠµë‹ˆë‹¤." : "ë¡œê·¸ì¸ ì œê³µìžë¥¼ ì„ íƒí•´ ì£¼ì„¸ìš”.";
-        document.getElementById("loginButton").textContent = signedIn ? "ë‚´ ê³„ì •" : "ë¡œê·¸ì¸";
-        document.getElementById("workspace").classList.toggle("visible", signedIn);
-        document.getElementById("accountNav").classList.toggle("visible", signedIn);
-        document.getElementById("accountData").classList.toggle("visible", signedIn);
-        document.getElementById("inquiries").classList.toggle("visible", signedIn);
-        document.getElementById("accountDeletion").classList.toggle("visible", signedIn);
-        if (!signedIn) resetAccountUi();
-        if (signedIn) {
-          try {
-            const workspaceId = await ensureWorkspace(user);
-            const isCurrent = () => generation === authGeneration && auth.currentUser?.uid === user.uid;
-            if (!isCurrent()) return;
-            window.autoworksWorkspaceId = workspaceId;
-            await Promise.all([loadProjects(workspaceId, isCurrent), loadWorkspaceData(workspaceId, isCurrent), loadDeletionStatus(user, workspaceId, isCurrent)]);
-            if (!isCurrent()) return;
-            authMessage.textContent = "ë¡œê·¸ì¸ ë° ê°œì¸ ìž‘ì—… ê³µê°„ì´ ì¤€ë¹„ë˜ì—ˆìŠµë‹ˆë‹¤.";
-            if (authModal.classList.contains("open")) setTimeout(hideAuth, 700);
-          } catch (error) {
-            if (generation !== authGeneration || auth.currentUser?.uid !== user.uid) return;
-            authMessage.textContent = "ë¡œê·¸ì¸í–ˆì§€ë§Œ ê°œì¸ ìž‘ì—… ê³µê°„ì„ ì¤€ë¹„í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ë‹¤ì‹œ ì‹œë„í•´ ì£¼ì„¸ìš”.";
-            console.error("ì›Œí¬ìŠ¤íŽ˜ì´ìŠ¤ ì¤€ë¹„ ì‹¤íŒ¨", error.code);
-          }
-        }
-      });
-      document.querySelectorAll("[data-auth-provider]").forEach(button => {
-        button.addEventListener("click", async () => {
-          if (button.dataset.authProvider !== "google") {
-            if (!apiBase) {
-              authMessage.textContent = "ë„¤ì´ë²„Â·ì¹´ì¹´ì˜¤ ë¡œê·¸ì¸ ì„œë²„ ë°°í¬ ì „ì´ë¼ ì•„ì§ ì‚¬ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.";
-              return;
-            }
-            const providerName = button.dataset.authProvider;
-            const popup = window.open(`${apiBase}/v1/auth/${encodeURIComponent(providerName)}/start?returnOrigin=${encodeURIComponent(location.origin)}`, "autoworks-oauth", "popup,width=520,height=720");
-            authMessage.textContent = popup ? "ë¡œê·¸ì¸ ì œê³µìž í™”ë©´ì—ì„œ ê³„ì†í•´ ì£¼ì„¸ìš”." : "ë¡œê·¸ì¸ íŒì—…ì´ ì°¨ë‹¨ë˜ì—ˆìŠµë‹ˆë‹¤. íŒì—…ì„ í—ˆìš©í•´ ì£¼ì„¸ìš”.";
-            return;
-          }
-          authMessage.textContent = "ë¡œê·¸ì¸ ì—°ê²°ì„ í™•ì¸í•˜ê³  ìžˆìŠµë‹ˆë‹¤.";
-          const provider = new GoogleAuthProvider();
-          try {
-            await signInWithPopup(auth, provider);
-            authMessage.textContent = "ë¡œê·¸ì¸ë˜ì—ˆìŠµë‹ˆë‹¤. ê°œì¸ ìž‘ì—… ê³µê°„ì„ í™•ì¸í•˜ê³  ìžˆìŠµë‹ˆë‹¤.";
-          } catch (error) {
-            const messages = {
-              "auth/operation-not-allowed": "ì´ ë¡œê·¸ì¸ ì œê³µìžëŠ” Firebaseì—ì„œ ì•„ì§ ì„¤ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.",
-              "auth/account-exists-with-different-credential": "ì´ ì´ë©”ì¼ì€ ë‹¤ë¥¸ ë¡œê·¸ì¸ ë°©ì‹ìœ¼ë¡œ ê°€ìž…ë˜ì–´ ìžˆìŠµë‹ˆë‹¤. ê¸°ì¡´ ë°©ì‹ìœ¼ë¡œ ë¡œê·¸ì¸í•´ ì£¼ì„¸ìš”.",
-              "auth/popup-blocked": "ë¸Œë¼ìš°ì €ê°€ ë¡œê·¸ì¸ ì°½ì„ ì°¨ë‹¨í–ˆìŠµë‹ˆë‹¤. íŒì—… í—ˆìš© í›„ ë‹¤ì‹œ ì‹œë„í•´ ì£¼ì„¸ìš”."
-            };
-            authMessage.textContent = messages[error.code] || "ë¡œê·¸ì¸ì— ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤. ìž ì‹œ í›„ ë‹¤ì‹œ ì‹œë„í•´ ì£¼ì„¸ìš”.";
-            console.error("Firebase ë¡œê·¸ì¸ ì‹¤íŒ¨", error.code);
-          }
-        });
-      });
-      document.getElementById("authSignOut").addEventListener("click", async () => {
-        try {
-          await signOut(auth);
-        } catch (error) {
-          authMessage.textContent = "ë¡œê·¸ì•„ì›ƒí•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ë‹¤ì‹œ ì‹œë„í•´ ì£¼ì„¸ìš”.";
-          console.error("Firebase ë¡œê·¸ì•„ì›ƒ ì‹¤íŒ¨", error.code);
-        }
-      });
-      document.getElementById("accountDeletionSubmit").disabled = !apiBase;
-      document.getElementById("accountDeletionState").textContent = apiBase ? "DELETEë¥¼ ì •í™•ížˆ ìž…ë ¥í•´ì•¼ ì ‘ìˆ˜ë©ë‹ˆë‹¤." : "ì„œë²„ê°€ ì—°ê²°ëœ í™˜ê²½ì—ì„œë§Œ ìš”ì²­í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.";
-      document.getElementById("accountDeletionForm").addEventListener("submit", async event => {
-        event.preventDefault();
-        const user = auth.currentUser, workspaceId = window.autoworksWorkspaceId;
-        const confirmation = document.getElementById("accountDeletionConfirmation").value.trim();
-        const submit = document.getElementById("accountDeletionSubmit"), state = document.getElementById("accountDeletionState");
-        if (!apiBase || !user || !workspaceId) { state.textContent = "ë¡œê·¸ì¸ê³¼ ì„œë²„ ì—°ê²°ì„ í™•ì¸í•´ ì£¼ì„¸ìš”."; return; }
-        if (confirmation !== "DELETE") { state.textContent = "í™•ì¸ ë¬¸êµ¬ DELETEë¥¼ ì •í™•ížˆ ìž…ë ¥í•´ ì£¼ì„¸ìš”."; return; }
-        submit.disabled = true; submit.textContent = "ìš”ì²­ ì¤‘";
-        try {
-          const token = await user.getIdToken();
-          const response = await fetch(`${apiBase}/v1/account-deletion-requests`, { method:"POST", headers:{ authorization:`Bearer ${token}`, "content-type":"application/json" }, body:JSON.stringify({ workspaceId, confirmation }) });
-          const result = await response.json().catch(() => ({}));
-          if (!response.ok) throw new Error(result.error?.message || "request-failed");
-          event.currentTarget.reset(); state.textContent = "íƒˆí‡´ ìš”ì²­ì„ ì ‘ìˆ˜í–ˆìŠµë‹ˆë‹¤. ìƒˆ ìžë™í™” ì‹¤í–‰ì€ ì¤‘ë‹¨ë˜ë©°, ì²˜ë¦¬ ìƒíƒœëŠ” ê³ ê°ì„¼í„°ë¥¼ í†µí•´ í™•ì¸í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤."; submit.textContent = "ìš”ì²­ ì ‘ìˆ˜ë¨";
-        } catch (error) {
-          state.textContent = "íƒˆí‡´ ìš”ì²­ì„ ì ‘ìˆ˜í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ìž ì‹œ í›„ ë‹¤ì‹œ ì‹œë„í•˜ê±°ë‚˜ ê³ ê°ì„¼í„°ë¡œ ë¬¸ì˜í•´ ì£¼ì„¸ìš”.";
-          submit.disabled = false; submit.textContent = "íƒˆí‡´ ìš”ì²­";
-          console.error("ê³„ì • íƒˆí‡´ ìš”ì²­ ì‹¤íŒ¨", error.message);
-        }
-      });
-      document.getElementById("projectAdd").addEventListener("click", () => {
-        const form = document.getElementById("projectForm");
-        form.classList.toggle("open");
-        if (form.classList.contains("open")) document.getElementById("projectName").focus();
-      });
-      document.getElementById("projectForm").addEventListener("submit", async event => {
-        event.preventDefault();
-        const workspaceId = window.autoworksWorkspaceId;
-        const name = document.getElementById("projectName").value.trim();
-        const brandName = document.getElementById("projectBrand").value.trim();
-        const keywords = [...new Set(document.getElementById("projectKeywords").value.split(",").map(value => value.trim()).filter(Boolean))].slice(0, 20);
-        if (!workspaceId || !name || !brandName) return;
-        const form = event.currentTarget;
-        const submit = form.querySelector("button[type=submit]");
-        submit.disabled = true;
-        submit.textContent = "ì €ìž¥ ì¤‘";
-        try {
-          if (!apiBase) throw new Error("api-not-configured");
-          const user = auth.currentUser;
-          if (!user) throw new Error("auth-required");
-          const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(workspaceId)}/projects`, {
-            method:"POST",
-            headers:{ authorization:`Bearer ${await user.getIdToken()}`, "content-type":"application/json" },
-            body:JSON.stringify({ name, brandName, keywords })
-          });
-          const result = await response.json().catch(() => ({}));
-          if (!response.ok) throw new Error(result.error?.message || "project-create-failed");
-          form.reset();
-          form.classList.remove("open");
-          await loadProjects(workspaceId);
-          showToast("í”„ë¡œì íŠ¸ë¥¼ ì €ìž¥í–ˆìŠµë‹ˆë‹¤.");
-        } catch (error) {
-          document.getElementById("projectState").textContent = error.message === "api-not-configured"
-            ? "í”„ë¡œì íŠ¸ ìƒì„± ì„œë²„ê°€ ì•„ì§ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤."
-            : error.message || "ì €ìž¥í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ë¡œê·¸ì¸ ìƒíƒœì™€ ì—°ê²°ì„ í™•ì¸í•´ ì£¼ì„¸ìš”.";
-          document.getElementById("projectState").hidden = false;
-          console.error("í”„ë¡œì íŠ¸ ì €ìž¥ ì‹¤íŒ¨", error.code);
-        } finally {
-          submit.disabled = false;
-          submit.textContent = "ì €ìž¥";
-        }
-      });
-      document.getElementById("inquiryForm").addEventListener("submit", async event => {
-        event.preventDefault();
-        const workspaceId = window.autoworksWorkspaceId;
-        const subject = document.getElementById("inquirySubject").value.trim();
-        const message = document.getElementById("inquiryMessage").value.trim();
-        if (!workspaceId || !subject || !message) return;
-        const form = event.currentTarget, submit = form.querySelector("button[type=submit]");
-        submit.disabled = true; submit.textContent = "ì ‘ìˆ˜ ì¤‘";
-        try {
-          await addDoc(workspaceCollection(workspaceId, "inquiries"), {
-            subject,
-            message,
-            status: "open",
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          });
-          form.reset();
-          renderInquiries(await getDocs(query(workspaceCollection(workspaceId, "inquiries"), orderBy("createdAt", "desc"), limit(5))));
-          showToast("ë¬¸ì˜ë¥¼ ì ‘ìˆ˜í–ˆìŠµë‹ˆë‹¤.");
-        } catch (error) {
-          document.getElementById("inquiryState").hidden = false;
-          document.getElementById("inquiryState").textContent = "ë¬¸ì˜ë¥¼ ì ‘ìˆ˜í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ë¡œê·¸ì¸ ìƒíƒœì™€ ì—°ê²°ì„ í™•ì¸í•´ ì£¼ì„¸ìš”.";
-          console.error("ë¬¸ì˜ ì ‘ìˆ˜ ì‹¤íŒ¨", error.code);
-        } finally {
-          submit.disabled = false; submit.textContent = "ë¬¸ì˜ ì ‘ìˆ˜";
-        }
-      });
-    } catch (error) {
-      const message = document.getElementById("authMessage");
-      if (message) message.textContent = "Firebase ì¸ì¦ ì—°ê²°ì„ ì¤€ë¹„í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ìž ì‹œ í›„ ë‹¤ì‹œ ì‹œë„í•´ ì£¼ì„¸ìš”.";
-      console.error("Firebase ì´ˆê¸°í™” ì‹¤íŒ¨", error);
-    }
-  }
- </script>
-</body>
-</html>
-
-
-
-
-
+ <section class="account-deletion" id="accountDeletion" aria-label="ê³„ì • íƒˆí‡´ ìš”ì²­"><div class="account-deletion-head"><h2>ê³„ì • íƒˆí‡´ ìš”ì²­</h2><p>ìš”ì²­ ì¦‰ì‹œ ìƒˆ ìžë™í™” ì‹¤í–‰ì´ ì¤‘ë‹¨ë©ë‹ˆë‹¤. ì§„í–‰ ì¤‘ ìž‘ì—…Â·êµ¬ë…Â·ë²•ì • ë³´ì¡´ ê±°ëž˜ë¥¼ í™•ì¸í•œ ë’¤ ê³„ì • ìžë£Œë¥¼ ì‚­ì œí•˜ë©°, ìš”ì²­ë§Œìœ¼ë¡œ ê²°ì œê°€ ìžë™ í™˜ë¶ˆë˜ì§€ëŠ” ì•ŠìŠµë‹ˆë‹¤.</p></div><form class="account-deletion-form" id="accountDeletionForm"><input id="accountDeletionConfirmation" autocomplete="off" placeholder="í™•ì¸ì„ ìœ„í•´ DELETE ìž…ë ¥" aria-label="íƒˆí‡´ í™•ì¸ ë¬¸êµ¬" required><button type="submit" id="accountDeletionSubmit">íƒˆí‡´ ìš”ì²­</button><div class="account-deletion-state" id="accountDeletionState" role="status">ì„œë²„ê°€ ì—°ê²°ëœ í™˜ê²½ì—ì„œë§Œ ìš”ì²­í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.</div></form></section>
+ <section class="composer" aria-label="ë¶„ì„ ì¡°ê±´ ë§Œë“¤ê¸°">
+  <div class="topic"><input id="topic" type="text" placeholder="ë¶„ì„í•  ë¸Œëžœë“œë‚˜ ì£¼ì œì–´ë¥¼ ìž…ë ¥í•˜ì„¸ìš”" autocomplete="off"></div>
+  <div class="compare"><button id="addCompare">ï¼‹ ë¹„êµ ë‹¨ì–´ ì¶”ê°€</button><span id="compareCount">0 / 1</span><input id="compare" placeholder="ë¹„êµí•  ë¸Œëžœë“œë‚˜ í‚¤ì›Œë“œ" hidden></div>
+  <div class="toolshelf">
+   <div class="modes"><button class="active" data-mode="keyword">í‚¤ì›Œë“œ</button><button data-mode="ai">âœ¦ AI ì œì•ˆ</button></div>
+   <button class="filter" id="period">ê¸°ê°„ <span>ìµœê·¼ 7ì¼ âŒ„</span></button>
+   <div class="channels" id="channels"><button class="channel selected">ë¸”ë¡œê·¸</button><button class="channel selected">ë‰´ìŠ¤</button><button class="channel">YouTube</button><button class="channel">Instagram</button></div>
+  </div>
+  <div class="submitrow"><span class="hint" id="hint">ì£¼ì œì–´ì™€ ì±„ë„ì„ ì„ íƒí•˜ë©´ ë¶„ì„ ì¡°ê±´ì„ ë§Œë“¤ ìˆ˜ ìžˆì–´ìš”.</span><button class="analyze" id="analyze">ë¶„ì„ ì¡°ê±´ ë§Œë“¤ê¸° <span>â†‘</span></button></div>
+ </section>
+ <section class="section">
+  <div class="section-heading"><div><h2>ì´ëŸ° ë¶„ì„ë¶€í„° ì‹œìž‘í•´ ë³´ì„¸ìš”</h2><p>ì›í•˜ëŠ” ë¶„ì„ ì£¼ì œë¥¼ ì„ íƒí•˜ë©´ ìž…ë ¥ëž€ì— ë„£ì–´ë“œë ¤ìš”.</p></div><button class="more" data-tools>ì „ì²´ ë„êµ¬ ë³´ê¸° â†’</button></div>
+  <div class="suggestions">
+   <button class="suggestion" data-topic="ë¸Œëžœë“œ ì–¸ê¸‰ ë³€í™”"><span class="mini">ë¸Œëžœë“œ ëª¨ë‹ˆí„°ë§</span><b>ë¸Œëžœë“œ ì–¸ê¸‰ ë³€í™”</b><span>ì±„ë„ë³„ ë°˜ì‘ê³¼ ì–¸ê¸‰ íë¦„ ì‚´íŽ´ë³´ê¸°</span></button>
+   <button class="suggestion" data-topic="ê²½ìŸ ë¸Œëžœë“œ ë¹„êµ"><span class="mini">ë¸Œëžœë“œ ë¹„êµ</span><b>ê²½ìŸ ë¸Œëžœë“œ ë¹„êµ</b><span>ë‘ ë¸Œëžœë“œì˜ ì½˜í…ì¸  ë°˜ì‘ ë¹„êµí•˜ê¸°</span></button>
+   <button class="suggestion" data-topic="ì´ë²ˆ ì£¼ í™”ì œ ì½˜í…ì¸ "><span class="mini">ì½˜í…ì¸  ë¦¬ì„œì¹˜</span><b>ì´ë²ˆ ì£¼ í™”ì œ ì½˜í…ì¸ </b><span>ì£¼ì œì–´ì™€ ê´€ë ¨ëœ ì½˜í…ì¸  ì°¾ì•„ë³´ê¸°</span></button>
+  </div>
+ </section>
+ <section class="section tools-section" id="toolSection">
+  <div class="section-heading"><div><h2>ì˜¤í† ì›ìŠ¤ ë¶„ì„ ë„êµ¬</h2><p>í˜„ìž¬ ê¸°ëŠ¥ì˜ ì›¹ ì—°ê²° ë‹¨ê³„ë¥¼ í™•ì¸í•˜ì„¸ìš”.</p></div></div>
+  <div class="tool-grid" id="toolGrid"></div>
+ </section>
+ <p class="notice">Google ë¡œê·¸ì¸ê³¼ ê°œì¸ ìž‘ì—… ê³µê°„ì€ Firebase Hostingì—ì„œ ì´ìš©í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. API í‚¤ ì €ìž¥ê³¼ ì‹¤ì œ ë¶„ì„ì€ ë³´ì•ˆ APIê°€ ì—°ê²°ëœ í™˜ê²½ì—ì„œë§Œ í™œì„±í™”ë˜ë©°, ì •ê¸°ê²°ì œëŠ” ì•„ì§ ì œê³µí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.</p>
+</main>
+<footer class="site-footer"><strong>ì˜¤í† ì›ìŠ¤</strong><p>ì›Œí¬ìŠ¤ìœ„ì¹˜ê°€ ë§Œë“¤ê³  ìš´ì˜í•©ë‹ˆë‹¤.</p><nav><a href="./guide.html">ì´ìš© ì•ˆë‚´</a><a href="./terms.html">ì´ìš©ì•½ê´€</a><a href="./privacy.html">ê°œì¸ì •ë³´ì²˜ë¦¬ë°©ì¹¨</a><a href="./refund.html">ê²°ì œÂ·ì·¨ì†Œ ë° í™˜ë¶ˆ</a><a href="./help.html">ê³ ê°ì„¼í„°</a><a href="./business.html">ì‚¬ì—…ìž ì •ë³´</a></nav><small>Â© ì›Œí¬ìŠ¤ìœ„ì¹˜ Â· ì˜¤í† ì›ìŠ¤</small></footer><div class="drawer" id="drawer"><nav class="drawer-panel"><div class="drawer-top">ì˜¤í† ì›ìŠ¤ ë©”ë‰´</div><button data-tools>í†µí•© ë¶„ì„</button><button data-tools>ìžë™í™” ë„êµ¬</button><button id="apiGuide">API ì—°ê²° ê°€ì´ë“œ</button><button data-toast>ìš”ê¸ˆì œ</button></nav></div>
+<div class="trend-modal" id="trendModal" role="dialog" aria-modal="true" aria-labelledby="trendTitle"><section class="trend-panel"><div class="trend-top"><div><div class="trend-title" id="trendTitle">ë¸Œëžœë“œ ê²€ìƒ‰ëŸ‰ ì¶”ì´</div><div class="trend-sub" id="trendPeriod">ìµœê·¼ 7ì¼ Â· í‚¤ì›Œë“œë„êµ¬ ì›”ê°„ ê²€ìƒ‰ëŸ‰ ê¸°ë¡</div></div><button class="trend-close" id="trendClose" aria-label="ë‹«ê¸°">Ã—</button></div><div class="trend-controls"><div class="trend-tabs" id="trendUnits"><button class="active" data-unit="day">ì¼ë³„</button><button data-unit="week">ì£¼ë³„</button><button data-unit="month">ì›”ë³„</button></div><div class="trend-tabs"><button class="active">ì›”ê°„ ê²€ìƒ‰ëŸ‰</button><button disabled title="ì¶”ì´ ì§€ìˆ˜ëŠ” ì œê³µí•˜ì§€ ì•ŠìŒ">ë¹„êµ ì§€ìˆ˜</button></div></div><div class="trend-content"><aside class="trend-side"><h3>í‚¤ì›Œë“œ ë„êµ¬</h3><div class="trend-source"><span class="trend-dot"></span><span id="trendKeyword">ë¸Œëžœë“œ Â· PC+ëª¨ë°”ì¼ ì›”ê°„ í‰ê· </span></div></aside><div class="trend-main"><p class="trend-summary"><b id="trendMetric">ì›”ê°„ ê²€ìƒ‰ëŸ‰ ê¸°ë¡</b> Â· PC+ëª¨ë°”ì¼ ê²€ìƒ‰ëŸ‰ Â· ë‹¨ìœ„: ê±´</p><svg class="trend-chart" id="trendChart" viewBox="0 0 760 220" role="img" aria-label="í‚¤ì›Œë“œë„êµ¬ ì›”ê°„ ê²€ìƒ‰ëŸ‰ ê¸°ë¡ ì˜ˆì‹œ ê·¸ëž˜í”„"></svg><div class="trend-labels" id="trendLabels"></div></div></div><div class="trend-note"><b>ë°ì´í„° ì•ˆë‚´</b> Â· ê·¸ëž˜í”„ëŠ” í™”ë©´ ì˜ˆì‹œìž…ë‹ˆë‹¤. ì‹¤ì œ ì—°ê²° ì‹œ ë„¤ì´ë²„ ê²€ìƒ‰ê´‘ê³  í‚¤ì›Œë“œë„êµ¬ì˜ ì›”ê°„ PCÂ·ëª¨ë°”ì¼ ê²€ìƒ‰ëŸ‰ì„ ì¡°íšŒí•´ ë‚ ì§œë³„ ìŠ¤ëƒ…ìƒ·ìœ¼ë¡œ ì €ìž¥í•©ë‹ˆë‹¤. ì¼Â·ì£¼Â·ì›” íƒ­ì€ ì´ ì›”ê°„ ê²€ìƒ‰ëŸ‰ ê°’ì˜ ê¸°ë¡ ì‹œì ì„ ë¬¶ì–´ ë³´ì—¬ì£¼ë©°, ë‚ ì§œë³„ ì‹¤ì œ ê²€ìƒ‰ ê±´ìˆ˜ë¥¼ ëœ»í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. ì„œë¹„ìŠ¤ ì—°ê²° ì „ì— ìŒ“ì¸ ê³¼ê±° ì¼ë³„ ê°’ì€ ë³µì›í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.</div><a href="./brand-search.html" style="display:inline-flex;margin-top:14px;padding:10px 14px;border-radius:7px;background:#5d49d3;color:#fff;text-decoration:none;font-size:11px;font-weight:700">ë¸Œëžœë“œ ê²€ìƒ‰ëŸ‰ ìž…ë ¥ í™”ë©´ ì—´ê¸° â†’</a></section></div><div class="toast" id="toast"></div><div class="auth-modal" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle"><section class="auth-panel"><div class="auth-head"><div><h2 id="authTitle">ì˜¤í† ì›ìŠ¤ ë¡œê·¸ì¸</h2><p>ê°€ìž…ê³¼ ë¡œê·¸ì¸ì„ ê°™ì€ ë°©ì‹ìœ¼ë¡œ ì§„í–‰í•©ë‹ˆë‹¤.</p></div><button class="auth-close" id="authClose" aria-label="ë‹«ê¸°">Ã—</button></div><div id="authProviders"><button class="auth-provider" data-auth-provider="google">Googleë¡œ ê³„ì†í•˜ê¸°</button><button class="auth-provider" data-auth-provider="naver">ë„¤ì´ë²„ë¡œ ê³„ì†í•˜ê¸°</button><button class="auth-provider" data-auth-provider="kakao">ì¹´ì¹´ì˜¤ë¡œ ê³„ì†í•˜ê¸°</button></div><p class="auth-message" id="authMessage" role="status">ë¡œê·¸ì¸ ì œê³µìžë¥¼ ì„ íƒí•´ ì£¼ì„¸ìš”.</p><div class="auth-account" id="authAccount" hidden><span id="authUser"></span><button id="authSignOut">ë¡œê·¸ì•„ì›ƒ</button></div></section></div>
+<script src="./runtime-config.js"></script>
+<script>
+const tools=[
+ ["âŒ•","ì¸í”Œë£¨ì–¸ì„œ í›„ë³´ ì°¾ê¸°","YouTubeÂ·Instagram ê³µê°œ í”„ë¡œí•„ í›„ë³´","ë¡œì»¬ ì½”ë“œ ìžˆìŒ"],
+ ["â—‰","í™”ì œ ì½˜í…ì¸  ë ˆí¼ëŸ°ìŠ¤","ê³µê°œ ê²Œì‹œë¬¼ ìˆ˜ì§‘ê³¼ ì½˜í…ì¸  ë¶„ì„","ë¡œì»¬ ì½”ë“œ ìžˆìŒ"],
+ ["â–¤","í˜‘ì—… ê²Œì‹œë¬¼ ì„±ê³¼ ì¡°íšŒ","YouTube ê³µê°œ ì˜ìƒ ì„±ê³¼ ì¡°íšŒ","ìž…ë ¥ í™”ë©´ ì¤€ë¹„"],
+ ["â†—","ë¸Œëžœë“œ ê²€ìƒ‰ëŸ‰ ì¶”ì´","ë¸Œëžœë“œ ì¼ë³„ ê²€ìƒ‰ ë°ì´í„° í™•ì¸","ë¡œì»¬ ì½”ë“œ ìžˆìŒ"],
+ ["â–¥","ì£¼ê°„ ê´‘ê³  ë¶„ì„","Excel ê´‘ê³  ì§€í‘œ ë¶„ì„","ë¸Œë¼ìš°ì € ë¶„ì„ ê°€ëŠ¥"],
+ ["âœ¦","AI ë¸”ë¡œê·¸ ìŠ¤íŠœë””ì˜¤","ì‚¬ì‹¤ ê¸°ë°˜ ê²€í† ìš© ì›ê³  ìž‘ì„±ê³¼ ë‹¤ë“¬ê¸°","ë¡œì»¬ ì½”ë“œ ìžˆìŒ"],
+ ["âŒ–","ë„¤ì´ë²„ ê²€ìƒ‰ ë…¸ì¶œ ì ê²€","ê³µì‹ ë¸”ë¡œê·¸Â·ì›¹ë¬¸ì„œ API ê²°ê³¼ í™•ì¸","ë¡œì»¬ ì½”ë“œ ìžˆìŒ"],
+ ["â–§","ì½˜í…ì¸  ìžë™ ì œìž‘","ì½˜í…ì¸  ì œìž‘ ì›Œí¬í”Œë¡œ","ê¸°ëŠ¥ í™•ì¸ í•„ìš”"]
+];
+document.getElementById("toolGrid").innerHTML=tools.map(t=>'<article class="tool" '+(t[1]==="ë¸Œëžœë“œ ê²€ìƒ‰ëŸ‰ ì¶”ì´"?'data-trend':t[1]==="ì£¼ê°„ ê´‘ê³  ë¶„ì„"?'data-weekly':t[1]==="í˜‘ì—… ê²Œì‹œë¬¼ ì„±ê³¼ ì¡°íšŒ"?'data-collab':t[1]==="í™”ì œ ì½˜í…ì¸  ë ˆí¼ëŸ°ìŠ¤"?'data-reference':t[1]==="ì¸í”Œë£¨ì–¸ì„œ í›„ë³´ ì°¾ê¸°"?'data-influencer':t[1]==="AI ë¸”ë¡œê·¸ ìŠ¤íŠœë””ì˜¤"?'data-ai-blog':t[1]==="ë„¤ì´ë²„ ê²€ìƒ‰ ë…¸ì¶œ ì ê²€"?'data-naver-visibility':'data-toast')+'><span class="tool-ico">'+t[0]+'</span><span><b>'+t[1]+'</b><small>'+t[2]+'</small></span><span class="state">'+t[3]+'</span></article>').join("");
+const toast=document.getElementById("toast");let timer;
+function showToast(msg){toast.textContent=msg;toast.classList.add("show");clearTimeout(timer);timer=setTimeout(()=>toast.classList.remove("show"),2400)}
+document.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("[data-mode]").forEach(x=>x.classList.toggle("active",x===b));showToast(b.dataset.mode==="ai"?"AI ì œì•ˆì€ API ì—°ê²° í›„ ì‚¬ìš©í•  ìˆ˜ ìžˆì–´ìš”.":"í‚¤ì›Œë“œ ìž…ë ¥ ë°©ì‹ìœ¼ë¡œ ë°”ë€Œì—ˆì–´ìš”.")}));
+document.querySelectorAll(".channel").forEach(b=>b.addEventListener("click",()=>b.classList.toggle("selected")));
+document.getElementById("addCompare").addEventListener("click",()=>{const f=document.getElementById("compare");if(f.hidden){f.hidden=false;f.focus();document.getElementById("addCompare").textContent="ë¹„êµ ë‹¨ì–´";document.getElementById("compareCount").textContent="1 / 1"}});
+document.querySelectorAll("[data-topic]").forEach(b=>b.addEveï]=¶‰žËkºwµçV–BÀÐ¢æÖS¢.¸+BÉ¸ÎØÎÈªNØéŽÉÛNÈªB"ÀÐ¢7&VFVDC¢6W'fW%F–ÖW7F×‚’ÀÐ¢WFFVDC¢6W'fW%F–ÖW7F×‚Ð¢Ò“°Ð¢&WGW&â7&VFVBæ–C°Ð¢Ò’‚’“°Ð¢ÐÐ¢G'’°Ð¢&WGW&âv—Bv÷&·76U6WGW2ævWB‡W6W"çV–B“°Ð¢Ò6F6‚†W'&÷"’°Ð¢v÷&·76U6WGW2æFVÆWFR‡W6W"çV–B“°Ð¢F‡&÷rW'&÷#°Ð¢ÐÐ¢ÐÐ¢7–æ2gVæ7F–öâÆöDFVÆWF–öå7FGW2‡W6W"Âv÷&·76T–BÂ—47W'&VçBÒ‚’ÓâG'VR’°Ð¢–b‚”&6R’&WGW&ã°Ð¢6öç7B7V&Ö—BÒFö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFVÆWF–öå7V&Ö—B"’Â7FFRÒFö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFVÆWF–öå7FFR"“°Ð¢G'’°Ð¢6öç7BFö¶VâÒv—BW6W"ævWD–EFö¶Vâ‚“°Ð¢6öç7B&W7öç6RÒv—BfWF6‚†G¶”&6WÒ÷cö66÷VçBÖFVÆWF–öâ×&WVW7G2òG¶Væ6öFUU$”6ö×öæVçB‡v÷&·76T–B—ÖÂ²†VFW'3§²WF†÷&—¦F–öã¦&V&W"G·Fö¶VçÖÒÒ“°Ð¢6öç7B&W7VÇBÒv—B&W7öç6Ræ§6öâ‚’æ6F6‚‚‚’Óâ‡·Ò’“°Ð¢–b‚&W7öç6Ræö²’F‡&÷ræWrW'&÷"‡&W7VÇBæW'&÷#òæÖW76vRÇÂ'&WVW7BÖf–ÆVB"“°Ð¢–b‚—47W'&VçB‚’’&WGW&ã°Ð¢–b‡&W7VÇBç7FGW2ÓÓÒ'VæF–ær"ÇÂ&W7VÇBç7FGW2ÓÓÒ&6ö×ÆWFVB"’°Ð¢7V&Ö—BæF—6&ÆVBÒG'VS²7V&Ö—BçFW‡D6öçFVçBÒ&W7VÇBç7FGW2ÓÓÒ&6ö×ÆWFVB"ò.Ø8ŽØ{BË)ŽºjÎ¹
+‚"¢.É©NË*ÒÊ	È‰Ž¹
+‚#°Ð¢7FFRçFW‡D6öçFVçBÒ&W7VÇBç7FGW2ÓÓÒ&6ö×ÆWFVB"ò.Ø8ŽØ{BË)ŽºjÎ«É˜Nº8Î¹	ŽÉxŽÈ«^¸¸Ž¸ºBâ"¢.Ø8ŽØ{BÉ©NË*ÞÉÛBÊ	È‰Ž¹	ŽÉkBÈ8‚Éé¸ùžÙ™BÈºNÙhžÉÛBÊI¸ºŽ¹	ŽÉxŽÈ«^¸¸Ž¸ºBâ#°Ð¢ÐÐ¢Ò6F6‚†W'&÷"’°Ð¢–b‚—47W'&VçB‚’’&WGW&ã°Ð¢7FFRçFW‡D6öçFVçBÒ.Ø8ŽØ{BÉ©NË*ÒÈ8Ø9Îº[ÂÙ™^ÉÛŽÙYŽÊxº«¾ÙhŽÈ«^¸¸Ž¸ºBâÉêÈ¹ÂÙ¸B¸ºNÈ¹ÂÈ¹Î¸øNÙ[BÊ;ÎÈKŽÉ©Bâ#°Ð¢6öç6öÆRæW'&÷"‚.«8NÊ	RØ8ŽØ{BÈ8Ø9ÂÊÙ¨ÂÈºNØÊ‚"ÂW'&÷"æÖW76vR“°Ð¢ÐÐ¢ÐÐ¢öäWF…7FFT6†ævVB†WF‚Â7–æ2W6W"Óâ°Ð¢6öç7BvVæW&F–öâÒ²¶WF„vVæW&F–öã°Ð¢6öç7B6–væVD–âÒ&ööÆVâ‡W6W"“°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&WF…&÷f–FW'2"’æ†–FFVâÒ6–væVD–ã°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&WF„66÷VçB"’æ†–FFVâÒ6–væVD–ã°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&WF…W6W""’çFW‡D6öçFVçBÒ6–væVD–àÐ¢ò‡W6W"æF—7Æ”æÖRÇÂW6W"æVÖ–ÂÇÂ.ºÎ«{ŽÉÛ‚È*ÎÉªžÉé"Ð¢¢"#°Ð¢WF„ÖW76vRçFW‡D6öçFVçBÒ6–væVD–âò.ºÎ«{ŽÉÛ‚«8NÊ	^ÉÙ‚ÉéÉxR«;^«NÉØBÙ™^ÉÛŽÙYŽ«:ÉèŽÈ«^¸¸Ž¸ºBâ"¢.ºÎ«{ŽÉÛ‚Ê	Î«;^Ééº[ÂÈJØ9ÞÙ[BÊ;ÎÈKŽÉ©Bâ#°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&Æöv–ä'WGFöâ"’çFW‡D6öçFVçBÒ6–væVD–âò.¸+B«8NÊ	R"¢.ºÎ«{ŽÉÛ‚#°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚'v÷&·76R"’æ6Æ74Æ—7BçFövvÆR‚'f—6–&ÆR"Â6–væVD–â“°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDæb"’æ6Æ74Æ—7BçFövvÆR‚'f—6–&ÆR"Â6–væVD–â“°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFF"’æ6Æ74Æ—7BçFövvÆR‚'f—6–&ÆR"Â6–væVD–â“°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&–çV—&–W2"’æ6Æ74Æ—7BçFövvÆR‚'f—6–&ÆR"Â6–væVD–â“°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFVÆWF–öâ"’æ6Æ74Æ—7BçFövvÆR‚'f—6–&ÆR"Â6–væVD–â“°Ð¢–b‚6–væVD–â’&W6WD66÷VçEV’‚“°Ð¢–b‡6–væVD–â’°Ð¢G'’°Ð¢6öç7Bv÷&·76T–BÒv—BVç7W&Uv÷&·76R‡W6W"“°Ð¢6öç7B—47W'&VçBÒ‚’ÓâvVæW&F–öâÓÓÒWF„vVæW&F–öâbbWF‚æ7W'&VçEW6W#òçV–BÓÓÒW6W"çV–C°Ð¢–b‚—47W'&VçB‚’’&WGW&ã°Ð¢v–æF÷ræWF÷v÷&·5v÷&·76T–BÒv÷&·76T–C°Ð¢v—B&öÖ—6RæÆÂ…¶ÆöE&ö¦V7G2‡v÷&·76T–BÂ—47W'&VçB’ÂÆöEv÷&·76TFF‡v÷&·76T–BÂ—47W'&VçB’ÂÆöDFVÆWF–öå7FGW2‡W6W"Âv÷&·76T–BÂ—47W'&VçB•Ò“°Ð¢–b‚—47W'&VçB‚’’&WGW&ã°Ð¢WF„ÖW76vRçFW‡D6öçFVçBÒ.ºÎ«{ŽÉÛ‚»ò«	ÎÉÛ‚ÉéÉxR«;^«NÉÛBÊH»˜N¹	ŽÉxŽÈ«^¸¸Ž¸ºBâ#°Ð¢–b†WF„ÖöFÂæ6Æ74Æ—7Bæ6öçF–ç2‚&÷Vâ"’’6WEF–ÖV÷WB††–FTWF‚Âs“°Ð¢Ò6F6‚†W'&÷"’°Ð¢–b†vVæW&F–öâÓÒWF„vVæW&F–öâÇÂWF‚æ7W'&VçEW6W#òçV–BÓÒW6W"çV–B’&WGW&ã°Ð¢WF„ÖW76vRçFW‡D6öçFVçBÒ.ºÎ«{ŽÉÛŽÙhŽÊxºxÂ«	ÎÉÛ‚ÉéÉxR«;^«NÉØBÊH»˜NÙYŽÊxº«¾ÙhŽÈ«^¸¸Ž¸ºBâ¸ºNÈ¹ÂÈ¹Î¸øNÙ[BÊ;ÎÈKŽÉ©Bâ#°Ð¢6öç6öÆRæW'&÷"‚.É¸ÎØÎÈªNØéŽÉÛNÈªBÊH»˜BÈºNØÊ‚"ÂW'&÷"æ6öFR“°Ð¢ÐÐ¢ÐÐ¢Ò“°Ð¢Fö7VÖVçBçVW'•6VÆV7F÷$ÆÂ‚%¶FFÖWF‚×&÷f–FW%Ò"’æf÷$V6‚†'WGFöâÓâ°Ð¢'WGFöâæFDWfVçDÆ—7FVæW"‚&6Æ–6²"Â7–æ2‚’Óâ°Ð¢–b†'WGFöâæFF6WBæWF…&÷f–FW"ÓÒ&vöövÆR"’°Ð¢–b‚”&6R’°Ð¢WF„ÖW76vRçFW‡D6öçFVçBÒ.¸JNÉÛN»(L+~Ë›NË›NÉŠBºÎ«{ŽÉÛ‚ÈIÎ»(B»ØúÂÊNÉÛN¹ÛÂÉXNÊxÈ*ÎÉªžÙZÈ‰‚ÉxnÈ«^¸¸Ž¸ºBâ#°Ð¢&WGW&ã°Ð¢ÐÐ¢6öç7B&÷f–FW$æÖRÒ'WGFöâæFF6WBæWF…&÷f–FW#°Ð¢6öç7B÷WÒv–æF÷ræ÷Vâ†G¶”&6WÒ÷cöWF‚òG¶Væ6öFUU$”6ö×öæVçB‡&÷f–FW$æÖR—Ò÷7F'C÷&WGW&ä÷&–v–ãÒG¶Væ6öFUU$”6ö×öæVçB†Æö6F–öâæ÷&–v–â—ÖÂ&WF÷v÷&·2ÖöWF‚"Â'÷WÇv–GFƒÓS#Æ†V–v‡CÓs#"“°Ð¢WF„ÖW76vRçFW‡D6öçFVçBÒ÷Wò.ºÎ«{ŽÉÛ‚Ê	Î«;^ÉéÙ™Nº›NÉyÈIÂ«8NÈhÞÙ[BÊ;ÎÈKŽÉ©Bâ"¢.ºÎ«{ŽÉÛ‚ØÉÞÉx^ÉÛBË
+Ž¸ºŽ¹	ŽÉxŽÈ«^¸¸Ž¸ºBâØÉÞÉx^ÉØBÙxŽÉªžÙ[BÊ;ÎÈKŽÉ©Bâ#°Ð¢&WGW&ã°Ð¢ÐÐ¢WF„ÖW76vRçFW‡D6öçFVçBÒ.ºÎ«{ŽÉÛ‚É{«+ÉØBÙ™^ÉÛŽÙYŽ«:ÉèŽÈ«^¸¸Ž¸ºBâ#°Ð¢6öç7B&÷f–FW"ÒæWrvöövÆTWF…&÷f–FW"‚“°Ð¢G'’°Ð¢v—B6–vä–åv—F…÷W†WF‚Â&÷f–FW"“°Ð¢WF„ÖW76vRçFW‡D6öçFVçBÒ.ºÎ«{ŽÉÛŽ¹	ŽÉxŽÈ«^¸¸Ž¸ºBâ«	ÎÉÛ‚ÉéÉxR«;^«NÉØBÙ™^ÉÛŽÙYŽ«:ÉèŽÈ«^¸¸Ž¸ºBâ#°Ð¢Ò6F6‚†W'&÷"’°Ð¢6öç7BÖW76vW2Ò°Ð¢&WF‚ö÷W&F–öâÖæ÷BÖÆÆ÷vVB#¢.ÉÛBºÎ«{ŽÉÛ‚Ê	Î«;^Éé¸©Bf—&V&6^ÉyÈIÂÉXNÊxÈJNÊ	^¹	ŽÊxÉX®ÉYŽÈ«^¸¸Ž¸ºBâ"ÀÐ¢&WF‚ö66÷VçBÖW†—7G2×v—F‚ÖF–ffW&VçBÖ7&VFVçF–Â#¢.ÉÛBÉÛNº™NÉÛÎÉØ¸ºNº[‚ºÎ«{ŽÉÛ‚»
+žÈ¹ÞÉËÎºÂ«Éè^¹	ŽÉkBÉèŽÈ«^¸¸Ž¸ºBâ«‹ÊB»
+žÈ¹ÞÉËÎºÂºÎ«{ŽÉÛŽÙ[BÊ;ÎÈKŽÉ©Bâ"ÀÐ¢&WF‚÷÷WÖ&Æö6¶VB#¢.»ˆÎ¹ÛÎÉ«Ê«ºÎ«{ŽÉÛ‚ËÞÉØBË
+Ž¸ºŽÙhŽÈ«^¸¸Ž¸ºBâØÉÞÉxRÙxŽÉª’Ù¸B¸ºNÈ¹ÂÈ¹Î¸øNÙ[BÊ;ÎÈKŽÉ©Bâ Ð¢Ó°Ð¢WF„ÖW76vRçFW‡D6öçFVçBÒÖW76vW5¶W'&÷"æ6öFUÒÇÂ.ºÎ«{ŽÉÛŽÉyÈºNØÊŽÙhŽÈ«^¸¸Ž¸ºBâÉêÈ¹ÂÙ¸B¸ºNÈ¹ÂÈ¹Î¸øNÙ[BÊ;ÎÈKŽÉ©Bâ#°Ð¢6öç6öÆRæW'&÷"‚$f—&V&6RºÎ«{ŽÉÛ‚ÈºNØÊ‚"ÂW'&÷"æ6öFR“°Ð¢ÐÐ¢Ò“°Ð¢Ò“°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&WF…6–vä÷WB"’æFDWfVçDÆ—7FVæW"‚&6Æ–6²"Â7–æ2‚’Óâ°Ð¢G'’°Ð¢v—B6–vä÷WB†WF‚“°Ð¢Ò6F6‚†W'&÷"’°Ð¢WF„ÖW76vRçFW‡D6öçFVçBÒ.ºÎ«{ŽÉXNÉ¸>ÙYŽÊxº«¾ÙhŽÈ«^¸¸Ž¸ºBâ¸ºNÈ¹ÂÈ¹Î¸øNÙ[BÊ;ÎÈKŽÉ©Bâ#°Ð¢6öç6öÆRæW'&÷"‚$f—&V&6RºÎ«{ŽÉXNÉ¸2ÈºNØÊ‚"ÂW'&÷"æ6öFR“°Ð¢ÐÐ¢Ò“°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFVÆWF–öå7V&Ö—B"’æF—6&ÆVBÒ”&6S°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFVÆWF–öå7FFR"’çFW‡D6öçFVçBÒ”&6Rò$DTÄUD^º[ÂÊ	^Ù™^Ùè‚Éè^º
+^Ù[NÉ[ÂÊ	È‰Ž¹
+ž¸¸Ž¸ºBâ"¢.ÈIÎ»(N«É{«+¹	ÂÙ™Ž«+ÞÉyÈIÎºxÂÉ©NË*ÞÙZÈ‰‚ÉèŽÈ«^¸¸Ž¸ºBâ#°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFVÆWF–öäf÷&Ò"’æFDWfVçDÆ—7FVæW"‚'7V&Ö—B"Â7–æ2WfVçBÓâ°Ð¢WfVçBç&WfVçDFVfVÇB‚“°Ð¢6öç7BW6W"ÒWF‚æ7W'&VçEW6W"Âv÷&·76T–BÒv–æF÷ræWF÷v÷&·5v÷&·76T–C°Ð¢6öç7B6öæf—&ÖF–öâÒFö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFVÆWF–öä6öæf—&ÖF–öâ"’çfÇVRçG&–Ò‚“°Ð¢6öç7B7V&Ö—BÒFö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFVÆWF–öå7V&Ö—B"’Â7FFRÒFö7VÖVçBævWDVÆVÖVçD'”–B‚&66÷VçDFVÆWF–öå7FFR"“°Ð¢–b‚”&6RÇÂW6W"ÇÂv÷&·76T–B’²7FFRçFW‡D6öçFVçBÒ.ºÎ«{ŽÉÛŽ«;ÂÈIÎ»(BÉ{«+ÉØBÙ™^ÉÛŽÙ[BÊ;ÎÈKŽÉ©Bâ#²&WGW&ã²ÐÐ¢–b†6öæf—&ÖF–öâÓÒ$DTÄUDR"’²7FFRçFW‡D6öçFVçBÒ.Ù™^ÉÛ‚ºËŽ«ZÂDTÄUD^º[ÂÊ	^Ù™^Ùè‚Éè^º
+^Ù[BÊ;ÎÈKŽÉ©Bâ#²&WGW&ã²ÐÐ¢7V&Ö—BæF—6&ÆVBÒG'VS²7V&Ö—BçFW‡D6öçFVçBÒ.É©NË*ÒÊI#°Ð¢G'’°Ð¢6öç7BFö¶VâÒv—BW6W"ævWD–EFö¶Vâ‚“°Ð¢6öç7B&W7öç6RÒv—BfWF6‚†G¶”&6WÒ÷cö66÷VçBÖFVÆWF–öâ×&WVW7G6Â²ÖWF†öC¢%õ5B"Â†VFW'3§²WF†÷&—¦F–öã¦&V&W"G·Fö¶VçÖÂ&6öçFVçB×G—R#¢&Æ–6F–öâö§6öâ"ÒÂ&öG“¤¥4ôâç7G&–æv–g’‡²v÷&·76T–BÂ6öæf—&ÖF–öâÒ’Ò“°Ð¢6öç7B&W7VÇBÒv—B&W7öç6Ræ§6öâ‚’æ6F6‚‚‚’Óâ‡·Ò’“°Ð¢–b‚&W7öç6Ræö²’F‡&÷ræWrW'&÷"‡&W7VÇBæW'&÷#òæÖW76vRÇÂ'&WVW7BÖf–ÆVB"“°Ð¢WfVçBæ7W'&VçEF&vWBç&W6WB‚“²7FFRçFW‡D6öçFVçBÒ.Ø8ŽØ{BÉ©NË*ÞÉØBÊ	È‰ŽÙhŽÈ«^¸¸Ž¸ºBâÈ8‚Éé¸ùžÙ™BÈºNÙhžÉØÊI¸ºŽ¹	Žº›ÂË)ŽºjÂÈ8Ø9Î¸©B«:«	ÞÈKÎØKº[ÂØk^Ù[BÙ™^ÉÛŽÙZÈ‰‚ÉèŽÈ«^¸¸Ž¸ºBâ#²7V&Ö—BçFW‡D6öçFVçBÒ.É©NË*ÒÊ	È‰Ž¹
+‚#°Ð¢Ò6F6‚†W'&÷"’°Ð¢7FFRçFW‡D6öçFVçBÒ.Ø8ŽØ{BÉ©NË*ÞÉØBÊ	È‰ŽÙYŽÊxº«¾ÙhŽÈ«^¸¸Ž¸ºBâÉêÈ¹ÂÙ¸B¸ºNÈ¹ÂÈ¹Î¸øNÙYŽ«¸)‚«:«	ÞÈKÎØKºÂºËŽÉÙŽÙ[BÊ;ÎÈKŽÉ©Bâ#°Ð¢7V&Ö—BæF—6&ÆVBÒfÇ6S²7V&Ö—BçFW‡D6öçFVçBÒ.Ø8ŽØ{BÉ©NË*Ò#°Ð¢6öç6öÆRæW'&÷"‚.«8NÊ	RØ8ŽØ{BÉ©NË*ÒÈºNØÊ‚"ÂW'&÷"æÖW76vR“°Ð¢ÐÐ¢Ò“°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚'&ö¦V7DFB"’æFDWfVçDÆ—7FVæW"‚&6Æ–6²"Â‚’Óâ°Ð¢6öç7Bf÷&ÒÒFö7VÖVçBævWDVÆVÖVçD'”–B‚'&ö¦V7Df÷&Ò"“°Ð¢f÷&Òæ6Æ74Æ—7BçFövvÆR‚&÷Vâ"“°Ð¢–b†f÷&Òæ6Æ74Æ—7Bæ6öçF–ç2‚&÷Vâ"’’Fö7VÖVçBævWDVÆVÖVçD'”–B‚'&ö¦V7DæÖR"’æfö7W2‚“°Ð¢Ò“°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚'&ö¦V7Df÷&Ò"’æFDWfVçDÆ—7FVæW"‚'7V&Ö—B"Â7–æ2WfVçBÓâ°Ð¢WfVçBç&WfVçDFVfVÇB‚“°Ð¢6öç7Bv÷&·76T–BÒv–æF÷ræWF÷v÷&·5v÷&·76T–C°Ð¢6öç7BæÖRÒFö7VÖVçBævWDVÆVÖVçD'”–B‚'&ö¦V7DæÖR"’çfÇVRçG&–Ò‚“°Ð¢6öç7B'&æDæÖRÒFö7VÖVçBævWDVÆVÖVçD'”–B‚'&ö¦V7D'&æB"’çfÇVRçG&–Ò‚“°Ð¢6öç7B¶W—v÷&G2Ò²ââææWr6WB†Fö7VÖVçBævWDVÆVÖVçD'”–B‚'&ö¦V7D¶W—v÷&G2"’çfÇVRç7Æ—B‚"Â"’æÖ‡fÇVRÓâfÇVRçG&–Ò‚’’æf–ÇFW"„&ööÆVâ’•Òç6Æ–6RƒÂ#“°Ð¢–b‚v÷&·76T–BÇÂæÖRÇÂ'&æDæÖR’&WGW&ã°Ð¢6öç7Bf÷&ÒÒWfVçBæ7W'&VçEF&vWC°Ð¢6öç7B7V&Ö—BÒf÷&ÒçVW'•6VÆV7F÷"‚&'WGFöå·G—S×7V&Ö—EÒ"“°Ð¢7V&Ö—BæF—6&ÆVBÒG'VS°Ð¢7V&Ö—BçFW‡D6öçFVçBÒ.ÊÉêRÊI#°Ð¢G'’°Ð¢–b‚”&6R’F‡&÷ræWrW'&÷"‚&’Öæ÷BÖ6öæf–wW&VB"“°Ð¢6öç7BW6W"ÒWF‚æ7W'&VçEW6W#°Ð¢–b‚W6W"’F‡&÷ræWrW'&÷"‚&WF‚×&WV—&VB"“°Ð¢6öç7B&W7öç6RÒv—BfWF6‚†G¶”&6WÒ÷c÷v÷&·76W2òG¶Væ6öFUU$”6ö×öæVçB‡v÷&·76T–B—Ò÷&ö¦V7G6Â°Ð¢ÖWF†öC¢%õ5B"ÀÐ¢†VFW'3§²WF†÷&—¦F–öã¦&V&W"G¶v—BW6W"ævWD–EFö¶Vâ‚—ÖÂ&6öçFVçB×G—R#¢&Æ–6F–öâö§6öâ"ÒÀÐ¢&öG“¤¥4ôâç7G&–æv–g’‡²æÖRÂ'&æDæÖRÂ¶W—v÷&G2ÒÐ¢Ò“°Ð¢6öç7B&W7VÇBÒv—B&W7öç6Ræ§6öâ‚’æ6F6‚‚‚’Óâ‡·Ò’“°Ð¢–b‚&W7öç6Ræö²’F‡&÷ræWrW'&÷"‡&W7VÇBæW'&÷#òæÖW76vRÇÂ'&ö¦V7BÖ7&VFRÖf–ÆVB"“°Ð¢f÷&Òç&W6WB‚“°Ð¢f÷&Òæ6Æ74Æ—7Bç&VÖ÷fR‚&÷Vâ"“°Ð¢v—BÆöE&ö¦V7G2‡v÷&·76T–B“°Ð¢6†÷uFö7B‚.ÙHNºÎÊ	ÞØ«Žº[ÂÊÉê^ÙhŽÈ«^¸¸Ž¸ºBâ"“°Ð¢Ò6F6‚†W'&÷"’°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚'&ö¦V7E7FFR"’çFW‡D6öçFVçBÒW'&÷"æÖW76vRÓÓÒ&’Öæ÷BÖ6öæf–wW&VB Ð¢ò.ÙHNºÎÊ	ÞØ«‚È9ÞÈKÈIÎ»(N«ÉXNÊxÉ{«+¹	ŽÊxÉX®ÉYŽÈ«^¸¸Ž¸ºBâ Ð¢¢W'&÷"æÖW76vRÇÂ.ÊÉê^ÙYŽÊxº«¾ÙhŽÈ«^¸¸Ž¸ºBâºÎ«{ŽÉÛ‚È8Ø9ÎÉ˜É{«+ÉØBÙ™^ÉÛŽÙ[BÊ;ÎÈKŽÉ©Bâ#°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚'&ö¦V7E7FFR"’æ†–FFVâÒfÇ6S°Ð¢6öç6öÆRæW'&÷"‚.ÙHNºÎÊ	ÞØ«‚ÊÉêRÈºNØÊ‚"ÂW'&÷"æ6öFR“°Ð¢Òf–æÆÇ’°Ð¢7V&Ö—BæF—6&ÆVBÒfÇ6S°Ð¢7V&Ö—BçFW‡D6öçFVçBÒ.ÊÉêR#°Ð¢ÐÐ¢Ò“°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&–çV—'”f÷&Ò"’æFDWfVçDÆ—7FVæW"‚'7V&Ö—B"Â7–æ2WfVçBÓâ°Ð¢WfVçBç&WfVçDFVfVÇB‚“°Ð¢6öç7Bv÷&·76T–BÒv–æF÷ræWF÷v÷&·5v÷&·76T–C°Ð¢6öç7B7V&¦V7BÒFö7VÖVçBævWDVÆVÖVçD'”–B‚&–çV—'•7V&¦V7B"’çfÇVRçG&–Ò‚“°Ð¢6öç7BÖW76vRÒFö7VÖVçBævWDVÆVÖVçD'”–B‚&–çV—'”ÖW76vR"’çfÇVRçG&–Ò‚“°Ð¢–b‚v÷&·76T–BÇÂ7V&¦V7BÇÂÖW76vR’&WGW&ã°Ð¢6öç7Bf÷&ÒÒWfVçBæ7W'&VçEF&vWBÂ7V&Ö—BÒf÷&ÒçVW'•6VÆV7F÷"‚&'WGFöå·G—S×7V&Ö—EÒ"“°Ð¢7V&Ö—BæF—6&ÆVBÒG'VS²7V&Ö—BçFW‡D6öçFVçBÒ.Ê	È‰‚ÊI#°Ð¢G'’°Ð¢v—BFDFö2‡v÷&·76T6öÆÆV7F–öâ‡v÷&·76T–BÂ&–çV—&–W2"’Â°Ð¢7V&¦V7BÀÐ¢ÖW76vRÀÐ¢7FGW3¢&÷Vâ"ÀÐ¢7&VFVDC¢6W'fW%F–ÖW7F×‚’ÀÐ¢WFFVDC¢6W'fW%F–ÖW7F×‚Ð¢Ò“°Ð¢f÷&Òç&W6WB‚“°Ð¢&VæFW$–çV—&–W2†v—BvWDFö72‡VW'’‡v÷&·76T6öÆÆV7F–öâ‡v÷&·76T–BÂ&–çV—&–W2"’Â÷&FW$'’‚&7&VFVDB"Â&FW62"’ÂÆ–Ö—BƒR’’’“°Ð¢6†÷uFö7B‚.ºËŽÉÙŽº[ÂÊ	È‰ŽÙhŽÈ«^¸¸Ž¸ºBâ"“°Ð¢Ò6F6‚†W'&÷"’°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&–çV—'•7FFR"’æ†–FFVâÒfÇ6S°Ð¢Fö7VÖVçBævWDVÆVÖVçD'”–B‚&–çV—'•7FFR"’çFW‡D6öçFVçBÒ.ºËŽÉÙŽº[ÂÊ	È‰ŽÙYŽÊxº«¾ÙhŽÈ«^¸¸Ž¸ºBâºÎ«{ŽÉÛ‚È8Ø9ÎÉ˜É{«+ÉØBÙ™^ÉÛŽÙ[BÊ;ÎÈKŽÉ©Bâ#°Ð¢6öç6öÆRæW'&÷"‚.ºËŽÉÙ‚Ê	È‰‚ÈºNØÊ‚"ÂW'&÷"æ6öFR“°Ð¢Òf–æÆÇ’°Ð¢7V&Ö—BæF—6&ÆVBÒfÇ6S²7V&Ö—BçFW‡D6öçFVçBÒ.ºËŽÉÙ‚Ê	È‰‚#°Ð¢ÐÐ¢Ò“°Ð¢Ò6F6‚†W'&÷"’°Ð¢6öç7BÖW76vRÒFö7VÖVçBævWDVÆVÖVçD'”–B‚&WF„ÖW76vR"“°Ð¢–b†ÖW76vR’ÖW76vRçFW‡D6öçFVçBÒ$f—&V&6RÉÛŽÊiÒÉ{«+ÉØBÊH»˜NÙYŽÊxº«¾ÙhŽÈ«^¸¸Ž¸ºBâÉêÈ¹ÂÙ¸B¸ºNÈ¹ÂÈ¹Î¸øNÙ[BÊ;ÎÈKŽÉ©Bâ#°Ð¢6öç6öÆRæW'&÷"‚$f—&V&6RËHŽ«‹Ù™BÈºNØÊ‚"ÂW'&÷"“°Ð¢ÐÐ¢ÐÐ¢Â÷67&—CàÐ£Âö&öG“àÐ£Âö‡FÖÃàÐ Ð Ð Ð Ð Ð

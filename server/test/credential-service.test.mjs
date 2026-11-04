@@ -48,7 +48,7 @@ test("연결 해제와 상태 조회도 uid를 저장소 권한 검증에 전달
 });
 
 test("YouTube·OpenAI와 Apify 연결도 평문 없이 제공자별 KMS 봉투로 저장한다", async () => {
-  for (const [provider, credentials] of [["youtube", { apiKey: "youtube-key" }], ["apify", { token: "apify-token" }], ["openai", { apiKey: "openai-key" }]]) {
+  for (const [provider, credentials] of [["youtube", { apiKey: "youtube-key" }], ["apify", { token: "apify-token" }], ["openai", { apiKey: "openai-key" }], ["naver-search", { clientId: "client-id", clientSecret: "client-secret" }]]) {
     let saved;
     const plaintextDataKey = Buffer.alloc(32, 3);
     const service = createCredentialService({

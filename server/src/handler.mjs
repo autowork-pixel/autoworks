@@ -5,6 +5,7 @@ import { normalizeCollabInstagramInput } from "./collab-instagram.mjs";
 import { normalizeContentReferenceInput } from "./content-reference.mjs";
 import { normalizeInfluencerCandidateInput } from "./influencer-candidate.mjs";
 import { normalizeAiBlogInput } from "./ai-blog.mjs";
+import { normalizeNaverVisibilityInput } from "./naver-search-visibility.mjs";
 
 const maximumBodyBytes = 64 * 1024;
 
@@ -62,7 +63,7 @@ function bearer(request) {
   return match[1];
 }
 
-export function createHandler({ verifyIdToken, repository, credentialService, collabYouTubeService, collabInstagramService, contentReferenceService, influencerCandidateService, aiBlogService, taskDispatcher, logger = console }) {
+export function createHandler({ verifyIdToken, repository, credentialService, collabYouTubeService, collabInstagramService, contentReferenceService, influencerCandidateService, aiBlogService, naverVisibilityService, taskDispatcher, logger = console }) {
   return async function handler(request, response) {
     const requestId = newRequestId();
     try {
@@ -159,7 +160,9 @@ export function createHandler({ verifyIdToken, repository, credentialService, co
         const result = await aiBlogService.run({ workspaceId: aiBlogMatch[1], uid: decoded.uid, input: normalizeAiBlogInput(await readJson(request)) });
         return json(response, result.reused ? 200 : 201, { ...result, requestId }, requestId);
       }
-      const credentialMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/provider-credentials\/(naver-searchad|youtube|apify|openai)$/);
+      const visibilityMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/naver-visibility-runs$/);
+      if(request.method==="POST"&&visibilityMatch&&naverVisibilityService){if(!String(request.headers["content-type"]||"").toLowerCase().startsWith("application/json"))throw new ApiError("INVALID_INPUT","Content-Type은 application/json이어야 합니다.",415);let decoded;try{decoded=await verifyIdToken(bearer(request))}catch{throw new ApiError("AUTH_REQUIRED","로그인을 다시 확인해주세요.",401)}if(!decoded?.uid)throw new ApiError("AUTH_REQUIRED","로그인을 다시 확인해주세요.",401);const result=await naverVisibilityService.run({workspaceId:visibilityMatch[1],uid:decoded.uid,input:normalizeNaverVisibilityInput(await readJson(request))});return json(response,result.reused?200:201,{...result,requestId},requestId)}
+      const credentialMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/provider-credentials\/(naver-searchad|naver-search|youtube|apify|openai)$/);
       if (credentialMatch && credentialService) {
         const token = bearer(request);
         let decoded;
