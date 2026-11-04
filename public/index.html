@@ -16,6 +16,7 @@
 <style>
 .inquiries{display:none;max-width:800px;margin:10px auto 0;background:#fff;border:1px solid #e7e7ed;border-radius:10px;overflow:hidden}.inquiries.visible{display:block}.inquiry-head{padding:14px 16px;border-bottom:1px solid #ececf1}.inquiry-head h2{font-size:11px;color:#3d3e48;margin:0}.inquiry-head p{font-size:9px;color:#8b8b96;margin:5px 0 0}.inquiry-form{display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px 16px;border-bottom:1px solid #ececf1;background:#fafafd}.inquiry-form input,.inquiry-form textarea{border:1px solid #e0e0e8;border-radius:7px;background:#fff;padding:9px 10px;font-size:10px;resize:vertical}.inquiry-form textarea{grid-column:1/-1;min-height:70px}.inquiry-form button{border:0;border-radius:7px;background:#6047df;color:#fff;padding:9px 14px;font-size:10px}.inquiry-form small{align-self:center;color:#8b8b96;font-size:9px}.inquiry-list{list-style:none;margin:0;padding:0}.inquiry-item{display:grid;grid-template-columns:1fr auto;gap:5px 10px;padding:11px 16px;border-bottom:1px solid #f0f0f3}.inquiry-item:last-child{border-bottom:0}.inquiry-item b{font-size:10px;color:#454650}.inquiry-item span{font-size:9px;color:#6956cb;font-weight:700}.inquiry-item p{grid-column:1/-1;font-size:9px;color:#858591;margin:0;line-height:1.5}.inquiry-state{padding:14px 16px;color:#8b8b96;font-size:10px}@media(max-width:620px){.inquiry-form{grid-template-columns:1fr}.inquiry-form textarea{grid-column:auto}.inquiry-form button{min-height:36px}}
 .account-deletion{display:none;max-width:800px;margin:10px auto 0;background:#fff;border:1px solid #ecdede;border-radius:10px;overflow:hidden}.account-deletion.visible{display:block}.account-deletion-head{padding:14px 16px;border-bottom:1px solid #f0e7e7}.account-deletion h2{font-size:11px;color:#493d3d;margin:0}.account-deletion p{font-size:9px;color:#8b7c7c;line-height:1.6;margin:5px 0 0}.account-deletion-form{display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px 16px;background:#fffafa}.account-deletion-form input{border:1px solid #e4d6d6;border-radius:7px;background:#fff;padding:9px 10px;font-size:10px}.account-deletion-form button{border:0;border-radius:7px;background:#8d4545;color:#fff;padding:9px 14px;font-size:10px;font-weight:700}.account-deletion-form button:disabled{background:#b9aaaa;cursor:not-allowed}.account-deletion-state{grid-column:1/-1;color:#8b7c7c;font-size:9px;line-height:1.5}@media(max-width:620px){.account-deletion-form{grid-template-columns:1fr}.account-deletion-form button{min-height:36px}}
+.subscription-actions{padding:0 16px 14px}.subscription-cancel{border:1px solid #e0dce9;border-radius:7px;background:#fff;color:#625b72;padding:8px 11px;font-size:9px}.subscription-cancel:hover{border-color:#9c8ed0;color:#4f3da3}.subscription-cancel:disabled{color:#aaa5b3;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -28,7 +29,7 @@
  <section class="intro"><p class="kicker">MARKETING ANALYSIS</p><h1>오늘은 어떤 분석을 도와드릴까요?</h1><p>브랜드와 키워드, 관심 채널을 고르면<br class="mobile-break"> 분석 조건을 한 번에 정리할 수 있어요.</p></section>
  <section class="workspace" id="workspace" aria-label="내 프로젝트"><div class="workspace-head"><div><h2>내 프로젝트</h2><p>브랜드와 키워드를 계정에 저장합니다.</p></div><button class="workspace-add" id="projectAdd">프로젝트 추가</button></div><form class="project-form" id="projectForm"><input id="projectName" maxlength="80" placeholder="프로젝트 이름" aria-label="프로젝트 이름" required><input id="projectBrand" maxlength="80" placeholder="브랜드명" aria-label="브랜드명" required><input id="projectKeywords" maxlength="500" placeholder="키워드 (쉼표로 구분, 최대 20개)" aria-label="키워드"><button type="submit">저장</button></form><div class="workspace-state" id="projectState" role="status">저장된 프로젝트를 불러오는 중입니다.</div><table class="project-list" id="projectTable" hidden><thead><tr><th>프로젝트</th><th>브랜드</th><th>키워드</th><th>수정일</th></tr></thead><tbody id="projectRows"></tbody></table><p class="workspace-note">입력한 프로젝트 정보는 로그인한 계정의 워크스페이스에 저장됩니다. API 키와 실행 결과는 이 화면에서 저장하지 않습니다.</p></section>
  <nav class="account-nav" id="accountNav" aria-label="내 계정 바로가기"><a class="account-link" href="./api-guide.html"><b>API 연결</b><span>필요한 키와 발급 안내</span></a><a class="account-link" href="#subscriptionCard"><b>구독 상태</b><span>베타 상태와 기간 확인</span></a><a class="account-link" href="#accountData"><b>사용량</b><span>이번 달 실행 현황</span></a><a class="account-link" href="#paymentCard"><b>결제 내역</b><span>최근 결제 요약</span></a></nav>
- <section class="account-data" id="accountData" aria-label="내 실행 데이터"><article class="data-card"><div class="data-head"><h2>최근 실행</h2><span>내 워크스페이스만 표시</span></div><div class="data-state" id="runState">실행 기록을 불러오는 중입니다.</div><ul class="run-list" id="runList" hidden></ul></article><article class="data-card"><div class="data-head"><h2>이번 달 사용량</h2><span id="usagePeriod">-</span></div><div class="data-state" id="usageState">사용량 기록이 없습니다.</div><div class="usage-grid" id="usageGrid" hidden><div><b id="usageRuns">0</b><span>실행</span></div><div><b id="usageLookups">0</b><span>키워드 조회</span></div><div><b id="usageRunsRemaining">-</b><span>남은 실행</span></div><div><b id="usageLookupsRemaining">-</b><span>남은 키워드 조회</span></div><div><b id="usageSuccess">0</b><span>성공</span></div><div><b id="usageFailed">0</b><span>실패</span></div></div></article><article class="data-card wide" id="subscriptionCard"><div class="data-head"><h2>구독 상태</h2><span>서버가 확인한 상태만 표시</span></div><div class="data-state" id="subscriptionState">활성 구독이 없습니다.</div></article><article class="data-card wide" id="paymentCard"><div class="data-head"><h2>최근 결제</h2><span>민감 결제정보는 표시하지 않음</span></div><div class="data-state" id="paymentState">결제 내역이 없습니다.</div></article><article class="data-card wide"><div class="data-head"><h2>최근 결과</h2><span>다운로드는 서버 검증 연결 후 제공</span></div><div class="data-state" id="reportState">저장된 결과가 없습니다.</div><ul class="report-list" id="reportList" hidden></ul></article></section>
+ <section class="account-data" id="accountData" aria-label="내 실행 데이터"><article class="data-card"><div class="data-head"><h2>최근 실행</h2><span>내 워크스페이스만 표시</span></div><div class="data-state" id="runState">실행 기록을 불러오는 중입니다.</div><ul class="run-list" id="runList" hidden></ul></article><article class="data-card"><div class="data-head"><h2>이번 달 사용량</h2><span id="usagePeriod">-</span></div><div class="data-state" id="usageState">사용량 기록이 없습니다.</div><div class="usage-grid" id="usageGrid" hidden><div><b id="usageRuns">0</b><span>실행</span></div><div><b id="usageLookups">0</b><span>키워드 조회</span></div><div><b id="usageRunsRemaining">-</b><span>남은 실행</span></div><div><b id="usageLookupsRemaining">-</b><span>남은 키워드 조회</span></div><div><b id="usageSuccess">0</b><span>성공</span></div><div><b id="usageFailed">0</b><span>실패</span></div></div></article><article class="data-card wide" id="subscriptionCard"><div class="data-head"><h2>구독 상태</h2><span>서버가 확인한 상태만 표시</span></div><div class="data-state" id="subscriptionState">활성 구독이 없습니다.</div><div class="subscription-actions"><button class="subscription-cancel" id="subscriptionCancel" type="button" hidden>다음 결제 해지</button></div></article><article class="data-card wide" id="paymentCard"><div class="data-head"><h2>최근 결제</h2><span>민감 결제정보는 표시하지 않음</span></div><div class="data-state" id="paymentState">결제 내역이 없습니다.</div></article><article class="data-card wide"><div class="data-head"><h2>최근 결과</h2><span>다운로드는 서버 검증 연결 후 제공</span></div><div class="data-state" id="reportState">저장된 결과가 없습니다.</div><ul class="report-list" id="reportList" hidden></ul></article></section>
  <section class="inquiries" id="inquiries" aria-label="내 문의"><div class="inquiry-head"><h2>내 문의</h2><p>문의에는 API 키·비밀번호·결제정보를 입력하지 마세요. 운영 답변은 이 계정에서 확인할 수 있습니다.</p></div><form class="inquiry-form" id="inquiryForm"><input id="inquirySubject" maxlength="100" placeholder="문의 제목" aria-label="문의 제목" required><small>제목 100자 · 내용 2,000자</small><textarea id="inquiryMessage" maxlength="2000" placeholder="문의 내용을 입력하세요" aria-label="문의 내용" required></textarea><button type="submit">문의 접수</button></form><div class="inquiry-state" id="inquiryState">등록된 문의가 없습니다.</div><ul class="inquiry-list" id="inquiryList" hidden></ul></section>
  <section class="account-deletion" id="accountDeletion" aria-label="계정 탈퇴 요청"><div class="account-deletion-head"><h2>계정 탈퇴 요청</h2><p>요청 즉시 새 자동화 실행이 중단됩니다. 진행 중 작업·구독·법정 보존 거래를 확인한 뒤 계정 자료를 삭제하며, 요청만으로 결제가 자동 환불되지는 않습니다.</p></div><form class="account-deletion-form" id="accountDeletionForm"><input id="accountDeletionConfirmation" autocomplete="off" placeholder="확인을 위해 DELETE 입력" aria-label="탈퇴 확인 문구" required><button type="submit" id="accountDeletionSubmit">탈퇴 요청</button><div class="account-deletion-state" id="accountDeletionState" role="status">서버가 연결된 환경에서만 요청할 수 있습니다.</div></form></section>
  <section class="composer" aria-label="분석 조건 만들기">
@@ -219,8 +220,8 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
         document.getElementById("usageLookupsRemaining").textContent = lookupsUsed !== null && Number.isSafeInteger(subscription.keywordLookupLimit) && subscription.keywordLookupLimit >= 0 ? Math.max(0, subscription.keywordLookupLimit - lookupsUsed).toLocaleString() : "-";
       }
       function renderSubscription(snapshot) {
-        const state = document.getElementById("subscriptionState");
-        if (!snapshot.exists()) { state.textContent = "검색량 무료 · 월 30회 · 키워드 300개"; return; }
+        const state = document.getElementById("subscriptionState"), cancel = document.getElementById("subscriptionCancel");
+        if (!snapshot.exists()) { state.textContent = "검색량 무료 · 월 30회 · 키워드 300개"; cancel.hidden = true; return; }
         const data = snapshot.data(), labels = { pending: "시작 대기", trialing: "베타 이용 중", active: "이용 중", past_due: "결제 확인 필요", canceled: "해지됨", expired: "만료됨" };
         const now = new Date(), endDate = data.periodEnd?.toDate?.(), graceDate = data.graceEnd?.toDate?.();
         const validEnd = endDate instanceof Date && Number.isFinite(endDate.getTime());
@@ -232,6 +233,8 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
         const projects = Number.isFinite(data.projectLimit) ? `브랜드 ${Number(data.projectLimit).toLocaleString()}개` : "브랜드 한도 확인 중";
         const renewal = data.autoRenew === false ? "자동결제 해지" : data.status === "past_due" ? "자동결제 재시도 중" : data.autoRenew === true ? "자동결제 동의" : "자동결제 미설정";
         state.textContent = `${data.planLabel || "요금제"} · ${label} · ${end} · ${projects} · ${limit} · ${renewal}`;
+        cancel.hidden = data.autoRenew !== true || !["trialing", "active", "past_due"].includes(data.status);
+        cancel.disabled = !apiBase;
       }
       function renderPayment(snapshot) {
         const state = document.getElementById("paymentState");
@@ -289,6 +292,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
           const node = document.getElementById(id); node.hidden = false; node.textContent = "로그인 후 확인할 수 있습니다.";
         }
         document.getElementById("usageGrid").hidden = true;
+        document.getElementById("subscriptionCancel").hidden = true;
         document.getElementById("inquiryForm").reset();
         document.getElementById("accountDeletionForm").reset();
         document.getElementById("accountDeletionSubmit").disabled = !apiBase;
@@ -430,6 +434,23 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
           console.error("계정 탈퇴 요청 실패", error.message);
         }
       });
+      document.getElementById("subscriptionCancel").addEventListener("click", async event => {
+        const user = auth.currentUser, workspaceId = window.autoworksWorkspaceId, button = event.currentTarget;
+        if (!apiBase || !user || !workspaceId) { showToast("로그인과 서버 연결을 확인해 주세요."); return; }
+        if (!window.confirm("다음 회차 자동결제를 해지할까요? 이미 결제한 이용 기간은 종료일까지 유지됩니다.")) return;
+        button.disabled = true; button.textContent = "해지 처리 중";
+        try {
+          const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(workspaceId)}/subscription:cancel`, { method:"POST", headers:{ authorization:`Bearer ${await user.getIdToken()}`, "content-type":"application/json" }, body:"{}" });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(result.error?.message || "subscription-cancel-failed");
+          await loadWorkspaceData(workspaceId);
+          showToast("다음 회차 자동결제를 해지했습니다. 현재 이용 기간은 유지됩니다.");
+        } catch (error) {
+          button.disabled = false; button.textContent = "다음 결제 해지";
+          showToast("구독을 해지하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+          console.error("구독 해지 실패", error.message);
+        }
+      });
       document.getElementById("projectAdd").addEventListener("click", () => {
         const form = document.getElementById("projectForm");
         form.classList.toggle("open");
@@ -508,7 +529,6 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
  </script>
 </body>
 </html>
-
 
 
 

@@ -13,5 +13,7 @@ assert.match(source, /usableStatus && endDate <= now \? "만료됨"/, "문서 �
 assert.match(source, /data\.status === "past_due" \? validGrace && graceDate > now \? "결제 확인 필요" : "이용 중지"/, "결제 유예 종료 전후 상태를 구분해야 합니다.");
 assert.match(source, /"자동결제 재시도 중"/, "결제 실패 뒤 자동 재시도 상태를 고객에게 표시해야 합니다.");
 assert.match(source, /failed \? nextDate \? `다음 재시도/, "실패 결제의 다음 날짜를 새 결제일로 오인하게 표시하면 안 됩니다.");
+assert.match(source, /subscription:cancel/, "고객 구독 화면에서 다음 회차 자동결제 해지 API를 호출해야 합니다.");
+assert.match(source, /window\.confirm\("다음 회차 자동결제를 해지할까요\?/, "자동결제 해지는 고객의 직전 확인을 받아야 합니다.");
+assert.match(source, /현재 이용 기간은 유지됩니다/, "해지가 즉시 이용 중단이나 환불로 오인되지 않아야 합니다.");
 console.log("구독 기간과 완료량·예약량을 반영하는 고객 표시를 확인");
-
