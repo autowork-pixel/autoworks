@@ -9,5 +9,9 @@ assert.match(source, /Number\.isSafeInteger\(subscription\.keywordLookupLimit\)/
 assert.match(source, /Number\.isSafeInteger\(number\) && number >= 0 \? number : null/, "손상된 사용량은 숫자로 표시하지 않아야 합니다.");
 assert.match(source, /Number\.isFinite\(endDate\.getTime\(\)\)/, "손상된 구독 종료일은 정상 날짜로 표시하면 안 됩니다.");
 assert.match(source, /usableStatus && !validEnd \? "기간 확인 필요"/, "이용 중 상태라도 종료일이 없으면 기간 확인이 필요하다고 표시해야 합니다.");
-assert.match(source, /usableStatus && endDate <= new Date\(\) \? "만료됨"/, "문서 상태가 남아 있어도 지난 이용 기간은 만료로 표시해야 합니다.");
+assert.match(source, /usableStatus && endDate <= now \? "만료됨"/, "문서 상태가 남아 있어도 지난 이용 기간은 만료로 표시해야 합니다.");
+assert.match(source, /data\.status === "past_due" \? validGrace && graceDate > now \? "결제 확인 필요" : "이용 중지"/, "결제 유예 종료 전후 상태를 구분해야 합니다.");
+assert.match(source, /"자동결제 재시도 중"/, "결제 실패 뒤 자동 재시도 상태를 고객에게 표시해야 합니다.");
+assert.match(source, /failed \? nextDate \? `다음 재시도/, "실패 결제의 다음 날짜를 새 결제일로 오인하게 표시하면 안 됩니다.");
 console.log("구독 기간과 완료량·예약량을 반영하는 고객 표시를 확인");
+

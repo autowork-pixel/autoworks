@@ -222,21 +222,23 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
         const state = document.getElementById("subscriptionState");
         if (!snapshot.exists()) { state.textContent = "검색량 무료 · 월 30회 · 키워드 300개"; return; }
         const data = snapshot.data(), labels = { pending: "시작 대기", trialing: "베타 이용 중", active: "이용 중", past_due: "결제 확인 필요", canceled: "해지됨", expired: "만료됨" };
-        const endDate = data.periodEnd?.toDate?.();
+        const now = new Date(), endDate = data.periodEnd?.toDate?.(), graceDate = data.graceEnd?.toDate?.();
         const validEnd = endDate instanceof Date && Number.isFinite(endDate.getTime());
+        const validGrace = graceDate instanceof Date && Number.isFinite(graceDate.getTime());
         const usableStatus = ["trialing", "active", "canceled"].includes(data.status);
-        const label = usableStatus && !validEnd ? "기간 확인 필요" : usableStatus && endDate <= new Date() ? "만료됨" : labels[data.status] || "상태 확인 중";
-        const end = validEnd ? endDate.toLocaleDateString("ko-KR") : "기간 미정";
+        const label = data.status === "past_due" ? validGrace && graceDate > now ? "결제 확인 필요" : "이용 중지" : usableStatus && !validEnd ? "기간 확인 필요" : usableStatus && endDate <= now ? "만료됨" : labels[data.status] || "상태 확인 중";
+        const end = data.status === "past_due" && validGrace ? `${graceDate.toLocaleDateString("ko-KR")}까지 결제 유예` : validEnd ? `${endDate.toLocaleDateString("ko-KR")}까지` : "기간 미정";
         const limit = Number.isFinite(data.runLimit) ? `월 ${Number(data.runLimit).toLocaleString()}회` : "실행 한도 검증 중";
         const projects = Number.isFinite(data.projectLimit) ? `브랜드 ${Number(data.projectLimit).toLocaleString()}개` : "브랜드 한도 확인 중";
-        const renewal = data.autoRenew === false ? "자동결제 해지" : data.autoRenew === true ? "자동결제 동의" : "자동결제 미설정";
-        state.textContent = `${data.planLabel || "요금제"} · ${label} · ${end}까지 · ${projects} · ${limit} · ${renewal}`;
+        const renewal = data.autoRenew === false ? "자동결제 해지" : data.status === "past_due" ? "자동결제 재시도 중" : data.autoRenew === true ? "자동결제 동의" : "자동결제 미설정";
+        state.textContent = `${data.planLabel || "요금제"} · ${label} · ${end} · ${projects} · ${limit} · ${renewal}`;
       }
       function renderPayment(snapshot) {
         const state = document.getElementById("paymentState");
         if (!snapshot.exists()) { state.textContent = "결제 내역이 없습니다. 정기결제는 테스트 전입니다."; return; }
-        const data = snapshot.data(), paidAt = data.paidAt?.toDate?.().toLocaleDateString("ko-KR") || "처리일 확인 중", nextBilling = data.nextBillingAt?.toDate?.().toLocaleDateString("ko-KR") || "다음 결제일 없음";
-        state.textContent = `${paidAt} · ${Number(data.amount || 0).toLocaleString()}원 · ${data.status || "상태 확인 중"} · 다음 결제 ${nextBilling}`;
+        const data = snapshot.data(), paidAt = data.paidAt?.toDate?.().toLocaleDateString("ko-KR") || "처리일 확인 중", nextDate = data.nextBillingAt?.toDate?.().toLocaleDateString("ko-KR"), failed = data.status === "FAILED", status = failed ? "결제 실패" : data.status === "DONE" ? "결제 완료" : "상태 확인 중";
+        const next = failed ? nextDate ? `다음 재시도 ${nextDate}` : "추가 재시도 없음" : nextDate ? `다음 결제 ${nextDate}` : "다음 결제일 없음";
+        state.textContent = `${paidAt} · ${Number(data.amount || 0).toLocaleString()}원 · ${status} · ${next}`;
       }
       function renderInquiries(snapshot) {
         const list = document.getElementById("inquiryList"), state = document.getElementById("inquiryState");
@@ -506,6 +508,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
  </script>
 </body>
 </html>
+
 
 
 

@@ -77,8 +77,8 @@
 - 고객에게 공개하는 `current` 문서에는 `planId`, `planLabel`, `status`, `periodStart`, `periodEnd`, `runLimit`, `keywordLookupLimit`, `updatedAt`만 둔다.
 - 고객은 자신의 공개 요약만 읽고 쓰기는 할 수 없다. 운영자는 읽기만 가능하다.
 - 결제 이벤트와 서버 검증을 거친 상태만 서버가 기록한다. billing key, payment key, 주문 원장과 웹훅 원문은 별도 서버 전용 경로에 보관한다.
-- 자동 갱신은 `nextRenewalAt`, `renewalAttempt`, 10분짜리 잠금 토큰으로 중복 실행을 막는다. 첫 실패 후 1일차와 3일차에만 재시도하고 `graceEnd` 이후에는 `past_due` 구독의 실행 권한을 실패-닫힘으로 차단한다.
-- 갱신 주문 ID와 멱등키는 워크스페이스·기존 이용 종료일에서 결정적으로 만들며, 빌링키 원문은 `billingCredentials/current`의 KMS 봉투 밖에 저장하지 않는다.
+- 자동 갱신의 `nextRenewalAt`, 재시도 횟수와 10분짜리 잠금 토큰은 고객이 읽지 못하는 `billingRenewals/current`에 분리한다. 첫 실패 후 1일차와 3일차에만 재시도하고 공개 구독 요약에는 `past_due`와 `graceEnd`만 표시한다.
+- 갱신 주문 ID와 멱등키는 워크스페이스·기존 이용 종료일에서 결정적으로 만들며, 빌링키 원문은 `billingCredentials/current`의 KMS 봉투 밖에 저장하지 않는다. `graceEnd` 이후에는 실행 권한을 실패-닫힘으로 차단한다.
 
 ### `auditLogs/{auditId}`
 
