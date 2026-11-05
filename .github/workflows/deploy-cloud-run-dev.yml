@@ -36,9 +36,9 @@ jobs:
       BUDGET_TOPIC: autoworks-budget-alerts
       BUDGET_SUBSCRIPTION: autoworks-budget-push-dev
       WEB_ORIGINS: https://autoworks-c9a6a.web.app,https://autoworks-c9a6a.firebaseapp.com
-      RUNTIME_SERVICE_ACCOUNT: ${{ vars.CLOUD_RUN_RUNTIME_SERVICE_ACCOUNT }}
-      TASK_SERVICE_ACCOUNT: ${{ vars.CLOUD_RUN_TASK_SERVICE_ACCOUNT }}
-      KMS_KEY_NAME: ${{ vars.CLOUD_RUN_KMS_KEY_NAME }}
+      RUNTIME_SERVICE_ACCOUNT: autoworks-api-runtime@autoworks-c9a6a.iam.gserviceaccount.com
+      TASK_SERVICE_ACCOUNT: autoworks-task-caller@autoworks-c9a6a.iam.gserviceaccount.com
+      KMS_KEY_NAME: projects/autoworks-c9a6a/locations/asia-northeast3/keyRings/autoworks/cryptoKeys/provider-credentials
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
