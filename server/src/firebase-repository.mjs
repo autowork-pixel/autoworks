@@ -28,7 +28,12 @@ function usagePeriod(now = new Date()) {
     .slice(0, 7);
 }
 
-export const verifyIdToken = token => tokenIssuer.verifyIdToken(token, true);
+// Signature, issuer, audience and expiry are verified locally on every request.
+// Revocation lookup is intentionally omitted here: passing `true` additionally
+// calls Firebase Auth's user API and makes every customer request depend on the
+// runtime service account having broad user-read IAM. Short-lived ID tokens and
+// the workspace owner check remain the request authorization boundary.
+export const verifyIdToken = token => tokenIssuer.verifyIdToken(token);
 
 export const repository = {
   listBrandSearchRuns: input => runLifecycleRepository.listBrandSearchRuns(input),
@@ -537,3 +542,4 @@ export const repository = {
     });
   }
 };
+
