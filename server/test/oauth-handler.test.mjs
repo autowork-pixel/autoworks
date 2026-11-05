@@ -42,3 +42,32 @@ test("콜백은 custom token을 URL이 아닌 허용 출처 postMessage 본문�
     assert.equal(body.includes("secret"), false);
   });
 });
+
+test("내부 OAuth 오류는 비밀 메시지 없이 이름과 코드만 기록한다", async () => {
+  const logged = [];
+  const failure = new Error("provider-secret-must-not-be-logged");
+  failure.code = "auth/insufficient-permission";
+  const fetchImpl = async url => url.includes("oauth2.0/token")
+    ? { ok: true, json: async () => ({ access_token: "provider-access" }) }
+    : { ok: true, json: async () => ({ resultcode: "00", response: { id: "subject-a" } }) };
+  await withServer({
+    ...base,
+    fetchImpl,
+    logger: { error: (...values) => logged.push(values) },
+    tokenIssuer: { createCustomToken: async () => { throw failure; } },
+    stateStore: { consume: async () => ({ provider: "naver", redirectUri: base.configs.naver.redirectUri, returnOrigin: "https://app.example", expiresAt: Date.now() + 10000 }) }
+  }, async url => {
+    const response = await fetch(`${url}/v1/auth/naver/callback?code=code&state=state`);
+    assert.equal(response.status, 500);
+  });
+  assert.equal(logged.length, 1);
+  assert.equal(logged[0][0], "oauth_request_failed");
+  assert.deepEqual(logged[0][1], {
+    requestId: logged[0][1].requestId,
+    code: "INTERNAL_ERROR",
+    errorName: "Error",
+    errorCode: "auth/insufficient-permission"
+  });
+  assert.equal(JSON.stringify(logged).includes("provider-secret-must-not-be-logged"), false);
+});
+
