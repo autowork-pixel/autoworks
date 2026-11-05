@@ -19,7 +19,10 @@
 - 배포 선택 항목을 OAuth secret 연결, Scheduler·예산 push, Firebase Hosting 연결로 분리했다. 한 항목의 실행이 다른 운영 자원을 함께 변경하지 않는다.
 - 실제 secret 생성·값 입력·OAuth 로그인은 실행하지 않았다. API 키나 비밀값은 코드·GitHub·증빙에 기록하지 않았다.
 - 이후 네이버·카카오 값 4개를 Secret Manager에 직접 생성했다. 첫 연결 실행 `41948057884`는 Cloud Run 배포와 스모크까지 성공했지만 GitHub 배포 계정에 `secretmanager.secrets.get`이 없어 참조 연결 전에 안전 중단됐다. Hosting과 운영 자동화는 실행되지 않았다.
-- 최소 권한을 위해 워크플로에서 IAM 변경을 제거했다. 각 secret에 실행 계정 `Secret Accessor`, 배포 계정 `Secret Manager Viewer`를 사람이 한 번 부여한 뒤 참조 연결만 재실행한다.
+- 최소 권한을 위해 워크플로에서 IAM 변경을 제거했다. 네 secret 각각에 실행 계정 `Secret Accessor`, 배포 계정 `Secret Manager Viewer`를 부여하고 연결 실행 `41949276958`에서 OAuth 참조와 Firebase Hosting을 정상 배포했다. Scheduler·예산 push와 결제는 실행하지 않았다.
+- Firebase custom token 발급에 필요한 실행 계정의 자기 자신 대상 `Service Account Token Creator`를 추가했다. 프로젝트 전체가 아닌 `autoworks-api-runtime` 서비스 계정 리소스에만 적용했다.
+- 네이버 로그인은 제공자 인증, Cloud Run callback, Firebase custom token 발급까지 실제 계정으로 완료했다. 카카오는 공식 동의 화면과 등록 callback 일치를 확인했으며, 회원번호 제공 동의는 사용자 검토로 남겼다.
+- 내부 OAuth 500은 비밀 메시지를 남기지 않고 오류 이름·코드만 기록하도록 보강하고 서버 테스트 202개를 통과했다. 진단 배포 `41950600675`도 성공했다.
 
 ## 2026-11-04 개발 서버 배포 체크포인트
 
@@ -45,7 +48,8 @@
 ## 다음 작업
 
 1. `review_required` 주문의 토스 주문 조회·환불/복구 운영 절차를 실제 MID 승인 후 검증한다. 그 전에는 자동 재청구를 열지 않는다.
-2. Secret Manager에 네이버·카카오 네 값을 직접 등록한 뒤 `connect_oauth_secrets`와 `connect_hosting`을 각각 실행하고 실제 로그인 계정으로 콜백을 확인한다.
+2. 카카오 공식 동의 화면에서 회원번호 제공을 직접 승인한 뒤 callback과 Firebase 로그인 완료를 확인한다. 그 다음 별도 테스트 계정으로 고객 데이터 격리를 검증한다.
 3. 별도 실행으로 예산 push 구독·복구 Scheduler를 연결한 뒤 고객별 접근 경계를 확인한다.
 
 작업을 마칠 때마다 **마지막 기능 커밋, 배포 범위, 확인 결과, 다음 작업**을 이 파일에 갱신하고 GitHub `main`에 저장한다. 전체 진행 기록은 [퀘스트 로그](QUEST_LOG.md), 사용자 확인 사항은 [검토 목록](USER_REVIEW.md)에 남긴다. API 키와 비밀정보는 기록하지 않는다.
+
