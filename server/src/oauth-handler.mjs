@@ -42,8 +42,14 @@ export function createOAuthHandler({ configs, stateStore, identityStore, tokenIs
       const nonce = randomBytes(18).toString("base64url"), payload = JSON.stringify({ type: "autoworks-oauth", provider: result.provider, customToken: result.customToken }).replaceAll("<", "\\u003c");
       html(response, 200, `<!doctype html><meta charset="utf-8"><title>로그인 완료</title><p>로그인을 완료하고 있습니다.</p><script nonce="${nonce}">if(window.opener){window.opener.postMessage(${payload},${JSON.stringify(result.returnOrigin)});window.close();}</script>`, requestId, nonce);
     } catch (error) {
-      if (!(error instanceof ApiError)) logger.error("oauth_request_failed", { requestId, code: "INTERNAL_ERROR" });
+      if (!(error instanceof ApiError)) logger.error("oauth_request_failed", {
+        requestId,
+        code: "INTERNAL_ERROR",
+        errorName: typeof error?.name === "string" ? error.name : "Error",
+        errorCode: typeof error?.code === "string" ? error.code : "UNKNOWN"
+      });
       return errorPage(response, error, requestId);
     }
   };
 }
+
