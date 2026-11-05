@@ -8,9 +8,9 @@ async function expectStatus(path, status, options = {}) {
   return response;
 }
 
-const health = await expectStatus("/healthz", 200);
+const health = await expectStatus("/health-check", 200);
 const healthBody = await health.json();
-if (healthBody.ok !== true) throw new Error("healthz response is not ok");
+if (healthBody.ok !== true) throw new Error("health-check response is not ok");
 
 const preflight = await expectStatus("/v1/workspaces/smoke/brand-search-runs", 204, {
   method: "OPTIONS",
@@ -38,6 +38,6 @@ for (const path of [
 }
 await expectStatus("/internal/v1/recovery:run", 401, { method: "POST" });
 await expectStatus("/internal/v1/budget-alerts:receive", 401, { method: "POST" });
-console.log("개발 API healthz·CORS·고객 인증·내부 OIDC 차단 스모크 테스트 통과");
+console.log("개발 API health-check·CORS·고객 인증·내부 OIDC 차단 스모크 테스트 통과");
 
 

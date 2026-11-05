@@ -68,7 +68,7 @@ export function createHandler({ verifyIdToken, repository, credentialService, co
   return async function handler(request, response) {
     const requestId = newRequestId();
     try {
-      if (request.method === "GET" && request.url === "/healthz") {
+      if (request.method === "GET" && request.url === "/health-check") {
         return json(response, 200, { ok: true }, requestId);
       }
       const projectMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/projects$/);
@@ -265,3 +265,4 @@ export function createHandler({ verifyIdToken, repository, credentialService, co
     }
   };
 }
+

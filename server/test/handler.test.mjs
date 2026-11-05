@@ -42,7 +42,7 @@ const requestProject = (base, body = { name: "브랜드 모니터링", brandName
 
 test("health check는 인증 없이 응답한다", async () => {
   await withServer({ verifyIdToken: async () => ({}), repository: {} }, async base => {
-    const response = await fetch(`${base}/healthz`);
+    const response = await fetch(`${base}/health-check`);
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), { ok: true });
   });
@@ -392,3 +392,4 @@ test("API 연결 해제는 토큰 uid를 검증한 뒤 서비스에 위임한다
     assert.equal(received.uid, "user-a");
   });
 });
+

@@ -21,7 +21,7 @@
 완료 증빙:
 
 - 예산 알림, 최소 IAM, KMS·Tasks·Scheduler·Cloud Run 자원 식별자
-- 공개 API `/healthz`, CORS, OIDC 내부 경로 거부·허용 결과
+- 공개 API `/health-check`, CORS, OIDC 내부 경로 거부·허용 결과
 - 최신 Hosting의 `runtime-config.js` 200과 `npm run verify:hosting` 통과
 
 연결 퀘스트: Q2-2~Q2-4, Q3, Q5, Q6-2. 상세 순서는 `SERVER_DEPLOYMENT.md`를 따른다.
@@ -101,4 +101,5 @@
 - 콘솔 캡처에는 키·토큰·개인정보가 없어야 한다.
 - 자원 생성, 관리자 권한 변경, 결제·환불처럼 외부 상태가 바뀌는 단계는 실행 직전에 범위를 다시 확인한다.
 - 완료 증빙이 부족하면 체크박스를 닫지 않고 `QUEST_LOG.md`에 보류 사유를 유지한다.
+
 

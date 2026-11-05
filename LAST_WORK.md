@@ -4,10 +4,12 @@
 
 ## 2026-11-05 Cloud Run 404 복구 준비
 
+- **원인 확정:** 새 리비전 배포·Ready·RoutesReady·ingress all·기본 URL·100% 트래픽·공개 IAM이 모두 정상인데 `/healthz`만 Google 프런트엔드 404를 반환하고 Cloud Run 요청 로그가 없었다. 같은 서비스의 `/health-check`는 컨테이너에 도달해 애플리케이션 JSON 404를 반환했다. Google Cloud 공개 이슈의 예약 경로 충돌 증상과 일치하므로 공개 상태 경로를 `/health-check`로 변경했다.
 - 서버의 공개 `GET /healthz` 구현과 로컬 테스트는 정상이며 서버 테스트 201개가 통과했다. Google 404가 애플리케이션 응답 전에 발생하는 정황과, 수정된 배포 워크플로가 실제 개발 서비스에 한 번도 실행되지 않은 기록을 확인했다.
 - 개발 배포에 `--ingress all`, `--default-url`, 최신 리비전 100% 트래픽 전환을 명시했다. 스모크 테스트의 응답 계약도 실제 서버 응답 `{ "ok": true }`와 일치시켰다.
 - 이번 404 복구가 성공해도 Scheduler·예산 push·Firebase Hosting을 자동 변경하지 않도록 `connect_downstream` 기본값을 `false`로 분리했다. 다음 단계는 이 변경을 GitHub에 저장하고 Cloud Run 개발 배포만 실행한 뒤 `/healthz` 200을 확인하는 것이다.
 - 첫 복구 실행은 GitHub `development` 환경 변수 3개가 비어 배포 전에 중단됐다. 비밀값이 아닌 고정 개발 리소스 식별자(실행 계정·호출 계정·KMS 키)를 워크플로에 명시해 별도 수동 변수 없이 같은 개발 자원만 사용하도록 보완했다.
+- GitHub 배포 계정에는 Cloud Run Source Developer·Service Usage Consumer와 실행/기본 빌드 계정에 대한 Service Account User를 최소 범위로 부여했고, 기본 빌드 계정에는 Cloud Run Builder를 부여했다. 이 권한으로 새 리비전 빌드·배포·최신 트래픽 전환까지 성공했다.
 
 ## 2026-11-04 개발 서버 배포 체크포인트
 
