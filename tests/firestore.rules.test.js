@@ -110,6 +110,47 @@ test("실행·스냅샷·결과·사용량은 소유자에게만 읽기 전용�
   await assertFails(setDoc(doc(owner, "workspaces/workspace-a/subscriptions/current"), { status: "active" }, { merge: true }));
 });
 
+test("두 고객의 실행·결과·구독은 양방향 격리되고 API 키는 소유자에게도 비공개다", async () => {
+  await environment.clearFirestore();
+  await environment.withSecurityRulesDisabled(async context => {
+    const admin = context.firestore();
+    for (const [workspaceId, ownerUid, label] of [
+      ["workspace-a", "user-a", "네이버"],
+      ["workspace-b", "user-b", "카카오"],
+    ]) {
+      const root = `workspaces/${workspaceId}`;
+      await setDoc(doc(admin, root), { ownerUid, name: `${label} 고객` });
+      await setDoc(doc(admin, `${root}/projects/project-1`), { name: `${label} 프로젝트`, brandName: label, keywords: [label] });
+      await setDoc(doc(admin, `${root}/runs/run-1`), { tool: "brand-search", status: "succeeded", inputSummary: `${label} 실행` });
+      await setDoc(doc(admin, `${root}/reports/report-1`), { title: `${label} 결과`, status: "ready" });
+      await setDoc(doc(admin, `${root}/usage/2026-11`), { runs: 1, keywordLookups: 1 });
+      await setDoc(doc(admin, `${root}/subscriptions/current`), { planId: "free-search", status: "active" });
+      await setDoc(doc(admin, `${root}/paymentSummaries/current`), { status: "none", amount: 0 });
+      await setDoc(doc(admin, `${root}/providerCredentials/naver-searchad`), { ciphertext: `${label}-secret` });
+      await setDoc(doc(admin, `${root}/runInputs/run-1`), { keywords: [`${label}-private`] });
+    }
+  });
+
+  const userA = environment.authenticatedContext("user-a").firestore();
+  const userB = environment.authenticatedContext("user-b").firestore();
+  const readable = [
+    "projects/project-1", "runs/run-1", "reports/report-1", "usage/2026-11",
+    "subscriptions/current", "paymentSummaries/current",
+  ];
+  for (const path of readable) {
+    await assertSucceeds(getDoc(doc(userA, `workspaces/workspace-a/${path}`)));
+    await assertFails(getDoc(doc(userA, `workspaces/workspace-b/${path}`)));
+    await assertSucceeds(getDoc(doc(userB, `workspaces/workspace-b/${path}`)));
+    await assertFails(getDoc(doc(userB, `workspaces/workspace-a/${path}`)));
+  }
+  for (const path of ["providerCredentials/naver-searchad", "runInputs/run-1"]) {
+    await assertFails(getDoc(doc(userA, `workspaces/workspace-a/${path}`)));
+    await assertFails(getDoc(doc(userA, `workspaces/workspace-b/${path}`)));
+    await assertFails(getDoc(doc(userB, `workspaces/workspace-a/${path}`)));
+    await assertFails(getDoc(doc(userB, `workspaces/workspace-b/${path}`)));
+  }
+});
+
 test("구독과 결제 요약이 아직 없어도 소유자는 빈 상태를 읽을 수 있다", async () => {
   await environment.clearFirestore();
   await environment.withSecurityRulesDisabled(async context => {
@@ -190,4 +231,5 @@ test("관리자 claim은 운영 데이터를 읽지만 문의 답변과 API 키�
   const owner = environment.authenticatedContext("user-a").firestore();
   await assertFails(getDoc(doc(owner, "workspaces/workspace-a/auditLogs/audit-a")));
 });
+
 
