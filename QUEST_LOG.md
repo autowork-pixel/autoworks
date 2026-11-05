@@ -121,7 +121,7 @@
 - [x] Hosting에서 Google 로그인 세션이 새로고침 뒤에도 복원되고 워크스페이스·프로젝트 목록이 다시 로드되는 것을 확인했다 (2026-11-02).
 - [ ] 로그아웃 시 프로젝트·실행·결과·사용량·문의 DOM과 workspace ID를 즉시 초기화하고, 이전 계정의 비동기 조회 결과가 재로그인한 계정 화면에 섞이지 않도록 세대 검증을 추가했다. 실제 Hosting 계정으로 로그아웃·재로그인은 사용자 확인이 남아 있다.
 - [x] 네이버·카카오는 Firebase OIDC 직접 연결 대신 각 디벨로퍼 OAuth와 서버 callback을 사용하고, Firebase custom token으로 로그인시키는 방향을 정한다.
-- [ ] 네이버·카카오 디벨로퍼 앱을 만들고 서비스 도메인·callback URL을 등록한다. client secret은 서버에만 저장한다.
+- [x] 네이버·카카오 디벨로퍼 앱에 서비스 도메인·개발 Cloud Run callback URL을 등록하고 client secret을 Secret Manager에만 저장했다. 네이버 실제 로그인을 완료했고 카카오 첫 회원번호 제공 동의만 사용자 검토로 남겼다.
 - [ ] Cloud Run callback 서버 코어와 HTTP 라우트, 해시 ID의 일회성 Firestore state 저장소, 허용 출처 팝업 전달을 구현했다. 10분 state·공식 토큰 교환·프로필 조회·Firebase custom token 경계를 테스트했으며 실제 앱 자격정보 설정과 Cloud Run 배포는 Cloud Billing/월 예산 결정 전까지 보류한다.
 - [x] 네이버·카카오 원본 사용자 ID를 Firebase UID나 문서 경로에 넣지 않고 `provider:subject`의 SHA-256 안정 식별자만 저장하도록 고정했다 (2026-11-03).
 - [x] Firebase 승인 도메인에 `localhost`, `autoworks-c9a6a.firebaseapp.com`, `autoworks-c9a6a.web.app`이 등록된 것을 확인했다 (2026-11-03).
@@ -384,6 +384,7 @@
 - 2026-11-04: 승인받은 개발 프로젝트에서 월 50,000원 예산과 50%·80%·100% 이메일 알림, Pub/Sub topic 연결, 서울 리전 KMS·Tasks·서비스 계정 및 공개 Cloud Run을 구성했다. 서버 테스트 201개 통과. 네이버·카카오 callback URL은 콘솔에 저장했다. 다만 Cloud Run 기본 URL의 `/healthz`가 Google 404여서 Hosting 연결·실제 로그인·Scheduler·예산 push 구독은 보류했다.
 - 2026-11-05: Cloud Run 공개 상태 경로를 Google 프런트엔드와 충돌하지 않는 `/health-check`로 바꾸고 GitHub Actions 배포·공개 스모크를 통과했다. 이어서 재배포가 OAuth secret 참조를 지우지 않도록 환경변수 갱신 방식을 수정하고, 네이버·카카오 네 secret을 값 조회 없이 개별 권한으로 연결하는 보호 스크립트와 검사를 추가했다. 실제 secret 값 입력과 로그인은 사용자 검토로 남겼다.
 - 2026-11-05: 네이버·카카오 OAuth 값 네 개를 Secret Manager에 직접 생성했다. 연결 실행 `41948057884`는 Cloud Run 배포·스모크 후 배포 계정의 Secret 조회 권한 부족으로 안전 중단됐고 Hosting은 실행되지 않았다. 워크플로가 IAM을 변경하지 않도록 고쳐, 네 secret 각각에 실행 계정 Accessor와 배포 계정 Viewer만 한 번 부여하는 구조로 좁혔다.
+- 2026-11-05: 네 secret의 최소 권한을 적용한 뒤 실행 `41949276958`에서 OAuth 참조와 Hosting을 연결했다. 실행 계정 자기 자신에게만 Firebase custom token 서명 권한을 부여했고, 비밀 메시지 없이 내부 오류 코드만 기록하는 회귀 테스트를 추가해 서버 테스트 202개와 진단 배포 `41950600675`를 통과했다. 네이버 실제 로그인은 callback과 custom token 발급까지 완료했으며 카카오는 공식 동의 화면까지 확인했다.
 - 2026-11-03: Q4-1 구독 상태 머신과 사용량·동시 요청 원칙을 문서화하고, 고객 공개 구독 요약 필드를 제한한 읽기 전용 규칙과 대시보드 표시를 추가했다. 가격·한도는 베타 자료 전까지 확정하지 않았다.
 - 2026-11-03: Q3-3 운영자 권한 기준과 감사 이벤트·필드를 문서화하고, 서버 전용 `auditLogs` 읽기 화면과 관리자 읽기/고객 읽기 거부/클라이언트 쓰기 거부 테스트를 추가했다.
 - 2026-11-03: CI 통과 커밋 `0135fbd`의 고객 문의·계정 바로가기·API 안내와 Firestore 문의 권한 규칙을 Firebase Hosting/Firestore에 배포했다. 캐시 우회 실서비스에서 새 영역과 브라우저 오류 없음도 확인했다.
@@ -405,3 +406,4 @@
 - 2026-10-27: 정적 웹에 Firebase Web SDK 초기화 코드를 추가하고, 로컬 `file://` 미리보기에서는 초기화하지 않도록 제한했다. Hosting 배포 후 런타임 검증은 남아 있다.
 - 2026-10-27: Q2-2 로그인 UI와 Google·네이버·카카오 Firebase Auth 클라이언트 흐름을 추가했다. 사용자 확인을 받은 뒤 Firebase Authentication에서 Google 제공자를 켜고 오토웍스 공개 이름과 승인된 지원 이메일을 저장했다. Hosting에서 로그인 런타임을 검증하고 네이버·카카오 OIDC 비용을 확인하는 일은 남아 있다.
 - 2026-10-25: Q1-2의 데이터 원천을 NAVER DataLab이 아닌 검색광고 키워드도구로 명확히 정정했다. API 요금과 광고 집행비를 구분하고, 일·주·월 화면은 실제 일별 검색량이 아니라 저장된 월간 검색량 스냅샷의 추이로 설계한다.
+
