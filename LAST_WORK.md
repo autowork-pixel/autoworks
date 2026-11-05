@@ -22,7 +22,7 @@
 - 최소 권한을 위해 워크플로에서 IAM 변경을 제거했다. 네 secret 각각에 실행 계정 `Secret Accessor`, 배포 계정 `Secret Manager Viewer`를 부여하고 연결 실행 `41949276958`에서 OAuth 참조와 Firebase Hosting을 정상 배포했다. Scheduler·예산 push와 결제는 실행하지 않았다.
 - Firebase custom token 발급에 필요한 실행 계정의 자기 자신 대상 `Service Account Token Creator`를 추가했다. 프로젝트 전체가 아닌 `autoworks-api-runtime` 서비스 계정 리소스에만 적용했다.
 - 네이버 로그인은 제공자 인증, Cloud Run callback, Firebase custom token 발급까지 실제 계정으로 완료했다. 카카오는 공식 동의 화면과 등록 callback 일치를 확인했으며, 회원번호 제공 동의는 사용자 검토로 남겼다.
-- 내부 OAuth 500은 비밀 메시지를 남기지 않고 오류 이름·코드만 기록하도록 보강하고 서버 테스트 202개를 통과했다. 진단 배포 `41950600675`도 성공했다.
+- 내부 OAuth 500 진단을 위해 오류 이름·코드만 기록하는 임시 배포 `41950600675`로 권한 전파 지연을 확인했다. 네이버 성공 확인 뒤 로그는 기존의 request ID와 일반 오류 코드만 남기는 최소 정책으로 즉시 되돌렸다.
 
 ## 2026-11-04 개발 서버 배포 체크포인트
 
