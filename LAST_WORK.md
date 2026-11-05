@@ -12,6 +12,13 @@
 - GitHub 배포 계정에는 Cloud Run Source Developer·Service Usage Consumer와 실행/기본 빌드 계정에 대한 Service Account User를 최소 범위로 부여했고, 기본 빌드 계정에는 Cloud Run Builder를 부여했다. 이 권한으로 새 리비전 빌드·배포·최신 트래픽 전환까지 성공했다.
 - GitHub Actions 실행 `41945726842`에서 새 `/health-check` 200, 허용 origin CORS, 고객 API 무인증 401, 내부 API 무인증 401을 모두 통과했다. 외부에서도 `https://autoworks-api-dev-beh42zoxia-du.a.run.app/health-check`의 `200 {"ok":true}`를 재확인했다.
 
+## 2026-11-05 OAuth 비밀값 연결 준비
+
+- 재배포가 이미 연결된 Secret Manager 참조를 지우지 않도록 초기 Cloud Run 환경변수 적용을 `--update-env-vars`로 변경했다.
+- 네이버·카카오 client ID/secret 네 값을 각각 별도 secret으로 두고, 값을 읽지 않은 채 실행 계정에 secret 단위 accessor만 부여해 Cloud Run 참조를 연결하는 보호 스크립트와 회귀 검사를 추가했다.
+- 배포 선택 항목을 OAuth secret 연결, Scheduler·예산 push, Firebase Hosting 연결로 분리했다. 한 항목의 실행이 다른 운영 자원을 함께 변경하지 않는다.
+- 실제 secret 생성·값 입력·OAuth 로그인은 실행하지 않았다. API 키나 비밀값은 코드·GitHub·증빙에 기록하지 않았다.
+
 ## 2026-11-04 개발 서버 배포 체크포인트
 
 - 사용자 승인 후 `autoworks-c9a6a` 결제 계정에 월 50,000원 예산(50%·80%·100% 이메일 알림, `autoworks-budget-alerts` Pub/Sub 연결)을 만들었다. 예산은 비용 알림이며 지출 상한은 아니다.
@@ -36,8 +43,7 @@
 ## 다음 작업
 
 1. `review_required` 주문의 토스 주문 조회·환불/복구 운영 절차를 실제 MID 승인 후 검증한다. 그 전에는 자동 재청구를 열지 않는다.
-2. 서버 비밀값을 안전하게 연결한 뒤 네이버·카카오 실제 로그인 계정으로 콜백을 확인한다.
-3. 예산 push 구독·복구 Scheduler와 Hosting API URL을 연결한 뒤 고객별 접근 경계를 확인한다.
+2. Secret Manager에 네이버·카카오 네 값을 직접 등록한 뒤 `connect_oauth_secrets`와 `connect_hosting`을 각각 실행하고 실제 로그인 계정으로 콜백을 확인한다.
+3. 별도 실행으로 예산 push 구독·복구 Scheduler를 연결한 뒤 고객별 접근 경계를 확인한다.
 
 작업을 마칠 때마다 **마지막 기능 커밋, 배포 범위, 확인 결과, 다음 작업**을 이 파일에 갱신하고 GitHub `main`에 저장한다. 전체 진행 기록은 [퀘스트 로그](QUEST_LOG.md), 사용자 확인 사항은 [검토 목록](USER_REVIEW.md)에 남긴다. API 키와 비밀정보는 기록하지 않는다.
-

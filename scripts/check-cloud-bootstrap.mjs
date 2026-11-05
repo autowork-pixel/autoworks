@@ -16,8 +16,10 @@ assert.match(script, /APPLY_DEV/);
 assert.doesNotMatch(script, /service-accounts keys create|--key-file/);
 assert.match(script, /roles\/cloudkms\.cryptoKeyEncrypterDecrypter/);
 assert.match(workflow, /inputs\.confirm == 'DEPLOY_DEV'/);
-assert.match(workflow, /connect_downstream:/);
-assert.match(workflow, /if: inputs\.connect_downstream/);
+assert.match(workflow, /connect_operations:/);
+assert.match(workflow, /if: inputs\.connect_operations/);
+assert.match(workflow, /connect_hosting:/);
+assert.match(workflow, /if: inputs\.connect_hosting/);
 assert.match(workflow, /autoworks-api-runtime@autoworks-c9a6a\.iam\.gserviceaccount\.com/);
 assert.match(workflow, /autoworks-task-caller@autoworks-c9a6a\.iam\.gserviceaccount\.com/);
 assert.match(workflow, /keyRings\/autoworks\/cryptoKeys\/provider-credentials/);
@@ -37,5 +39,4 @@ assert.match(smoke, /\/internal\/v1\/recovery:run/);
 assert.match(smoke, /\/internal\/v1\/budget-alerts:receive/);
 assert.match(smoke, /expected \$\{status\}/);
 console.log("개발 Cloud Run 부트스트랩의 결제 확인·무키 파일·최소 분리 계정 경계를 확인");
-
 

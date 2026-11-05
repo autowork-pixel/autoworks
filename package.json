@@ -16,6 +16,7 @@
     "test:billing-callback": "node scripts/check-billing-callback.mjs",
     "test:container": "node scripts/check-container.mjs",
     "test:cloud-bootstrap": "node scripts/check-cloud-bootstrap.mjs",
+    "test:oauth-secret-connection": "node scripts/check-oauth-secret-connection.mjs",
     "test:authenticated-smoke": "node scripts/check-authenticated-smoke.mjs",
     "smoke:development-api": "node scripts/smoke-development-api.mjs",
     "smoke:authenticated-api": "node scripts/smoke-authenticated-api.mjs",

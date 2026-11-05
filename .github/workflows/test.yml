@@ -41,6 +41,7 @@ jobs:
       - run: npm run test:billing-callback
       - run: npm run test:container
       - run: npm run test:cloud-bootstrap
+      - run: npm run test:oauth-secret-connection
       - run: npm run test:authenticated-smoke
       - run: docker build --tag autoworks-api:test ./server
       - run: npm run test:server

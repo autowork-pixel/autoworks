@@ -48,13 +48,18 @@
 6. `public/runtime-config.js`의 `AUTOWORKS_API_BASE`를 Cloud Run HTTPS origin으로 설정하고 Hosting을 배포한다. 이 파일에는 URL 외 비밀정보를 넣지 않는다.
 7. `/health-check`, CORS 사전 요청, 로그인 고객 예약, Tasks 작업자, 결과 CSV, 취소, 재시도 복구를 순서대로 검증한다.
 
-개발 환경은 GitHub Actions의 **Deploy development Cloud Run API** 워크플로로 위 3~4단계를 재현한다. `development` 환경에 다음 Repository variable 세 개가 모두 있어야 하며, 실행 시 확인값 `DEPLOY_DEV`를 직접 입력해야 한다.
+개발 환경은 GitHub Actions의 **Deploy development Cloud Run API** 워크플로로 위 3~4단계를 재현한다. 고정된 개발 프로젝트·리전·서비스 계정·KMS 키만 사용하며, 실행 시 확인값 `DEPLOY_DEV`를 직접 입력해야 한다.
 
-- `CLOUD_RUN_RUNTIME_SERVICE_ACCOUNT`
-- `CLOUD_RUN_TASK_SERVICE_ACCOUNT`
-- `CLOUD_RUN_KMS_KEY_NAME`
+워크플로는 먼저 전체 서버·런타임·컨테이너 검사를 실행한다. 최초 revision은 임시 HTTPS audience로 기동한 뒤 실제 Cloud Run URL을 조회해 `SERVICE_URL`과 `WORKER_AUDIENCE`를 즉시 고정한다. 공개 `/health-check` 성공과 무인증 내부 복구·예산 경로의 401 거부를 확인한다. 이후 선택 항목은 서로 분리되어 있다. `connect_oauth_secrets`는 이미 Secret Manager에 등록된 네이버·카카오 값의 참조만 연결하고, `connect_operations`는 Scheduler·예산 push를 연결하며, `connect_hosting`은 공개 API URL을 Hosting에 기록해 배포한다.
 
-워크플로는 먼저 전체 서버·런타임·컨테이너 검사를 실행한다. 최초 revision은 임시 HTTPS audience로 기동한 뒤 실제 Cloud Run URL을 조회해 `SERVICE_URL`과 `WORKER_AUDIENCE`를 즉시 고정한다. 공개 `/health-check` 성공과 무인증 내부 복구·예산 경로의 401 거부를 확인한 뒤 빌드 산출물의 `runtime-config.js`에 공개 API URL만 기록해 Hosting·Firestore Rules를 배포하고 공개 Hosting을 재검증한다. OAuth·토스 비밀값은 이 기본 배포에 포함하지 않고 Secret Manager 연결 퀘스트에서 별도로 주입한다.
+OAuth 값은 아래 이름으로 Secret Manager에 각각 등록한다. 값은 GitHub·Hosting·일반 로그에 복사하지 않는다.
+
+- `autoworks-naver-oauth-client-id`
+- `autoworks-naver-oauth-client-secret`
+- `autoworks-kakao-oauth-client-id`
+- `autoworks-kakao-oauth-client-secret`
+
+네 secret에 활성 버전이 모두 생긴 뒤 `connect_oauth_secrets`를 선택하면 `scripts/connect-oauth-dev.sh`가 값을 읽지 않고 실행 계정에 각 secret의 accessor 권한만 부여해 Cloud Run 환경변수 참조를 연결한다. 일반 재배포는 `--update-env-vars`를 사용하므로 기존 secret 참조를 지우지 않는다. OAuth·토스 비밀값은 기본 배포에 포함하지 않는다.
 
 `smoke:development-api`는 배포 URL의 health-check, 허용 Hosting origin CORS, P1~P8 핵심 고객 API의 무인증 401, 내부 복구 경로의 무인증 401을 확인한다. 실제 고객 토큰·외부 제공자 키·결제는 사용하지 않는다.
 
@@ -87,4 +92,3 @@ npm run smoke:authenticated-api
 - Tasks/Scheduler 이외의 신원이 내부 엔드포인트를 호출함
 
 위 항목이 하나라도 나타나면 신규 실행을 중지하고 `OPERATIONS_RUNBOOK.md`의 P0/P1 절차를 따른다.
-
