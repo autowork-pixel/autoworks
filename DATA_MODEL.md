@@ -67,6 +67,7 @@
 
 ### `providerCredentials/{provider}`
 
+- 각 문서는 해당 워크스페이스 고객이 직접 연결한 자격정보만 담는다. 운영자 테스트 키나 다른 고객 키를 공용 fallback으로 사용하지 않으며, 서버 환경변수에 YouTube·Apify·OpenAI·네이버 기능용 공용 키가 있으면 애플리케이션 시작을 거부한다. 개발 중 운영자가 연결한 키도 운영자의 테스트 워크스페이스에 속한 고객 자격정보로만 취급한다.
 - 브라우저 읽기·쓰기를 전부 거부한다.
 - 서버에서 AES-256-GCM으로 암호화한 `ciphertext`, `iv`, `authTag`와 KMS가 감싼 `encryptedDataKey`, `keyVersion`, 비민감 `apiKeyHint`, `status`, `updatedAt`만 저장한다. 원문 키, 평문 데이터 키, Authorization 헤더, 토큰을 로그·실행 문서·보고서에 복사하지 않는다.
 - KMS는 Cloud Billing과 키 수명주기 결정 뒤 연결한다. 저장 전 암호화·변조 감지 봉투 형식은 서버 단위 테스트로 고정했다.

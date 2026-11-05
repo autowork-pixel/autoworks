@@ -1,6 +1,15 @@
 const serviceAccountPattern = /^[A-Za-z0-9][A-Za-z0-9._-]*@[A-Za-z0-9.-]+\.iam\.gserviceaccount\.com$/;
 const resourceIdPattern = /^[A-Za-z0-9_-]{1,100}$/;
 const kmsKeyPattern = /^projects\/[^/]+\/locations\/[^/]+\/keyRings\/[^/]+\/cryptoKeys\/[^/]+$/;
+const sharedProviderCredentialNames = [
+  "YOUTUBE_API_KEY",
+  "APIFY_API_TOKEN",
+  "OPENAI_API_KEY",
+  "NAVER_SEARCH_API_KEY",
+  "NAVER_SEARCHAD_API_KEY",
+  "NAVER_SEARCHAD_SECRET_KEY",
+  "NAVER_SEARCHAD_CUSTOMER_ID"
+];
 
 function required(env, name) {
   const value = String(env[name] || "").trim();
@@ -26,6 +35,10 @@ function oauthProvider(env, prefix, provider, serviceUrl) {
 }
 
 export function readRuntimeConfig(env = process.env) {
+  const sharedProviderCredential = sharedProviderCredentialNames.find(name => String(env[name] || "").trim());
+  if (sharedProviderCredential) {
+    throw new Error(`Shared customer provider credentials are forbidden: ${sharedProviderCredential}`);
+  }
   const projectId = String(env.GOOGLE_CLOUD_PROJECT || env.GCLOUD_PROJECT || "").trim();
   if (!projectId) throw new Error("Missing runtime configuration: GOOGLE_CLOUD_PROJECT");
   const location = required(env, "TASKS_LOCATION");

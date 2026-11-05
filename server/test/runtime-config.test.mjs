@@ -30,6 +30,12 @@ test("필수 설정 누락과 다른 프로젝트 KMS 키를 시작 전에 거�
   assert.throws(() => readRuntimeConfig({ ...env, BUDGET_DISPLAY_NAME: "bad\nname" }), /BUDGET_DISPLAY_NAME/);
 });
 
+test("운영자 공용 제공자 키는 런타임 설정으로 사용할 수 없다", () => {
+  for (const name of ["YOUTUBE_API_KEY", "APIFY_API_TOKEN", "OPENAI_API_KEY", "NAVER_SEARCH_API_KEY", "NAVER_SEARCHAD_API_KEY", "NAVER_SEARCHAD_SECRET_KEY", "NAVER_SEARCHAD_CUSTOMER_ID"]) {
+    assert.throws(() => readRuntimeConfig({ ...env, [name]: "must-not-be-shared" }), new RegExp(name));
+  }
+});
+
 test("예산 자동중지는 정확한 예산 표시 이름을 선택적으로 고정한다", () => {
   assert.equal(readRuntimeConfig({ ...env, BUDGET_DISPLAY_NAME: budgetName }).budgetDisplayName, budgetName);
 });
