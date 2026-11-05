@@ -18,4 +18,9 @@ for (const file of files) {
   if (!["index.mjs", "runtime-config.mjs"].includes(file)) assert.equal(/process\.env/.test(source), false, `${file}: 환경변수는 런타임 설정 계층에서만 읽어야 합니다.`);
 }
 
+const firebaseRepository = await readFile(resolve(root, "firebase-repository.mjs"), "utf8");
+assert.match(firebaseRepository, /verifyIdToken\(token\)/, "Firebase ID 토큰의 서명·발급자·만료 검증이 필요합니다.");
+assert.doesNotMatch(firebaseRepository, /verifyIdToken\(token,\s*true\)/, "요청마다 사용자 조회 IAM을 요구하는 철회 검사는 사용하지 않습니다.");
+
 console.log(`${files.length}개 서버 모듈의 비밀값·구조화 로그·환경변수 접근 경계를 확인`);
+
