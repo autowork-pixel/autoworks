@@ -12,11 +12,10 @@ for (const value of [
 ]) assert.ok(connection.includes(value), `OAuth connection missing ${value}`);
 
 assert.match(connection, /APPLY_DEV/);
-assert.match(connection, /roles\/secretmanager\.secretAccessor/);
 assert.match(connection, /gcloud secrets versions list/);
 assert.match(connection, /--update-secrets/);
 assert.doesNotMatch(connection, /versions access/);
-assert.doesNotMatch(connection, /projects add-iam-policy-binding[\s\S]*secretmanager\.secretAccessor/);
+assert.doesNotMatch(connection, /add-iam-policy-binding|set-iam-policy|roles\/secretmanager/);
 assert.match(workflow, /connect_oauth_secrets:/);
 assert.match(workflow, /if: inputs\.connect_oauth_secrets/);
 assert.match(workflow, /connect_operations:/);

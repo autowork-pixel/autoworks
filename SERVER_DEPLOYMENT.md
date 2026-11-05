@@ -59,7 +59,7 @@ OAuth 값은 아래 이름으로 Secret Manager에 각각 등록한다. 값은 G
 - `autoworks-kakao-oauth-client-id`
 - `autoworks-kakao-oauth-client-secret`
 
-네 secret에 활성 버전이 모두 생긴 뒤 `connect_oauth_secrets`를 선택하면 `scripts/connect-oauth-dev.sh`가 값을 읽지 않고 실행 계정에 각 secret의 accessor 권한만 부여해 Cloud Run 환경변수 참조를 연결한다. 일반 재배포는 `--update-env-vars`를 사용하므로 기존 secret 참조를 지우지 않는다. OAuth·토스 비밀값은 기본 배포에 포함하지 않는다.
+네 secret에 활성 버전이 모두 생긴 뒤 각 secret에 실행 계정의 `Secret Manager Secret Accessor`, GitHub 배포 계정의 `Secret Manager Viewer`를 부여한다. 권한은 프로젝트 전체가 아닌 네 secret 각각에만 적용한다. 이후 `connect_oauth_secrets`를 선택하면 `scripts/connect-oauth-dev.sh`가 값과 IAM 정책을 바꾸지 않고 Cloud Run 환경변수 참조만 연결한다. 일반 재배포는 `--update-env-vars`를 사용하므로 기존 secret 참조를 지우지 않는다. OAuth·토스 비밀값은 기본 배포에 포함하지 않는다.
 
 `smoke:development-api`는 배포 URL의 health-check, 허용 Hosting origin CORS, P1~P8 핵심 고객 API의 무인증 401, 내부 복구 경로의 무인증 401을 확인한다. 실제 고객 토큰·외부 제공자 키·결제는 사용하지 않는다.
 

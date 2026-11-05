@@ -18,6 +18,8 @@
 - 네이버·카카오 client ID/secret 네 값을 각각 별도 secret으로 두고, 값을 읽지 않은 채 실행 계정에 secret 단위 accessor만 부여해 Cloud Run 참조를 연결하는 보호 스크립트와 회귀 검사를 추가했다.
 - 배포 선택 항목을 OAuth secret 연결, Scheduler·예산 push, Firebase Hosting 연결로 분리했다. 한 항목의 실행이 다른 운영 자원을 함께 변경하지 않는다.
 - 실제 secret 생성·값 입력·OAuth 로그인은 실행하지 않았다. API 키나 비밀값은 코드·GitHub·증빙에 기록하지 않았다.
+- 이후 네이버·카카오 값 4개를 Secret Manager에 직접 생성했다. 첫 연결 실행 `41948057884`는 Cloud Run 배포와 스모크까지 성공했지만 GitHub 배포 계정에 `secretmanager.secrets.get`이 없어 참조 연결 전에 안전 중단됐다. Hosting과 운영 자동화는 실행되지 않았다.
+- 최소 권한을 위해 워크플로에서 IAM 변경을 제거했다. 각 secret에 실행 계정 `Secret Accessor`, 배포 계정 `Secret Manager Viewer`를 사람이 한 번 부여한 뒤 참조 연결만 재실행한다.
 
 ## 2026-11-04 개발 서버 배포 체크포인트
 

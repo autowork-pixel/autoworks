@@ -52,7 +52,8 @@
 - [ ] 운영 Google Cloud 결제 계정을 연결하고 월 50,000원 예산 알림 및 예산 초과 시 신규 자동화 중지 정책을 승인한다.
 - [x] 개발 Cloud Run `/health-check`와 무인증 보안 경계 스모크 통과
 - [ ] 네이버·카카오 앱에 개발 Cloud Run callback URL은 저장했다. 서버 비밀값을 연결한 뒤 실제 로그인 계정으로 검증한다.
-- [ ] Google Secret Manager에 네이버 client ID/secret과 카카오 client ID/secret을 네 개의 지정 secret으로 직접 등록한다. 값은 채팅·GitHub·Hosting 파일에 남기지 않는다.
+- [x] Google Secret Manager에 네이버 client ID/secret과 카카오 client ID/secret을 네 개의 지정 secret으로 직접 등록했다. 값은 GitHub·Hosting 파일에 남기지 않았다.
+- [ ] 네 OAuth secret 각각에 Cloud Run 실행 계정의 `Secret Manager Secret Accessor`, GitHub 배포 계정의 `Secret Manager Viewer`를 최소 범위로 부여한다. 프로젝트 전체 권한은 부여하지 않는다.
 - [ ] 오토웍스 전용 토스페이먼츠 상점·MID 승인을 완료한다.
 - [ ] 전용 MID의 자동결제 테스트 클라이언트 키·시크릿 키를 Secret Manager에 등록하고, 카드 등록 → 빌링키 발급 → 19,900원 테스트 승인 → 계정 화면의 다음 결제일 표시를 확인한다.
 - [ ] 같은 결제 완료 요청을 동시에 두 번 보내도 1건만 승인되는지, 승인 응답을 의도적으로 끊은 뒤 주문 조회로 같은 결제를 복구하는지 확인한다.
