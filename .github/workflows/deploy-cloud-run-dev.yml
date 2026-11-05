@@ -7,6 +7,11 @@ on:
         description: Type DEPLOY_DEV to deploy the development API
         required: true
         type: string
+      connect_downstream:
+        description: Also connect Scheduler, budget push, and Firebase Hosting
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -76,6 +81,8 @@ jobs:
             --service-account "$RUNTIME_SERVICE_ACCOUNT" \
             --allow-unauthenticated \
             --no-invoker-iam-check \
+            --ingress all \
+            --default-url \
             --min-instances 0 --max-instances 1 \
             --set-env-vars "^|^GOOGLE_CLOUD_PROJECT=$PROJECT_ID|TASKS_LOCATION=$REGION|TASKS_QUEUE=$TASKS_QUEUE|SERVICE_URL=https://bootstrap.invalid|WORKER_AUDIENCE=https://bootstrap.invalid|TASK_SERVICE_ACCOUNT_EMAIL=$TASK_SERVICE_ACCOUNT|KMS_KEY_NAME=$KMS_KEY_NAME|WEB_ORIGINS=$WEB_ORIGINS|BUDGET_DISPLAY_NAME=$BUDGET_DISPLAY_NAME" \
             --quiet
@@ -88,7 +95,14 @@ jobs:
           gcloud run services update "$SERVICE" \
             --project "$PROJECT_ID" \
             --region "$REGION" \
+            --ingress all \
+            --default-url \
             --update-env-vars "^|^SERVICE_URL=$SERVICE_URL|WORKER_AUDIENCE=$SERVICE_URL" \
+            --quiet
+          gcloud run services update-traffic "$SERVICE" \
+            --project "$PROJECT_ID" \
+            --region "$REGION" \
+            --to-latest \
             --quiet
           echo "service_url=$SERVICE_URL" >> "$GITHUB_OUTPUT"
         id: service
@@ -100,6 +114,7 @@ jobs:
           set -euo pipefail
           AUTOWORKS_API_BASE="$SERVICE_URL" npm run smoke:development-api
       - name: Grant only the caller identity and configure recovery schedule
+        if: inputs.connect_downstream
         shell: bash
         env:
           SERVICE_URL: ${{ steps.service.outputs.service_url }}
@@ -130,6 +145,7 @@ jobs:
               --push-auth-service-account "$TASK_SERVICE_ACCOUNT" --push-auth-token-audience "$SERVICE_URL" --quiet
           fi
       - name: Connect Hosting to the deployed API
+        if: inputs.connect_downstream
         shell: bash
         env:
           SERVICE_URL: ${{ steps.service.outputs.service_url }}
@@ -144,5 +160,6 @@ jobs:
             sleep 5
           done
           exit 1
+
 
 
