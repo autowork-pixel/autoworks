@@ -121,7 +121,7 @@
 - [x] Hosting에서 Google 로그인 세션이 새로고침 뒤에도 복원되고 워크스페이스·프로젝트 목록이 다시 로드되는 것을 확인했다 (2026-11-02).
 - [ ] 로그아웃 시 프로젝트·실행·결과·사용량·문의 DOM과 workspace ID를 즉시 초기화하고, 이전 계정의 비동기 조회 결과가 재로그인한 계정 화면에 섞이지 않도록 세대 검증을 추가했다. 실제 Hosting 계정으로 로그아웃·재로그인은 사용자 확인이 남아 있다.
 - [x] 네이버·카카오는 Firebase OIDC 직접 연결 대신 각 디벨로퍼 OAuth와 서버 callback을 사용하고, Firebase custom token으로 로그인시키는 방향을 정한다.
-- [x] 네이버·카카오 디벨로퍼 앱에 서비스 도메인·개발 Cloud Run callback URL을 등록하고 client secret을 Secret Manager에만 저장했다. 네이버 실제 로그인을 완료했고 카카오 첫 회원번호 제공 동의만 사용자 검토로 남겼다.
+- [x] 네이버·카카오 디벨로퍼 앱에 서비스 도메인·개발 Cloud Run callback URL을 등록하고 client secret을 Secret Manager에만 저장했다. 두 제공자 모두 실제 계정으로 callback과 Firebase custom token 발급까지 완료했다.
 - [ ] Cloud Run callback 서버 코어와 HTTP 라우트, 해시 ID의 일회성 Firestore state 저장소, 허용 출처 팝업 전달을 구현했다. 10분 state·공식 토큰 교환·프로필 조회·Firebase custom token 경계를 테스트했으며 실제 앱 자격정보 설정과 Cloud Run 배포는 Cloud Billing/월 예산 결정 전까지 보류한다.
 - [x] 네이버·카카오 원본 사용자 ID를 Firebase UID나 문서 경로에 넣지 않고 `provider:subject`의 SHA-256 안정 식별자만 저장하도록 고정했다 (2026-11-03).
 - [x] Firebase 승인 도메인에 `localhost`, `autoworks-c9a6a.firebaseapp.com`, `autoworks-c9a6a.web.app`이 등록된 것을 확인했다 (2026-11-03).
@@ -386,6 +386,7 @@
 - 2026-11-05: 네이버·카카오 OAuth 값 네 개를 Secret Manager에 직접 생성했다. 연결 실행 `41948057884`는 Cloud Run 배포·스모크 후 배포 계정의 Secret 조회 권한 부족으로 안전 중단됐고 Hosting은 실행되지 않았다. 워크플로가 IAM을 변경하지 않도록 고쳐, 네 secret 각각에 실행 계정 Accessor와 배포 계정 Viewer만 한 번 부여하는 구조로 좁혔다.
 - 2026-11-05: 네 secret의 최소 권한을 적용한 뒤 실행 `41949276958`에서 OAuth 참조와 Hosting을 연결했다. 실행 계정 자기 자신에게만 Firebase custom token 서명 권한을 부여했고 진단 배포 `41950600675`로 권한 전파 뒤 네이버 callback과 custom token 발급 성공을 확인했다. 임시 진단 로그는 성공 확인 즉시 기존 최소 로그 정책으로 되돌렸으며, 카카오는 공식 동의 화면까지 확인했다.
 - 2026-11-05: 최소 OAuth 로그 정책을 복원한 최종 `main`의 검증 실행 `41951269578`과 개발 배포 `41951487497`이 성공했다. 최종 리비전에서도 네이버 실제 로그인을 다시 완료했다. 결제와 Scheduler·예산 push 연결은 실행하지 않았다.
+- 2026-11-05: 사용자가 카카오 회원번호 제공 동의를 승인했고, 카카오도 공식 인가 화면부터 Cloud Run callback과 Firebase custom token 발급까지 실제 계정으로 완료했다.
 - 2026-11-03: Q4-1 구독 상태 머신과 사용량·동시 요청 원칙을 문서화하고, 고객 공개 구독 요약 필드를 제한한 읽기 전용 규칙과 대시보드 표시를 추가했다. 가격·한도는 베타 자료 전까지 확정하지 않았다.
 - 2026-11-03: Q3-3 운영자 권한 기준과 감사 이벤트·필드를 문서화하고, 서버 전용 `auditLogs` 읽기 화면과 관리자 읽기/고객 읽기 거부/클라이언트 쓰기 거부 테스트를 추가했다.
 - 2026-11-03: CI 통과 커밋 `0135fbd`의 고객 문의·계정 바로가기·API 안내와 Firestore 문의 권한 규칙을 Firebase Hosting/Firestore에 배포했다. 캐시 우회 실서비스에서 새 영역과 브라우저 오류 없음도 확인했다.
