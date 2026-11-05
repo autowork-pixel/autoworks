@@ -1,6 +1,9 @@
 import { createCorsHandler } from "./cors-handler.mjs";
 import { createAccountDeletionHandler } from "./account-deletion-handler.mjs";
 import { createAccountDeletionRepository } from "./account-deletion-repository.mjs";
+import { createAccountDeletionPurgeHandler } from "./account-deletion-purge-handler.mjs";
+import { createAccountDeletionPurgeRepository } from "./account-deletion-purge-repository.mjs";
+import { createAccountDeletionPurgeService } from "./account-deletion-purge-service.mjs";
 import { createAdminHandler } from "./admin-handler.mjs";
 import { createAdminRepository } from "./admin-repository.mjs";
 import { createCredentialRepository } from "./credential-repository.mjs";
@@ -75,11 +78,17 @@ export function createApplication({ config, database, serverTimestamp, verifyIdT
   });
   const adminHandler = createCorsHandler({ allowedOrigins: config.allowedOrigins, handler: createAdminHandler({ verifyIdToken, repository: createAdminRepository({ database, serverTimestamp }), logger }) });
   const accountDeletionHandler = createCorsHandler({ allowedOrigins: config.allowedOrigins, handler: createAccountDeletionHandler({ verifyIdToken, repository: createAccountDeletionRepository({ database, serverTimestamp }), logger }) });
+  const accountDeletionPurgeHandler = createAccountDeletionPurgeHandler({
+    verifyTaskRequest,
+    service: createAccountDeletionPurgeService({ repository: createAccountDeletionPurgeRepository({ database, serverTimestamp }), logger }),
+    logger
+  });
   const billingRepository = config.tossBilling ? createBillingRepository({ database, serverTimestamp }) : null;
   const billingProvider = config.tossBilling ? createTossBillingClient({ secretKey:config.tossBilling.secretKey }) : null;
   const billingHandler = config.tossBilling ? createCorsHandler({ allowedOrigins: config.allowedOrigins, handler: createBillingHandler({ verifyIdToken, service: createBillingService({ repository:billingRepository, provider:billingProvider, keyManager, clientKey:config.tossBilling.clientKey, webOrigin:config.allowedOrigins[0] }), logger }) }) : null;
   const billingRenewalHandler = config.tossBilling ? createBillingRenewalHandler({ verifyTaskRequest, service:createBillingRenewalService({ repository:billingRepository, provider:billingProvider, keyManager }), logger }) : null;
   const budgetAlertHandler = config.budgetDisplayName ? createBudgetAlertHandler({ verifyTaskRequest, service: createBudgetAlertService({ repository: createBudgetAlertRepository({ database, serverTimestamp }), expectedBudgetDisplayName: config.budgetDisplayName }), logger }) : null;
-  return createRouter({ publicHandler, workerHandler, recoveryHandler, budgetAlertHandler, oauthHandler, adminHandler, accountDeletionHandler, billingHandler, billingRenewalHandler });
+  return createRouter({ publicHandler, workerHandler, recoveryHandler, budgetAlertHandler, oauthHandler, adminHandler, accountDeletionHandler, accountDeletionPurgeHandler, billingHandler, billingRenewalHandler });
 }
+
 

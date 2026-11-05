@@ -1,4 +1,4 @@
-export function createRouter({ publicHandler, workerHandler, recoveryHandler, budgetAlertHandler, oauthHandler, adminHandler, accountDeletionHandler, billingHandler, billingRenewalHandler }) {
+export function createRouter({ publicHandler, workerHandler, recoveryHandler, budgetAlertHandler, oauthHandler, adminHandler, accountDeletionHandler, accountDeletionPurgeHandler, billingHandler, billingRenewalHandler }) {
   if (![publicHandler, workerHandler, recoveryHandler].every(handler => typeof handler === "function")) throw new Error("Router configuration is incomplete");
   return (request, response) => {
     if (/^\/v1\/auth\//.test(request.url || "") && oauthHandler) return oauthHandler(request, response);
@@ -7,10 +7,12 @@ export function createRouter({ publicHandler, workerHandler, recoveryHandler, bu
     if (/^\/v1\/workspaces\/[^/]+\/billing-sessions(?:\/|$)/.test(request.url || "") && billingHandler) return billingHandler(request, response);
     if (/^\/v1\/workspaces\/[^/]+\/subscription:cancel$/.test(request.url || "") && billingHandler) return billingHandler(request, response);
     if (request.url === "/internal/v1/recovery:run") return recoveryHandler(request, response);
+    if (request.url === "/internal/v1/account-deletions:purge-credentials" && accountDeletionPurgeHandler) return accountDeletionPurgeHandler(request, response);
     if (request.url === "/internal/v1/billing-renewals:run" && billingRenewalHandler) return billingRenewalHandler(request, response);
     if (request.url === "/internal/v1/budget-alerts:receive" && budgetAlertHandler) return budgetAlertHandler(request, response);
     if (/^\/internal\/v1\/workspaces\//.test(request.url || "")) return workerHandler(request, response);
     return publicHandler(request, response);
   };
 }
+
 
