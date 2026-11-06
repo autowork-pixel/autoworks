@@ -39,3 +39,19 @@ test("피드 조회수와 누락 지표는 0으로 표시하지 않는다", asyn
   assert.equal(result.comments, null);
   assert.equal(result.viewsStatus, "조회수 미제공(피드)");
 });
+
+
+test("Apify의 -1 비공개 지표는 오류나 0이 아니라 미제공으로 보존한다", async () => {
+  const result = await fetchInstagramPost({ shortcode: "DfSFftCCQYc", url: "https://www.instagram.com/reel/DfSFftCCQYc/", token: "test-token",
+    fetchImpl: async () => ({ ok: true, json: async () => [{ shortCode: "DfSFftCCQYc", type: "Video", videoPlayCount: 1297, likesCount: -1, commentsCount: 0 }] }) });
+  assert.equal(result.views, 1297);
+  assert.equal(result.likes, null);
+  assert.equal(result.comments, 0);
+});
+
+test("-1 이외의 음수와 손상된 수치는 제공자 응답 오류로 거부한다", async () => {
+  for (const likesCount of [-2, "not-a-count"]) {
+    await assert.rejects(() => fetchInstagramPost({ shortcode: "ABC_123", url: "https://www.instagram.com/p/ABC_123/", token: "test-token",
+      fetchImpl: async () => ({ ok: true, json: async () => [{ shortCode: "ABC_123", type: "Image", likesCount }] }) }), { code: "PROVIDER_INVALID_RESPONSE" });
+  }
+});
