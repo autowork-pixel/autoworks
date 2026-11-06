@@ -56,6 +56,9 @@ PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(project
 gcloud iam service-accounts add-iam-policy-binding "$CALLER_EMAIL" --project "$PROJECT_ID" \
   --member "serviceAccount:service-$PROJECT_NUMBER@gcp-sa-pubsub.iam.gserviceaccount.com" \
   --role roles/iam.serviceAccountTokenCreator --quiet
+gcloud iam service-accounts add-iam-policy-binding "$CALLER_EMAIL" --project "$PROJECT_ID" \
+  --member "serviceAccount:$RUNTIME_EMAIL" \
+  --role roles/iam.serviceAccountUser --quiet
 for role in roles/datastore.user roles/cloudtasks.enqueuer roles/logging.logWriter; do
   gcloud projects add-iam-policy-binding "$PROJECT_ID" \
     --member "serviceAccount:$RUNTIME_EMAIL" --role "$role" --condition=None --quiet
