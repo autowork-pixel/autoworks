@@ -265,7 +265,7 @@ test("실행 상태와 UTF-8 CSV 결과를 인증 후 반환한다", async () =>
     verifyIdToken: async () => ({ uid: "user-a" }),
     repository: {
       getBrandSearchRun: async () => ({ runId: "run-a", status: "succeeded", resultReady: true }),
-      getBrandSearchReport: async () => ({ rows: [{ keyword: "=위험", pc: 1, mobile: 2, total: 3, recordedAt: new Date("2026-11-03T00:00:00Z") }] })
+      getBrandSearchReport: async () => ({ rows: [{ keyword: "=위험", pc: 1, mobile: 2, total: 3, recordedAt: { toDate: () => new Date("2026-11-03T00:00:00Z") } }] })
     }
   }, async base => {
     const headers = { authorization: "Bearer token" };
