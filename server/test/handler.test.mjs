@@ -393,3 +393,17 @@ test("API 연결 해제는 토큰 uid를 검증한 뒤 서비스에 위임한다
   });
 });
 
+test("광고 매체별 자격정보 경로를 허용한다", async () => {
+  const received = [];
+  await withServer({
+    verifyIdToken: async () => ({ uid: "user-a" }), repository: {},
+    credentialService: { status: async value => { received.push(value); return { provider: value.provider, status: "disconnected" }; } }
+  }, async base => {
+    for (const provider of ["meta-ads", "google-ads", "kakao-moment"]) {
+      const response = await fetch(`${base}/v1/workspaces/workspace-a/provider-credentials/${provider}`, { headers: { authorization: "Bearer token" } });
+      assert.equal(response.status, 200);
+    }
+  });
+  assert.deepEqual(received.map(value => value.provider), ["meta-ads", "google-ads", "kakao-moment"]);
+});
+

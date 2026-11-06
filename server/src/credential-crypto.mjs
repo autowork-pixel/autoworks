@@ -10,7 +10,15 @@ function dataKey(value) {
 
 function credentialPayload(value, provider = "naver-searchad") {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new ApiError("INVALID_INPUT", "연결 정보 형식이 올바르지 않습니다.");
-  const fields = { "naver-searchad": ["apiKey", "secretKey", "customerId"], "naver-search": ["clientId", "clientSecret"], youtube: ["apiKey"], apify: ["token"], openai: ["apiKey"], "toss-billing": ["billingKey", "customerKey"] };
+  const fields = {
+    "naver-searchad": ["apiKey", "secretKey", "customerId"],
+    "naver-search": ["clientId", "clientSecret"],
+    youtube: ["apiKey"], apify: ["token"], openai: ["apiKey"],
+    "meta-ads": ["accessToken", "adAccountId"],
+    "google-ads": ["developerToken", "clientId", "clientSecret", "refreshToken", "customerId", "loginCustomerId"],
+    "kakao-moment": ["businessAccessToken", "adAccountId"],
+    "toss-billing": ["billingKey", "customerKey"]
+  };
   const allowed = fields[provider];
   if (!allowed) throw new ApiError("INVALID_INPUT", "지원하지 않는 API 연결입니다.");
   if (Object.keys(value).some(key => !allowed.includes(key))) throw new ApiError("INVALID_INPUT", "허용되지 않은 연결 정보 필드입니다.");
