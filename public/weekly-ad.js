@@ -247,9 +247,9 @@ async function initAccount() {
   accountState.loadReports = async () => {
     if (!accountState.workspaceId) return;
     const workspaceId = accountState.workspaceId, user = accountState.user;
-    const snapshot = await getDocs(query(collection(database, "workspaces", workspaceId, "reports"), orderBy("createdAt", "desc"), limit(20)));
+    const snapshot = await getDocs(query(collection(database, "workspaces", workspaceId, "reports"), where("tool", "==", "weekly-ad"), orderBy("createdAt", "desc"), limit(20)));
     if (workspaceId !== accountState.workspaceId || user !== accountState.user) return;
-    accountState.reports = new Map(snapshot.docs.filter(item => item.data().tool === "weekly-ad").map(item => [item.id, item.data()]));
+    accountState.reports = new Map(snapshot.docs.map(item => [item.id, item.data()]));
     historySelect.replaceChildren(new Option(accountState.reports.size ? "저장된 결과 선택" : "저장된 주간 광고 결과 없음", ""));
     for (const [id, report] of accountState.reports) historySelect.add(new Option(`${report.sourceName} · ${report.summary}`, id));
     historySelect.disabled = accountState.reports.size === 0;
