@@ -31,6 +31,11 @@ jobs:
         with:
           workload_identity_provider: projects/823085494995/locations/global/workloadIdentityPools/github-actions/providers/github
           service_account: autoworks-github-deploy@autoworks-c9a6a.iam.gserviceaccount.com
+      - name: Configure public development API origin
+        env:
+          API_BASE: https://autoworks-api-dev-beh42zoxia-du.a.run.app
+        run: |
+          printf 'window.AUTOWORKS_API_BASE = "%s";\n' "$API_BASE" > public/runtime-config.js
       - name: Deploy Hosting, Firestore rules, and indexes
         run: npx --yes firebase-tools@15.34.2 deploy --project autoworks-c9a6a --only hosting,firestore:rules,firestore:indexes --non-interactive
       - name: Verify deployed Hosting
