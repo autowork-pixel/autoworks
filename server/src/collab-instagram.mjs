@@ -36,6 +36,9 @@ export function collabInstagramDigest(input) {
 function count(value) {
   if (value === undefined || value === null) return null;
   const number = Number(value);
+  // Instagram Scraper uses -1 when a public metric is hidden or unavailable.
+  // Preserve that distinction instead of treating it as a real zero or a broken response.
+  if (number === -1) return null;
   if (!Number.isSafeInteger(number) || number < 0) throw new ApiError("PROVIDER_INVALID_RESPONSE", "Instagram 지표 형식이 올바르지 않습니다.", 502);
   return number;
 }
