@@ -28,7 +28,10 @@ function csvCell(value) {
 
 function csv(response, report, runId, requestId) {
   const header = ["키워드", "PC 월간 검색량", "모바일 월간 검색량", "합계", "기준시각"];
-  const rows = report.rows.map(item => [item.keyword, item.pc, item.mobile, item.total, item.recordedAt instanceof Date ? item.recordedAt.toISOString() : String(item.recordedAt || "")]);
+  const rows = report.rows.map(item => {
+    const recordedAt = item.recordedAt instanceof Date ? item.recordedAt : item.recordedAt?.toDate?.();
+    return [item.keyword, item.pc, item.mobile, item.total, recordedAt instanceof Date ? recordedAt.toISOString() : String(item.recordedAt || "")];
+  });
   const body = `\ufeff${[header, ...rows].map(row => row.map(csvCell).join(",")).join("\r\n")}\r\n`;
   response.writeHead(200, {
     "content-type": "text/csv; charset=utf-8", "content-disposition": `attachment; filename="brand-search-${runId}.csv"`,
