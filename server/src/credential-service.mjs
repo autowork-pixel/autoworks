@@ -1,7 +1,13 @@
 import { ApiError } from "./domain.mjs";
 import { encryptCredentialPayload } from "./credential-crypto.mjs";
 
-const supportedProviders = new Set(["naver-searchad", "naver-search", "youtube", "apify", "openai"]);
+const supportedProviders = new Set(["naver-searchad", "naver-search", "youtube", "apify", "openai", "meta-ads", "google-ads", "kakao-moment"]);
+
+const hintFields = Object.freeze({
+  "meta-ads": "adAccountId",
+  "google-ads": "customerId",
+  "kakao-moment": "adAccountId"
+});
 
 function providerName(value) {
   if (!supportedProviders.has(value)) throw new ApiError("INVALID_INPUT", "지원하지 않는 API 연결입니다.");
@@ -26,13 +32,14 @@ export function createCredentialService({ keyManager, repository, now = () => ne
           encryptedDataKey: generated.encryptedDataKey,
           keyVersion: generated.keyVersion
         });
+        const hintValue = credentials[hintFields[selectedProvider]] || credentials.apiKey || credentials.token || credentials.clientId;
         await repository.saveCredential({
           workspaceId,
           uid,
           provider: selectedProvider,
-          document: { ...envelope, apiKeyHint: keyHint(credentials.apiKey || credentials.token || credentials.clientId), status: "active", updatedAt: now() }
+          document: { ...envelope, apiKeyHint: keyHint(hintValue), status: "active", updatedAt: now() }
         });
-        return { provider: selectedProvider, status: "active", apiKeyHint: keyHint(credentials.apiKey || credentials.token || credentials.clientId) };
+        return { provider: selectedProvider, status: "active", apiKeyHint: keyHint(hintValue) };
       } finally {
         generated.plaintextDataKey.fill(0);
       }
