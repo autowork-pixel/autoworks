@@ -10,7 +10,7 @@ const compareBody = document.getElementById("compareBody"), compareCount = docum
 let user = null, workspaceId = null, database, auth, generation = 0, lookupGeneration = 0, historyGeneration = 0, reportById = new Map(), requestKey = null, reloadHistory = async () => {};
 let currentPost = null, comparePosts = [];
 const displayCount = value => value == null ? "미제공" : Number(value).toLocaleString("ko-KR");
-function updateAvailability() { lookup.disabled = !apiBase || !user || !workspaceId || !project.value || !postUrl.value.trim(); }
+function updateAvailability() { lookup.disabled = !navigator.onLine || !apiBase || !user || !workspaceId || !project.value || !postUrl.value.trim(); }
 function lookupCurrent(context) {
   return context.generation === lookupGeneration && context.user === user && context.workspaceId === workspaceId
     && context.projectId === project.value && context.platform === platform.value && context.url === postUrl.value.trim();
@@ -154,6 +154,7 @@ async function initialize() {
     if (event.persisted) renderAccount(auth.currentUser);
   });
   lookup.addEventListener("click", async () => {
+    if (!navigator.onLine) { lookupStatus.textContent = "인터넷 연결을 확인한 뒤 같은 URL로 다시 시도해 주세요."; return; }
     if (lookup.disabled) return;
     const context = { generation: ++lookupGeneration, user, workspaceId, projectId: project.value, platform: platform.value, url: postUrl.value.trim() };
     const currentUser = context.user, currentWorkspace = context.workspaceId, selectedProject = context.projectId;
@@ -180,6 +181,8 @@ async function initialize() {
   });
   lookupStatus.textContent = apiBase ? "프로젝트와 YouTube URL을 입력해 주세요." : "서버 연결 전에는 실제 조회할 수 없습니다.";
 }
+window.addEventListener("offline", () => { lookupGeneration++; historyGeneration++; updateAvailability(); lookupStatus.textContent = "인터넷 연결이 끊겼습니다. 연결 후 같은 URL로 다시 시도해 주세요."; });
+window.addEventListener("online", () => { updateAvailability(); lookupStatus.textContent = "인터넷 연결이 복구되었습니다. 같은 URL로 다시 조회할 수 있습니다."; });
 renderComparison();
 initialize().catch(() => { accountStatus.textContent = "계정 화면을 준비하지 못했습니다."; });
 

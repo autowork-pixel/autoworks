@@ -174,6 +174,17 @@ for (const file of ["ai-blog.js", "naver-visibility.js", "content-reference.js",
   });
 }
 
+test("collab-post.js와 influencer-candidates.js는 오프라인 조회를 막고 이전 응답을 폐기한다", async () => {
+  const collab = await readFile(new URL("../public/collab-post.js", import.meta.url), "utf8");
+  const influencer = await readFile(new URL("../public/influencer-candidates.js", import.meta.url), "utf8");
+  assert.match(collab, /lookup\.disabled = !navigator\.onLine \|\|/);
+  assert.match(collab, /window\.addEventListener\("offline", \(\) => \{ lookupGeneration\+\+; historyGeneration\+\+;/);
+  assert.match(collab, /window\.addEventListener\("online", \(\) => \{ updateAvailability\(\)/);
+  assert.match(influencer, /el\.submit\.disabled=!navigator\.onLine\|\|/);
+  assert.match(influencer, /event\.stopImmediatePropagation\(\);message\("인터넷 연결을 확인한 뒤 같은 조건으로 다시 시도해 주세요\./);
+  assert.match(influencer, /addEventListener\("offline",\(\)=>\{requestGeneration\+\+;historyGeneration\+\+;/);
+});
+
 test("brand-search.js 예약·상태 조회는 요청 당시 계정·워크스페이스·프로젝트만 갱신한다", async () => {
   const source = await readFile(new URL("../public/brand-search.js", import.meta.url), "utf8");
   assert.match(source, /function captureContext\(runId=state\.runId\)/);
@@ -218,7 +229,17 @@ test("brand-search.js 인증·프로젝트 전환은 진행 중인 이전 상태
   assert.match(source, /window\.addEventListener\("pagehide",\(\)=>\{stopPolling\(\);state\.runGeneration\+\+\}\)/);
   assert.match(source, /window\.addEventListener\("pageshow",event=>\{if\(!event\.persisted/);
   assert.match(source, /if\(context\.runId\)resumeCurrentRun\(\);else refreshHistory\(null,context\)/);
-  assert.match(source, /function resumeCurrentRun\(\)\{if\(!state\.runId\|\|state\.pollTimer\|\|document\.visibilityState==="hidden"\)return/);
+  assert.match(source, /function resumeCurrentRun\(\)\{if\(!navigator\.onLine\|\|!state\.runId\|\|state\.pollTimer\|\|document\.visibilityState==="hidden"\)return/);
   assert.match(source, /document\.addEventListener\("visibilitychange",\(\)=>\{if\(document\.visibilityState==="hidden"\)\{stopPolling\(\);state\.runGeneration\+\+;return\}resumeCurrentRun\(\)\}\)/);
+});
+
+test("brand-search.js 오프라인 전환은 새 실행을 막고 연결 복구 시 기존 상태만 재개한다", async () => {
+  const source = await readFile(new URL("../public/brand-search.js", import.meta.url), "utf8");
+  assert.match(source, /function resumeCurrentRun\(\)\{if\(!navigator\.onLine\|\|/);
+  assert.match(source, /async function refreshHistory[\s\S]*if\(!navigator\.onLine\|\|/);
+  assert.match(source, /function blockOffline\(event\)\{if\(navigator\.onLine\)return;event\.preventDefault\(\);event\.stopImmediatePropagation\(\)/);
+  assert.match(source, /window\.addEventListener\("offline",\(\)=>\{stopPolling\(\);state\.runGeneration\+\+;syncOnlineControls\(\)/);
+  assert.match(source, /window\.addEventListener\("online",\(\)=>\{syncOnlineControls\(\);[\s\S]*if\(state\.runId\)resumeCurrentRun\(\);else if/);
+  assert.match(source, /pageshow",event=>\{if\(!event\.persisted\|\|!navigator\.onLine/);
 });
 
