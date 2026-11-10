@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { buildTopicCandidates } from "../public/content-topics.js";
+import { buildTopicCandidates, describeTopicReview } from "../public/content-topics.js";
 
 test("프로젝트 키워드와 타깃·후크로 중복 없는 주제 후보를 만든다", () => {
   const result = buildTopicCandidates([" 오쏘몰 ", "오쏘몰", "비타민", "건강기능식품"], "직장인", "QQA");
@@ -72,12 +72,27 @@ test("오래됨 기준은 운영 검토 뒤 조정할 수 있다", () => {
   assert.match(result.note, /14일 이상 지난 참고값/);
 });
 
+test("선택한 주제의 키워드·검색량·기준일을 생성 전 검토 문구로 만든다", () => {
+  const [candidate] = buildTopicCandidates(["브랜드"], "고객", "SCS", [
+    { keyword: "브랜드", total: 3000, recordedAt: "2026-09-30T00:00:00Z" }
+  ], { now: "2026-11-10T00:00:00Z" });
+  const summary = describeTopicReview(candidate);
+  assert.match(summary, /선택 주제:/);
+  assert.match(summary, /키워드: 브랜드/);
+  assert.match(summary, /월간 검색량: 3,000회/);
+  assert.match(summary, /기준: 2026-09-30/);
+  assert.match(summary, /30일 이상 지난 참고값/);
+  assert.equal(describeTopicReview(null), "");
+});
+
 test("콘텐츠 화면은 같은 프로젝트의 저장된 브랜드 검색량만 읽고 외부 조회를 만들지 않는다", async () => {
   const source = await readFile(new URL("../public/content-pack.js", import.meta.url), "utf8");
   assert.match(source, /where\("tool", "==", "brand-search"\)/);
   assert.match(source, /report\.projectId !== projectId/);
   assert.match(source, /recordedAt: row\.recordedAt/);
   assert.match(source, /idea\.searchStale/);
+  assert.match(source, /describeTopicReview\(idea\)/);
+  assert.match(source, /el\.campaign\.value\.trim\(\) !== selectedTopic\.title/);
   assert.match(source, /buildTopicCandidates\(keywords, el\.audience\.value, el\.topicHook\.value, topicSignals\)/);
   assert.equal(/brand-search-runs|provider-credentials/.test(source), false);
 });

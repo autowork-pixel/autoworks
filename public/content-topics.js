@@ -60,3 +60,11 @@ export function buildTopicCandidates(keywords, audience, hook, searchSignals = [
     };
   });
 }
+
+export function describeTopicReview(candidate) {
+  if (!candidate || typeof candidate.title !== "string" || typeof candidate.keyword !== "string") return "";
+  const volume = Number.isFinite(candidate.searchVolume) ? `${candidate.searchVolume.toLocaleString("ko-KR")}회` : "저장값 없음";
+  const date = candidate.searchRecordedAt || "조회일 미확인";
+  const warning = candidate.searchStale ? " · 30일 이상 지난 참고값" : "";
+  return `선택 주제: ${candidate.title} | 키워드: ${candidate.keyword} | 월간 검색량: ${volume} | 기준: ${date}${warning}`;
+}
