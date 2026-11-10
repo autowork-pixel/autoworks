@@ -47,7 +47,8 @@ el.makeTopics.addEventListener("click", () => {
     el.topicIdeas.append(button);
   }
   const signaled = ideas.filter(idea => idea.searchVolume !== null).length;
-  message(signaled ? `최근 월간 검색량이 있는 후보 ${signaled}개를 우선했습니다.` : "저장된 검색량이 없어 프로젝트 키워드 순서로 후보를 만들었습니다.");
+  const stale = ideas.filter(idea => idea.searchStale).length;
+  message(stale ? `${stale}개 검색량이 30일 이상 지난 참고값입니다. 새 조회 후 다시 확인하세요.` : signaled ? `최근 월간 검색량이 있는 후보 ${signaled}개를 우선했습니다.` : "저장된 검색량이 없어 프로젝트 키워드 순서로 후보를 만들었습니다.", stale ? "error" : "");
 });
 el.copy.addEventListener("click", async () => {
   try { await navigator.clipboard.writeText(el.draft.value); message("복사했습니다.", "success"); }
