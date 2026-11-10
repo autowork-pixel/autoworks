@@ -7,10 +7,14 @@ const platform = document.getElementById("platform"), credentialGuide = document
 const addCompare = document.getElementById("addCompare"), downloadCurrent = document.getElementById("downloadCurrent");
 const downloadCompare = document.getElementById("downloadCompare"), clearCompare = document.getElementById("clearCompare");
 const compareBody = document.getElementById("compareBody"), compareCount = document.getElementById("compareCount");
-let user = null, workspaceId = null, database, auth, generation = 0, reportById = new Map(), requestKey = null, reloadHistory = async () => {};
+let user = null, workspaceId = null, database, auth, generation = 0, lookupGeneration = 0, historyGeneration = 0, reportById = new Map(), requestKey = null, reloadHistory = async () => {};
 let currentPost = null, comparePosts = [];
 const displayCount = value => value == null ? "미제공" : Number(value).toLocaleString("ko-KR");
 function updateAvailability() { lookup.disabled = !apiBase || !user || !workspaceId || !project.value || !postUrl.value.trim(); }
+function lookupCurrent(context) {
+  return context.generation === lookupGeneration && context.user === user && context.workspaceId === workspaceId
+    && context.projectId === project.value && context.platform === platform.value && context.url === postUrl.value.trim();
+}
 function safeCell(value) {
   const text = value == null ? "" : String(value), protectedText = /^[=+\-@]/.test(text) ? `'${text}` : text;
   return `"${protectedText.replaceAll('"', '""')}"`;
@@ -51,10 +55,17 @@ function renderComparison() {
     values.forEach(value => { const cell = row.insertCell(); cell.textContent = value; });
   }
 }
-postUrl.addEventListener("input", () => { requestKey = null; updateAvailability(); });
-project.addEventListener("change", () => { requestKey = null; reportById.clear(); comparePosts = []; renderComparison(); clearResult(); updateAvailability(); reloadHistory().catch(() => { history.replaceChildren(new Option("저장된 결과를 불러오지 못했습니다.", "")); }); });
+postUrl.addEventListener("input", () => { lookupGeneration++; requestKey = null; clearResult(); updateAvailability(); });
+project.addEventListener("change", () => {
+  lookupGeneration++; requestKey = null; reportById.clear(); comparePosts = []; renderComparison(); clearResult(); updateAvailability();
+  const requestHistoryGeneration = historyGeneration + 1, selectedProject = project.value, currentUser = user, currentWorkspace = workspaceId;
+  reloadHistory().catch(() => {
+    if (requestHistoryGeneration === historyGeneration && currentUser === user && currentWorkspace === workspaceId && selectedProject === project.value)
+      history.replaceChildren(new Option("저장된 결과를 불러오지 못했습니다.", ""));
+  });
+});
 platform.addEventListener("change", () => {
-  requestKey = null; postUrl.value = ""; clearResult();
+  lookupGeneration++; requestKey = null; postUrl.value = ""; clearResult();
   const instagram = platform.value === "instagram";
   document.getElementById("urlLabel").textContent = instagram ? "게시물 또는 릴스 URL" : "영상 또는 Shorts URL";
   postUrl.placeholder = instagram ? "https://www.instagram.com/reel/.../" : "https://www.youtube.com/watch?v=...";
@@ -84,11 +95,11 @@ downloadCompare.addEventListener("click", () => {
 clearCompare.addEventListener("click", () => { comparePosts = []; renderComparison(); });
 
 async function loadHistory(getDocs, collection, query, where, orderBy, limit) {
-  const currentUser = user, currentWorkspace = workspaceId, projectId = project.value;
+  const requestHistoryGeneration = ++historyGeneration, currentUser = user, currentWorkspace = workspaceId, projectId = project.value;
   reportById.clear(); history.replaceChildren(new Option(projectId ? "결과 불러오는 중" : "프로젝트 선택 후 결과 조회", "")); history.disabled = true;
   if (!currentUser || !currentWorkspace || !projectId) return;
   const snapshot = await getDocs(query(collection(database, "workspaces", currentWorkspace, "reports"), where("tool", "==", "collab-post"), where("projectId", "==", projectId), orderBy("createdAt", "desc"), limit(50)));
-  if (currentUser !== user || currentWorkspace !== workspaceId || projectId !== project.value) return;
+  if (requestHistoryGeneration !== historyGeneration || currentUser !== user || currentWorkspace !== workspaceId || projectId !== project.value) return;
   reportById = new Map(snapshot.docs.filter(doc => ["YouTube", "Instagram"].includes(doc.data().post?.platform))
     .map(doc => [doc.id, doc.data()]));
   history.replaceChildren(new Option(reportById.size ? "저장된 결과 선택" : "저장된 조회 결과 없음", ""));
@@ -113,7 +124,7 @@ async function initialize() {
     .catch(() => { accountStatus.textContent = "로그인하지 못했습니다."; }));
   onAuthStateChanged(auth, async signedIn => {
     const current = ++generation;
-    user = signedIn; workspaceId = null; requestKey = null; reportById.clear(); comparePosts = []; renderComparison(); clearResult();
+    lookupGeneration++; historyGeneration++; user = signedIn; workspaceId = null; requestKey = null; reportById.clear(); comparePosts = []; renderComparison(); clearResult();
     document.getElementById("login").hidden = Boolean(user);
     project.replaceChildren(new Option(user ? "프로젝트 불러오는 중" : "로그인 후 프로젝트 선택", "")); project.disabled = true;
     history.replaceChildren(new Option(user ? "저장된 결과 불러오는 중" : "로그인 후 결과 조회", "")); history.disabled = true;
@@ -136,27 +147,28 @@ async function initialize() {
   });
   lookup.addEventListener("click", async () => {
     if (lookup.disabled) return;
-    const currentUser = user, currentWorkspace = workspaceId, selectedProject = project.value;
-    const selectedPlatform = platform.value;
+    const context = { generation: ++lookupGeneration, user, workspaceId, projectId: project.value, platform: platform.value, url: postUrl.value.trim() };
+    const currentUser = context.user, currentWorkspace = context.workspaceId, selectedProject = context.projectId;
+    const selectedPlatform = context.platform;
     lookup.disabled = true; lookupStatus.textContent = `${selectedPlatform === "instagram" ? "Instagram" : "YouTube"} 공개 지표를 조회하고 있습니다.`;
     requestKey ||= crypto.randomUUID().replaceAll("-", "");
     try {
       const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(currentWorkspace)}/collab-${selectedPlatform}-runs`, {
         method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${await currentUser.getIdToken()}` },
-        body: JSON.stringify({ projectId: selectedProject, url: postUrl.value.trim(), idempotencyKey: requestKey })
+        body: JSON.stringify({ projectId: selectedProject, url: context.url, idempotencyKey: requestKey })
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) {
         if (body.error?.code && body.error.code !== "INTERNAL_ERROR") requestKey = null;
         throw new Error(body.error?.message || "조회에 실패했습니다.");
       }
-      if (currentUser !== user || currentWorkspace !== workspaceId || selectedProject !== project.value || selectedPlatform !== platform.value) return;
+      if (!lookupCurrent(context)) return;
       if (body.post) { showResult(body.post); lookupStatus.textContent = "조회 결과를 내 계정에 저장했습니다."; }
       else lookupStatus.textContent = body.status === "running" ? "같은 요청이 진행 중입니다. 잠시 후 저장된 결과를 확인해 주세요." : "저장된 결과를 다시 확인해 주세요.";
       if (body.status !== "running") requestKey = null;
-      await reloadHistory().catch(() => { lookupStatus.textContent += " 목록은 새로고침 후 확인할 수 있습니다."; });
-    } catch (error) { if (currentUser === user && currentWorkspace === workspaceId && selectedProject === project.value && selectedPlatform === platform.value) lookupStatus.textContent = error.message; }
-    finally { updateAvailability(); }
+      await reloadHistory().catch(() => { if (lookupCurrent(context)) lookupStatus.textContent += " 목록은 새로고침 후 확인할 수 있습니다."; });
+    } catch (error) { if (lookupCurrent(context)) lookupStatus.textContent = error.message; }
+    finally { if (lookupCurrent(context)) updateAvailability(); }
   });
   lookupStatus.textContent = apiBase ? "프로젝트와 YouTube URL을 입력해 주세요." : "서버 연결 전에는 실제 조회할 수 없습니다.";
 }
