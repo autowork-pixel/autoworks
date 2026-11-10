@@ -40,6 +40,9 @@ test("brand-search.js 예약·상태 조회는 요청 당시 계정·워크스�
   assert.match(source, /projectId:context\.projectId/);
   assert.match(source, /await poll\(runContext\)/);
   assert.match(source, /state\.pollTimer=setTimeout\(\(\)=>poll\(context\),3000\)/);
+  assert.match(source, /state\.pollFailureGeneration!==context\.runGeneration/);
+  assert.match(source, /if\(state\.pollFailures>=5\)\{stopPolling\(\);elements\.submit\.disabled=false/);
+  assert.match(source, /Math\.min\(60000,5000\*\(2\*\*\(state\.pollFailures-1\)\)\)/);
   assert.match(source, /if\(state\.requestFingerprint!==fingerprint\)\{state\.requestKey=crypto\.randomUUID\(\)\.replaceAll\("-",""\);state\.requestFingerprint=fingerprint\}/);
   assert.match(source, /JSON\.stringify\(\{\.\.\.input,idempotencyKey:requestKey\}\)/);
   assert.match(source, /if\(terminalRequestErrors\.has\(error\.code\)\)\{state\.requestKey=null;state\.requestFingerprint=null\}/);
