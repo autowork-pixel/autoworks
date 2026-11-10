@@ -8,7 +8,7 @@ const cases = [
   ["collab-post.js", /if \(!lookupCurrent\(context\)\) return/, /projectId: selectedProject/],
   ["weekly-ad.js", /selectedProject !== projectSelect\.value/, /projectId: selectedProject/],
   ["ai-blog.js", /selectedProject!==el\.project\.value/, /projectId:selectedProject/],
-  ["influencer-candidates.js", /selectedProject!==el\.project\.value/, /projectId:selectedProject/],
+  ["influencer-candidates.js", /if\(!requestCurrent\(context\)\)return/, /projectId:selectedProject/],
   ["naver-visibility.js", /selectedProject!==el\.project\.value/, /projectId:selectedProject/]
 ];
 
@@ -24,7 +24,7 @@ const errorCases = [
   ["collab-post.js", /catch \(error\) \{ if \(lookupCurrent\(context\)\) lookupStatus\.textContent = error\.message; \}/],
   ["weekly-ad.js", /requestUser === accountState\.user && requestWorkspace === accountState\.workspaceId && requestProject === projectSelect\.value/],
   ["ai-blog.js", /catch\(error\)\{if\(currentUser===user&&currentWorkspace===workspaceId&&selectedProject===el\.project\.value\)/],
-  ["influencer-candidates.js", /catch\(error\)\{if\(currentUser===user&&currentWorkspace===workspaceId&&selectedProject===el\.project\.value\)/],
+  ["influencer-candidates.js", /catch\(error\)\{if\(requestCurrent\(context\)\)message\(error\.message,"error"\)\}/],
   ["naver-visibility.js", /catch\(error\)\{if\(u===user&&w===workspaceId&&selectedProject===el\.project\.value\)/]
 ];
 
@@ -44,6 +44,19 @@ test("collab-post.js 이전 URL·플랫폼·프로젝트 요청은 현재 화면
   assert.match(source, /finally \{ if \(lookupCurrent\(context\)\) updateAvailability\(\); \}/);
   assert.match(source, /const requestHistoryGeneration = \+\+historyGeneration/);
   assert.match(source, /requestHistoryGeneration !== historyGeneration/);
+});
+
+test("influencer-candidates.js 이전 조건·프로젝트 요청은 현재 후보와 버튼 상태를 덮지 않는다", async () => {
+  const source = await readFile(new URL("../public/influencer-candidates.js", import.meta.url), "utf8");
+  assert.match(source, /requestGeneration=0,historyGeneration=0/);
+  assert.match(source, /function formFingerprint\(\)/);
+  assert.match(source, /function requestCurrent\(context\)/);
+  assert.match(source, /el\.candidateForm\.addEventListener\("input",\(\)=>\{requestGeneration\+\+;requestKey=null;render\(\);update\(\)\}\)/);
+  assert.match(source, /const context=\{generation:\+\+requestGeneration,user,workspaceId,projectId:el\.project\.value,fingerprint:formFingerprint\(\)\}/);
+  assert.match(source, /if\(!requestCurrent\(context\)\)return;render\(body\.rows\)/);
+  assert.match(source, /finally\{if\(requestCurrent\(context\)\)update\(\)\}/);
+  assert.match(source, /const currentGeneration=\+\+historyGeneration/);
+  assert.match(source, /currentGeneration!==historyGeneration/);
 });
 
 test("brand-search.js 예약·상태 조회는 요청 당시 계정·워크스페이스·프로젝트만 갱신한다", async () => {

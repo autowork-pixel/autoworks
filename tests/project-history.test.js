@@ -51,7 +51,8 @@ test("인플루언서 후보 이력은 선택 프로젝트로 조회하고 전�
   const source = await readFile(new URL("../public/influencer-candidates.js", import.meta.url), "utf8");
   assert.match(source, /where\("tool","==","influencer-candidate"\),where\("projectId","==",projectId\)/);
   assert.match(source, /projectId!==el\.project\.value/);
-  assert.match(source, /requestKey=null;render\(\);update\(\);reloadHistory\(\)/);
+  assert.match(source, /requestGeneration\+\+;requestKey=null;render\(\);update\(\);const expectedHistoryGeneration=historyGeneration\+1/);
+  assert.match(source, /expectedHistoryGeneration===historyGeneration/);
 });
 
 test("프로젝트별 보고서 조회에 필요한 공통 복합 색인이 있다", async () => {
