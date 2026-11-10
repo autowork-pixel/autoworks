@@ -32,3 +32,28 @@ for (const [file, guard] of errorCases) test(`${file} 이전 요청 오류는 �
   const source = await readFile(new URL(`../public/${file}`, import.meta.url), "utf8");
   assert.match(source, guard);
 });
+
+test("brand-search.js 예약·상태 조회는 요청 당시 계정·워크스페이스·프로젝트만 갱신한다", async () => {
+  const source = await readFile(new URL("../public/brand-search.js", import.meta.url), "utf8");
+  assert.match(source, /function captureContext\(runId=state\.runId\)/);
+  assert.match(source, /function isCurrent\(context,/);
+  assert.match(source, /projectId:context\.projectId/);
+  assert.match(source, /await poll\(runContext\)/);
+  assert.match(source, /state\.pollTimer=setTimeout\(\(\)=>poll\(context\),3000\)/);
+});
+
+test("brand-search.js 취소·다운로드·비교의 늦은 응답은 현재 화면을 덮지 않는다", async () => {
+  const source = await readFile(new URL("../public/brand-search.js", import.meta.url), "utf8");
+  assert.match(source, /path\(context\.runId,":cancel",context\)/);
+  assert.match(source, /if\(!isCurrent\(context\)\)return;renderRun\(run\)/);
+  assert.match(source, /path\(context\.runId,"\/report\.csv",context\)/);
+  assert.match(source, /if\(!isCurrent\(context\)\)return;const url=URL\.createObjectURL/);
+  assert.match(source, /if\(!isCurrent\(context,\{run:false\}\)\|\|runIds\.some/);
+});
+
+test("brand-search.js 인증·프로젝트 전환은 진행 중인 이전 상태를 초기화한다", async () => {
+  const source = await readFile(new URL("../public/brand-search.js", import.meta.url), "utf8");
+  assert.match(source, /const generation=\+\+state\.authGeneration/);
+  assert.match(source, /generation!==state\.authGeneration\|\|user!==state\.user/);
+  assert.match(source, /elements\.project\.addEventListener\("change",\(\)=>\{stopPolling\(\);state\.runId=null;state\.runs=\[\]/);
+});
