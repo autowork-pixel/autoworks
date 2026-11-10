@@ -56,7 +56,7 @@ export function createRunRepository({ database, serverTimestamp, now = () => new
       return snapshot.docs.map(document => {
         const run = document.data();
         return {
-          runId: document.id, projectId: run.projectId, status: run.status,
+          runId: document.id, status: run.status,
           inputSummary: run.inputSummary || null, errorCode: run.errorCode || null,
           succeededKeywords: Number(run.succeededKeywords || 0), failedKeywords: Number(run.failedKeywords || 0),
           resultReady: Boolean(run.resultReportId && run.status === "succeeded"), createdAt: run.createdAt || null
@@ -76,7 +76,7 @@ export function createRunRepository({ database, serverTimestamp, now = () => new
         const run = runSnapshot.data();
         if (run.tool !== "brand-search" || run.projectId !== projectId) throw new ApiError("INVALID_INPUT", "실행을 찾을 수 없습니다.", 404);
         return {
-          runId, projectId: run.projectId, tool: run.tool, status: run.status,
+          runId, status: run.status,
           inputSummary: run.inputSummary || null, errorCode: run.errorCode || null,
           succeededKeywords: Number(run.succeededKeywords || 0), failedKeywords: Number(run.failedKeywords || 0),
           resultReady: Boolean(run.resultReportId && run.status === "succeeded")
