@@ -53,10 +53,11 @@ test("brand-search.js 취소·다운로드·비교의 늦은 응답은 현재 �
   assert.match(source, /if\(!isCurrent\(context\)\)return;renderRun\(run\)/);
   assert.match(source, /path\(context\.runId,"\/report\.csv",context\)/);
   assert.match(source, /if\(!isCurrent\(context\)\)return;const url=URL\.createObjectURL/);
-  assert.match(source, /if\(!isCurrent\(context,\{run:false\}\)\|\|runIds\.some/);
+  assert.match(source, /if\(!isCurrent\(context\)\|\|runIds\.some/);
   assert.match(source, /context\.runId===state\.runId&&context\.runGeneration===state\.runGeneration/);
   assert.match(source, /state\.runGeneration\+\+;const context=captureContext\(\);elements\.cancel\.disabled=true/);
   assert.match(source, /취소하지 못했습니다[\s\S]*state\.pollTimer=setTimeout\(\(\)=>poll\(context\),3000\)/);
+  assert.match(source, /if\(!isCurrent\(context,\{run:Boolean\(selectRunId\)\}\)\)return;state\.runs=body\.runs/);
 });
 
 test("brand-search.js 인증·프로젝트 전환은 진행 중인 이전 상태를 초기화한다", async () => {
