@@ -15,7 +15,7 @@ if(!validId(workspaceId)||!validId(sessionId)||!validId(customerKey)||typeof aut
  const {initializeApp}=await import("https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js");
  const {getAuth,GoogleAuthProvider,signInWithPopup,signInWithCustomToken,onAuthStateChanged}=await import("https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js");
  const auth=getAuth(initializeApp(firebaseConfig));
- let activeRequest=null,completed=false,authGeneration=0,requestGeneration=0;
+ let activeRequest=null,completed=false,authGeneration=0,requestGeneration=0,loginGeneration=0,oauthPopup=null;
  const requestCurrent=context=>context.requestGeneration===requestGeneration&&context.authGeneration===authGeneration&&context.user===auth.currentUser;
  async function confirmPayment(user){
   if(!user||completed||(activeRequest&&activeRequest.user===user&&activeRequest.authGeneration===authGeneration))return;
@@ -33,20 +33,23 @@ if(!validId(workspaceId)||!validId(sessionId)||!validId(customerKey)||typeof aut
    signin.hidden=review;retry.hidden=review;console.error("결제 완료 확인 실패",error.message);
   }finally{if(activeRequest===context)activeRequest=null}
  }
- onAuthStateChanged(auth,user=>{authGeneration++;requestGeneration++;activeRequest=null;if(!user){signin.hidden=false;retry.hidden=true;state.textContent="결제를 시작한 계정으로 이 화면에서 로그인해 주세요.";return}confirmPayment(user)});
+ onAuthStateChanged(auth,user=>{authGeneration++;requestGeneration++;loginGeneration++;activeRequest=null;if(oauthPopup&&!oauthPopup.closed)oauthPopup.close();oauthPopup=null;if(!user){signin.hidden=false;retry.hidden=true;state.textContent="결제를 시작한 계정으로 이 화면에서 로그인해 주세요.";return}confirmPayment(user)});
  signin.addEventListener("click",async event=>{
   const provider=event.target.closest("[data-provider]")?.dataset.provider;
   if(!provider)return;
+  const generation=++loginGeneration;
   if(provider==="google"){
-   try{await signInWithPopup(auth,new GoogleAuthProvider())}catch{state.textContent="Google 로그인에 실패했습니다. 결제를 시작한 계정으로 다시 시도해 주세요."}
+   try{await signInWithPopup(auth,new GoogleAuthProvider())}catch{if(generation===loginGeneration)state.textContent="Google 로그인에 실패했습니다. 결제를 시작한 계정으로 다시 시도해 주세요."}
    return;
   }
-  const popup=window.open(`${apiBase}/v1/auth/${provider}/start?returnOrigin=${encodeURIComponent(location.origin)}`,"autoworks-oauth","popup,width=520,height=720");
-  state.textContent=popup?"로그인 제공자 화면에서 계속해 주세요.":"로그인 팝업이 차단되었습니다. 팝업을 허용해 주세요.";
+  if(oauthPopup&&!oauthPopup.closed)oauthPopup.close();
+  oauthPopup=window.open(`${apiBase}/v1/auth/${provider}/start?returnOrigin=${encodeURIComponent(location.origin)}`,"autoworks-oauth","popup,width=520,height=720");
+  if(generation===loginGeneration)state.textContent=oauthPopup?"로그인 제공자 화면에서 계속해 주세요.":"로그인 팝업이 차단되었습니다. 팝업을 허용해 주세요.";
  });
  window.addEventListener("message",async event=>{
-  if(event.origin!==new URL(apiBase).origin||event.data?.type!=="autoworks-oauth"||typeof event.data.customToken!=="string")return;
-  try{await signInWithCustomToken(auth,event.data.customToken)}catch{state.textContent="외부 로그인 정보를 연결하지 못했습니다. 다시 시도해 주세요."}
+  if(event.origin!==new URL(apiBase).origin||event.source!==oauthPopup||event.data?.type!=="autoworks-oauth"||typeof event.data.customToken!=="string")return;
+  const generation=loginGeneration;
+  try{await signInWithCustomToken(auth,event.data.customToken)}catch{if(generation===loginGeneration)state.textContent="외부 로그인 정보를 연결하지 못했습니다. 다시 시도해 주세요."}
  });
  retry.addEventListener("click",()=>confirmPayment(auth.currentUser));
 }
