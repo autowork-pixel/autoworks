@@ -14,12 +14,15 @@ assert.match(success,/history\.replaceState\(null,"",location\.pathname\)/,"일�
 assert.match(success,/auth\.currentUser|onAuthStateChanged/,"결제 완료 API는 로그인 계정을 확인한 뒤 호출해야 합니다.");
 assert.match(success,/signInWithPopup\(auth,new GoogleAuthProvider\(\)\)/,"결제 반환 화면에서 로그인을 다시 진행할 수 있어야 합니다.");
 assert.match(success,/signInWithCustomToken\(auth,event\.data\.customToken\)/,"네이버·카카오 로그인도 결제 반환 화면에서 복구할 수 있어야 합니다.");
+assert.match(success,/event\.source!==oauthPopup/,"OAuth custom token 메시지는 이 화면이 연 팝업 창에서만 받아야 합니다.");
+assert.match(success,/loginGeneration\+\+;activeRequest=null;if\(oauthPopup&&!oauthPopup\.closed\)oauthPopup\.close\(\)/,"로그인 전환 시 이전 OAuth 팝업과 결과를 무효화해야 합니다.");
+assert.match(success,/if\(generation===loginGeneration\)state\.textContent="외부 로그인 정보를 연결하지 못했습니다/,"이전 OAuth 시도의 오류는 현재 로그인 화면을 덮지 않아야 합니다.");
 assert.match(success,/retry\.addEventListener\("click"/,"결제 확인 실패 뒤 같은 화면에서 다시 시도할 수 있어야 합니다.");
 assert.match(success,/review=error\.message==="PAYMENT_REVIEW_REQUIRED"/,"승인 결과가 불확실하면 자동 재시도를 막아야 합니다.");
 assert.match(success,/billing-sessions\/\$\{encodeURIComponent\(sessionId\)\}:complete/,"결제 완료는 검증된 세션 완료 API만 호출해야 합니다.");
 assert.match(success,/authorization:`Bearer \$\{await user\.getIdToken\(\)\}`/,"결제 완료 API에 Firebase ID token을 전달해야 합니다.");
 assert.match(success,/const requestCurrent=context=>context\.requestGeneration===requestGeneration&&context\.authGeneration===authGeneration&&context\.user===auth\.currentUser/,"결제 완료 응답은 요청 당시 로그인 세션에서만 반영해야 합니다.");
-assert.match(success,/onAuthStateChanged\(auth,user=>\{authGeneration\+\+;requestGeneration\+\+;activeRequest=null/,"로그인 전환은 진행 중인 이전 결제 확인 요청을 무효화해야 합니다.");
+assert.match(success,/onAuthStateChanged\(auth,user=>\{authGeneration\+\+;requestGeneration\+\+;loginGeneration\+\+;activeRequest=null/,"로그인 전환은 진행 중인 이전 결제 확인·OAuth 요청을 무효화해야 합니다.");
 assert.match(success,/if\(!requestCurrent\(context\)\)return;\s*completed=true/,"이전 계정 결제 성공은 현재 화면을 활성 상태로 바꾸면 안 됩니다.");
 assert.doesNotMatch(success,/localStorage|sessionStorage/,"일회용 결제 결과를 브라우저 저장소에 남기면 안 됩니다.");
 assert.doesNotMatch(failure,/fetch\(/,"결제 실패·취소 페이지가 구독 활성화 API를 호출하면 안 됩니다.");
