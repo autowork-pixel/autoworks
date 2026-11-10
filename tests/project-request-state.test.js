@@ -76,5 +76,7 @@ test("brand-search.js 인증·프로젝트 전환은 진행 중인 이전 상태
   assert.match(source, /state\.runs=\[\];state\.requestKey=null;state\.requestFingerprint=null/);
   assert.match(source, /window\.addEventListener\("pagehide",\(\)=>\{stopPolling\(\);state\.runGeneration\+\+\}\)/);
   assert.match(source, /window\.addEventListener\("pageshow",event=>\{if\(!event\.persisted/);
-  assert.match(source, /if\(context\.runId\)poll\(context\);else refreshHistory\(null,context\)/);
+  assert.match(source, /if\(context\.runId\)resumeCurrentRun\(\);else refreshHistory\(null,context\)/);
+  assert.match(source, /function resumeCurrentRun\(\)\{if\(!state\.runId\|\|state\.pollTimer\|\|document\.visibilityState==="hidden"\)return/);
+  assert.match(source, /document\.addEventListener\("visibilitychange",\(\)=>\{if\(document\.visibilityState==="hidden"\)\{stopPolling\(\);state\.runGeneration\+\+;return\}resumeCurrentRun\(\)\}\)/);
 });
