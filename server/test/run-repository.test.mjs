@@ -57,6 +57,7 @@ test("소유자에게 선택 프로젝트의 최근 브랜드 검색 실행만 �
   assert.deepEqual(runs.map(run => run.runId), ["run-new", "run-old"]);
   assert.equal(runs[0].resultReady, true);
   assert.equal(JSON.stringify(runs).includes("resultReportId"), false);
+  assert.deepEqual(Object.keys(runs[0]).sort(), ["createdAt", "errorCode", "failedKeywords", "inputSummary", "resultReady", "runId", "status", "succeededKeywords"]);
   await assert.rejects(() => repository.listBrandSearchRuns({ workspaceId: "workspace-a", uid: "user-b", projectId: "project-a" }), error => error.code === "AUTH_REQUIRED");
 });
 
@@ -70,6 +71,7 @@ test("소유자만 실행 상태와 준비된 결과를 조회한다", async () 
   const run = await repository.getBrandSearchRun({ workspaceId: "workspace-a", runId: "run-a", projectId: "project-a", uid: "user-a" });
   assert.equal(run.resultReady, true);
   assert.equal(run.succeededKeywords, 1);
+  assert.deepEqual(Object.keys(run).sort(), ["errorCode", "failedKeywords", "inputSummary", "resultReady", "runId", "status", "succeededKeywords"]);
   const report = await repository.getBrandSearchReport({ workspaceId: "workspace-a", runId: "run-a", projectId: "project-a", uid: "user-a" });
   assert.equal(report.rows[0].total, 3);
   await assert.rejects(() => repository.getBrandSearchRun({ workspaceId: "workspace-a", runId: "run-a", projectId: "project-a", uid: "user-b" }), error => error.code === "AUTH_REQUIRED");

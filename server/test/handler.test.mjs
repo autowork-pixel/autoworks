@@ -290,7 +290,9 @@ test("실행 상태와 UTF-8 CSV 결과를 인증 후 반환한다", async () =>
     const headers = { authorization: "Bearer token" };
     const statusResponse = await fetch(`${base}/v1/workspaces/workspace-a/brand-search-runs/run-a?projectId=project-a`, { headers });
     assert.equal(statusResponse.status, 200);
-    assert.equal((await statusResponse.json()).resultReady, true);
+    const statusBody = await statusResponse.json();
+    assert.equal(statusBody.resultReady, true);
+    assert.deepEqual(Object.keys(statusBody).sort(), ["requestId", "resultReady", "runId", "status"]);
     const csvResponse = await fetch(`${base}/v1/workspaces/workspace-a/brand-search-runs/run-a/report.csv?projectId=project-a`, { headers });
     const body = await csvResponse.text();
     assert.equal(csvResponse.status, 200);
