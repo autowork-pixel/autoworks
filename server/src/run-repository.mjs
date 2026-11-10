@@ -64,7 +64,7 @@ export function createRunRepository({ database, serverTimestamp, now = () => new
       });
     },
 
-    async getBrandSearchRun({ workspaceId, runId, uid }) {
+    async getBrandSearchRun({ workspaceId, runId, projectId, uid }) {
       const root = workspace(workspaceId);
       const runRef = root.collection("runs").doc(runId);
       return database.runTransaction(async transaction => {
@@ -74,6 +74,7 @@ export function createRunRepository({ database, serverTimestamp, now = () => new
         }
         if (!runSnapshot.exists) throw new ApiError("INVALID_INPUT", "실행을 찾을 수 없습니다.", 404);
         const run = runSnapshot.data();
+        if (run.tool !== "brand-search" || run.projectId !== projectId) throw new ApiError("INVALID_INPUT", "실행을 찾을 수 없습니다.", 404);
         return {
           runId, projectId: run.projectId, tool: run.tool, status: run.status,
           inputSummary: run.inputSummary || null, errorCode: run.errorCode || null,
@@ -83,7 +84,7 @@ export function createRunRepository({ database, serverTimestamp, now = () => new
       });
     },
 
-    async getBrandSearchReport({ workspaceId, runId, uid }) {
+    async getBrandSearchReport({ workspaceId, runId, projectId, uid }) {
       const root = workspace(workspaceId);
       const runRef = root.collection("runs").doc(runId);
       return database.runTransaction(async transaction => {
@@ -93,15 +94,16 @@ export function createRunRepository({ database, serverTimestamp, now = () => new
         }
         if (!runSnapshot.exists) throw new ApiError("INVALID_INPUT", "실행을 찾을 수 없습니다.", 404);
         const run = runSnapshot.data();
+        if (run.tool !== "brand-search" || run.projectId !== projectId) throw new ApiError("INVALID_INPUT", "실행을 찾을 수 없습니다.", 404);
         if (run.status !== "succeeded" || !run.resultReportId) throw new ApiError("RESULT_NOT_READY", "아직 내려받을 결과가 없습니다.", 409);
         const reportSnapshot = await transaction.get(root.collection("reports").doc(run.resultReportId));
-        if (!reportSnapshot.exists || reportSnapshot.data().status !== "ready") throw new ApiError("RESULT_NOT_READY", "아직 내려받을 결과가 없습니다.", 409);
+        if (!reportSnapshot.exists || reportSnapshot.data().status !== "ready" || reportSnapshot.data().projectId !== projectId) throw new ApiError("RESULT_NOT_READY", "아직 내려받을 결과가 없습니다.", 409);
         const report = reportSnapshot.data();
         return { runId, title: report.title, rows: Array.isArray(report.rows) ? report.rows : [] };
       });
     },
 
-    async cancelBrandSearchRun({ workspaceId, runId, uid }) {
+    async cancelBrandSearchRun({ workspaceId, runId, projectId, uid }) {
       const root = workspace(workspaceId);
       const runRef = root.collection("runs").doc(runId);
       const reservationRef = root.collection("usageReservations").doc(runId);
@@ -114,6 +116,7 @@ export function createRunRepository({ database, serverTimestamp, now = () => new
         }
         if (!runSnapshot.exists || !reservationSnapshot.exists) throw new ApiError("INVALID_INPUT", "실행 예약을 찾을 수 없습니다.", 404);
         const run = runSnapshot.data();
+        if (run.tool !== "brand-search" || run.projectId !== projectId) throw new ApiError("INVALID_INPUT", "실행 예약을 찾을 수 없습니다.", 404);
         if (run.status === "canceled") return { status: "canceled", reused: true };
         if (!["queued", "validating"].includes(run.status)) {
           throw new ApiError("RUN_CANCEL_CONFLICT", "이미 시작되었거나 종료된 실행은 취소할 수 없습니다.", 409);

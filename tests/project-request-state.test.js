@@ -44,6 +44,7 @@ test("brand-search.js 예약·상태 조회는 요청 당시 계정·워크스�
 
 test("brand-search.js 취소·다운로드·비교의 늦은 응답은 현재 화면을 덮지 않는다", async () => {
   const source = await readFile(new URL("../public/brand-search.js", import.meta.url), "utf8");
+  assert.match(source, /\?projectId=\$\{encodeURIComponent\(context\.projectId\)\}/);
   assert.match(source, /path\(context\.runId,":cancel",context\)/);
   assert.match(source, /if\(!isCurrent\(context\)\)return;renderRun\(run\)/);
   assert.match(source, /path\(context\.runId,"\/report\.csv",context\)/);
