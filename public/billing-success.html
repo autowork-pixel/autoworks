@@ -15,22 +15,25 @@ if(!validId(workspaceId)||!validId(sessionId)||!validId(customerKey)||typeof aut
  const {initializeApp}=await import("https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js");
  const {getAuth,GoogleAuthProvider,signInWithPopup,signInWithCustomToken,onAuthStateChanged}=await import("https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js");
  const auth=getAuth(initializeApp(firebaseConfig));
- let completing=false,completed=false;
+ let activeRequest=null,completed=false,authGeneration=0,requestGeneration=0;
+ const requestCurrent=context=>context.requestGeneration===requestGeneration&&context.authGeneration===authGeneration&&context.user===auth.currentUser;
  async function confirmPayment(user){
-  if(!user||completing||completed)return;
-  completing=true;signin.hidden=true;retry.hidden=true;state.textContent="주문과 결제 결과를 확인하는 중입니다.";
+  if(!user||completed||(activeRequest&&activeRequest.user===user&&activeRequest.authGeneration===authGeneration))return;
+  const context={requestGeneration:++requestGeneration,authGeneration,user};activeRequest=context;signin.hidden=true;retry.hidden=true;state.textContent="주문과 결제 결과를 확인하는 중입니다.";
   try{
    const response=await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(workspaceId)}/billing-sessions/${encodeURIComponent(sessionId)}:complete`,{method:"POST",headers:{authorization:`Bearer ${await user.getIdToken()}`,"content-type":"application/json"},body:JSON.stringify({customerKey,authKey})});
    const result=await response.json().catch(()=>({}));
    if(!response.ok||result.status!=="active")throw new Error(result.error?.code||"PAYMENT_CONFIRM_FAILED");
+   if(!requestCurrent(context))return;
    completed=true;state.textContent="구독이 활성화되었습니다. 구독 상태에서 이용 기간과 다음 결제일을 확인해 주세요.";
   }catch(error){
+   if(!requestCurrent(context))return;
    const review=error.message==="PAYMENT_REVIEW_REQUIRED";
    state.textContent=review?"결제 승인 결과를 확인 중입니다. 추가 결제하지 말고 고객센터로 문의해 주세요.":"결제 확인을 완료하지 못했습니다. 결제를 시작한 계정을 확인하거나 같은 화면에서 다시 시도해 주세요. 중복 결제는 하지 마세요.";
    signin.hidden=review;retry.hidden=review;console.error("결제 완료 확인 실패",error.message);
-  }finally{completing=false}
+  }finally{if(activeRequest===context)activeRequest=null}
  }
- onAuthStateChanged(auth,user=>{if(!user){signin.hidden=false;retry.hidden=true;state.textContent="결제를 시작한 계정으로 이 화면에서 로그인해 주세요.";return}confirmPayment(user)});
+ onAuthStateChanged(auth,user=>{authGeneration++;requestGeneration++;activeRequest=null;if(!user){signin.hidden=false;retry.hidden=true;state.textContent="결제를 시작한 계정으로 이 화면에서 로그인해 주세요.";return}confirmPayment(user)});
  signin.addEventListener("click",async event=>{
   const provider=event.target.closest("[data-provider]")?.dataset.provider;
   if(!provider)return;
@@ -48,3 +51,4 @@ if(!validId(workspaceId)||!validId(sessionId)||!validId(customerKey)||typeof aut
  retry.addEventListener("click",()=>confirmPayment(auth.currentUser));
 }
 </script></body></html>
+
