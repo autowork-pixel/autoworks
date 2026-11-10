@@ -34,6 +34,13 @@ test("토큰 교환은 secret을 URL에 넣지 않고 폼 본문으로 전송한
   assert.equal(received.options.body.get("client_secret"), "secret");
 });
 
+test("카카오 토큰 거부는 안전한 단계 코드로 구분한다", async () => {
+  await assert.rejects(() => exchangeAuthorizationCode({
+    provider: "kakao", clientId: "client", clientSecret: "wrong-secret", redirectUri: "https://service.example/callback", code: "code",
+    fetchImpl: async () => ({ ok: false, json: async () => ({ error: "invalid_client", error_description: "private detail" }) })
+  }), error => error.code === "OAUTH_TOKEN_EXCHANGE_FAILED" && !error.message.includes("private detail"));
+});
+
 test("제공자 프로필을 최소 공통 식별자로 정규화한다", async () => {
   const naver = await fetchProviderIdentity({ provider: "naver", accessToken: "token", fetchImpl: async () => ({ ok: true, json: async () => ({ resultcode: "00", response: { id: "naver-id", email: "a@example.com", nickname: "A" } }) }) });
   const kakao = await fetchProviderIdentity({ provider: "kakao", accessToken: "token", fetchImpl: async () => ({ ok: true, json: async () => ({ id: 123, kakao_account: { email: "b@example.com", profile: { nickname: "B" } } }) }) });
@@ -70,3 +77,4 @@ test("만료되거나 제공자가 다른 state는 토큰 요청 전에 거부�
   }), error => error.code === "AUTH_REQUIRED");
   assert.equal(called, false);
 });
+
