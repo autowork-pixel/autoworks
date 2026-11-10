@@ -79,9 +79,12 @@ async function initialize() {
       for (const document of snapshot.docs) {
         const report = document.data();
         if (report.projectId !== projectId || !Array.isArray(report.rows)) continue;
-        for (const row of report.rows) if (typeof row.keyword === "string" && Number.isFinite(row.total) && !latest.has(row.keyword.trim())) latest.set(row.keyword.trim(), row.total);
+        for (const row of report.rows) {
+          if (typeof row.keyword !== "string" || !Number.isFinite(row.total) || latest.has(row.keyword.trim())) continue;
+          latest.set(row.keyword.trim(), { total: row.total, recordedAt: row.recordedAt });
+        }
       }
-      topicSignals = [...latest].map(([keyword, total]) => ({ keyword, total }));
+      topicSignals = [...latest].map(([keyword, signal]) => ({ keyword, ...signal }));
       message(topicSignals.length ? `저장된 최근 월간 검색량 ${topicSignals.length}개를 주제 후보에 연결했습니다.` : "이 프로젝트의 저장된 검색량이 없어 키워드 순서를 사용합니다.");
     } catch { topicSignals = []; message("검색량 신호를 불러오지 못해 프로젝트 키워드 순서를 사용합니다."); }
   };
