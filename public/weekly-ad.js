@@ -182,7 +182,17 @@ function render(source, sheet, result) {
   document.getElementById("results").hidden = false;
 }
 
-let latest;
+let latest, analysisGeneration = 0, historyGeneration = 0, saveGeneration = 0;
+function resetAnalysis() {
+  latest = null; viewedStored = false; document.getElementById("results").hidden = true;
+  document.getElementById("download").disabled = true; document.getElementById("analyze").disabled = false; enableSave();
+}
+function analysisCurrent(context) {
+  return context.generation === analysisGeneration && context.provider === sourceType.value
+    && context.user === accountState.user && context.workspaceId === accountState.workspaceId
+    && context.projectId === projectSelect.value && context.since === document.getElementById("since").value
+    && context.until === document.getElementById("until").value && context.file === document.getElementById("file").files[0];
+}
 function apiRows(rows) {
   return rows.map(row => ({
     campaign: row.campaignName || row.campaignId || "미분류", group: row.adGroupName || "", keyword: row.adName || "",
@@ -200,16 +210,19 @@ function setDefaultPeriod() {
   if (!document.getElementById("until").value) document.getElementById("until").value = localDate(until);
 }
 sourceType.addEventListener("change", () => {
+  analysisGeneration++;
   const excel = sourceType.value === "excel";
   excelSource.hidden = !excel; apiPeriod.hidden = excel;
   document.getElementById("analyze").textContent = excel ? "분석하기" : `${providerLabels[sourceType.value]} 불러와 분석`;
   document.getElementById("status").textContent = excel ? "파일을 선택해 주세요." : "로그인·프로젝트 선택·광고 API 연결 후 조회할 수 있습니다.";
   if (!excel) setDefaultPeriod();
-  latest = null; viewedStored = false; document.getElementById("results").hidden = true; document.getElementById("download").disabled = true; enableSave();
+  resetAnalysis();
 });
+document.getElementById("file").addEventListener("change", () => { analysisGeneration++; resetAnalysis(); });
+apiPeriod.addEventListener("input", () => { analysisGeneration++; resetAnalysis(); });
 document.getElementById("analyze").addEventListener("click", async () => {
   const file = document.getElementById("file").files[0], status = document.getElementById("status"), button = document.getElementById("analyze");
-  latest = null; viewedStored = false; document.getElementById("results").hidden = true; document.getElementById("download").disabled = true; enableSave();
+  resetAnalysis();
   const provider = sourceType.value;
   if (provider === "excel" && (!file || !/\.xlsx$/i.test(file.name) || file.size > 5 * 1024 * 1024)) { status.textContent = "5MB 이하의 .xlsx 파일을 선택해 주세요."; return; }
   if (provider !== "excel" && (!apiBase || !accountState.user || !accountState.workspaceId || !projectSelect.value)) {
@@ -219,10 +232,13 @@ document.getElementById("analyze").addEventListener("click", async () => {
   const days = since && until ? Math.round((new Date(`${until}T00:00:00Z`) - new Date(`${since}T00:00:00Z`)) / 86400000) + 1 : 0;
   if (provider !== "excel" && (days < 1 || days > 31)) { status.textContent = "조회 기간을 1~31일로 선택해 주세요."; return; }
   button.disabled = true; status.textContent = provider === "excel" ? "Excel 파일을 분석하고 있습니다." : `${providerLabels[provider]} 성과를 안전하게 불러오고 있습니다.`;
-  const requestUser = accountState.user, requestWorkspace = accountState.workspaceId, requestProject = projectSelect.value;
+  const context = { generation: ++analysisGeneration, provider, user: accountState.user, workspaceId: accountState.workspaceId,
+    projectId: projectSelect.value, since, until, file };
+  const requestUser = context.user, requestWorkspace = context.workspaceId, requestProject = context.projectId;
   try {
     if (provider === "excel") {
       const { sheet, rows } = findTable(workbookSheets(await unzip(await file.arrayBuffer())));
+      if (!analysisCurrent(context)) return;
       const analysis = analyze(rows);
       latest = { generatedAt: new Date().toISOString(), source: file.name, sheet, analysis, analysisMode: "규칙 기반", sourceType: "excel" };
       render(file.name, sheet, analysis);
@@ -234,17 +250,17 @@ document.getElementById("analyze").addEventListener("click", async () => {
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error?.code || "REQUEST_FAILED");
-      if (requestUser !== accountState.user || requestWorkspace !== accountState.workspaceId || requestProject !== projectSelect.value) return;
+      if (!analysisCurrent(context)) return;
       const analysis = analyze(apiRows(body.rows || []));
       latest = { generatedAt: new Date().toISOString(), source: providerLabels[provider], sheet: "API", analysis, analysisMode: "규칙 기반", sourceType: "api", provider, since, until };
       viewedStored = true; render(providerLabels[provider], "API", analysis);
       status.textContent = `${providerLabels[provider]}에서 ${integer(analysis.rowCount)}행을 불러와 분석하고 계정에 저장했습니다.`;
-      try { await accountState.loadReports?.(); } catch { saveStatus.textContent = "분석 결과는 저장됐으며 목록은 새로고침 후 확인할 수 있습니다."; }
+      try { await accountState.loadReports?.(); } catch { if (analysisCurrent(context)) saveStatus.textContent = "분석 결과는 저장됐으며 목록은 새로고침 후 확인할 수 있습니다."; }
     }
     document.getElementById("download").disabled = false;
     enableSave();
-  } catch (error) { if (provider === "excel" || (requestUser === accountState.user && requestWorkspace === accountState.workspaceId && requestProject === projectSelect.value)) status.textContent = `분석하지 못했습니다. (${error.message || "REQUEST_FAILED"})`; }
-  finally { button.disabled = false; }
+  } catch (error) { if (analysisCurrent(context)) status.textContent = `분석하지 못했습니다. (${error.message || "REQUEST_FAILED"})`; }
+  finally { if (analysisCurrent(context)) button.disabled = false; }
 });
 document.getElementById("download").addEventListener("click", () => {
   if (!latest) return;
@@ -253,10 +269,14 @@ document.getElementById("download").addEventListener("click", () => {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
 projectSelect.addEventListener("change", () => {
-  enableSave(); accountState.reports = new Map(); viewedStored = false;
+  analysisGeneration++; saveGeneration++; resetAnalysis(); accountState.reports = new Map();
   historySelect.replaceChildren(new Option(projectSelect.value ? "저장된 결과 불러오는 중" : "프로젝트 선택 후 결과 조회", ""));
   historySelect.disabled = true;
-  accountState.loadReports?.().catch(() => { historySelect.replaceChildren(new Option("저장된 결과를 불러오지 못했습니다.", "")); });
+  const expectedHistoryGeneration = historyGeneration + 1, user = accountState.user, workspaceId = accountState.workspaceId, projectId = projectSelect.value;
+  accountState.loadReports?.().catch(() => {
+    if (expectedHistoryGeneration === historyGeneration && user === accountState.user && workspaceId === accountState.workspaceId && projectId === projectSelect.value)
+      historySelect.replaceChildren(new Option("저장된 결과를 불러오지 못했습니다.", ""));
+  });
 });
 historySelect.addEventListener("change", () => {
   const report = accountState.reports?.get(historySelect.value);
@@ -273,25 +293,26 @@ historySelect.addEventListener("change", () => {
 });
 saveButton.addEventListener("click", async () => {
   if (saveButton.disabled || !latest) return;
-  const user = accountState.user, workspaceId = accountState.workspaceId, selectedProject = projectSelect.value;
+  const context = { generation: ++saveGeneration, user: accountState.user, workspaceId: accountState.workspaceId, projectId: projectSelect.value, result: latest };
+  const user = context.user, workspaceId = context.workspaceId, selectedProject = context.projectId;
   saveButton.disabled = true; saveStatus.textContent = "결과를 계정에 저장하고 있습니다.";
   try {
     const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(workspaceId)}/weekly-ad-reports`, {
       method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${await user.getIdToken()}` },
-      body: JSON.stringify({ projectId: selectedProject, sourceName: latest.source, sheet: latest.sheet,
-        analysis: latest.analysis, idempotencyKey: crypto.randomUUID().replaceAll("-", "") })
+      body: JSON.stringify({ projectId: selectedProject, sourceName: context.result.source, sheet: context.result.sheet,
+        analysis: context.result.analysis, idempotencyKey: crypto.randomUUID().replaceAll("-", "") })
     });
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
       throw new Error(body.error?.code || "REQUEST_FAILED");
     }
-    if (user !== accountState.user || workspaceId !== accountState.workspaceId || selectedProject !== projectSelect.value) return;
+    if (context.generation !== saveGeneration || user !== accountState.user || workspaceId !== accountState.workspaceId || selectedProject !== projectSelect.value || context.result !== latest) return;
     viewedStored = true;
     saveStatus.textContent = "내 계정에 결과를 저장했습니다.";
     try { await accountState.loadReports?.(); }
-    catch { saveStatus.textContent = "결과를 저장했습니다. 목록은 새로고침 후 확인해 주세요."; }
-  } catch (error) { if (user === accountState.user && workspaceId === accountState.workspaceId && selectedProject === projectSelect.value) saveStatus.textContent = `저장하지 못했습니다. (${error.message})`; }
-  finally { enableSave(); }
+    catch { if (context.generation === saveGeneration) saveStatus.textContent = "결과를 저장했습니다. 목록은 새로고침 후 확인해 주세요."; }
+  } catch (error) { if (context.generation === saveGeneration && user === accountState.user && workspaceId === accountState.workspaceId && selectedProject === projectSelect.value && context.result === latest) saveStatus.textContent = `저장하지 못했습니다. (${error.message})`; }
+  finally { if (context.generation === saveGeneration) enableSave(); }
 });
 
 async function initAccount() {
@@ -306,11 +327,12 @@ async function initAccount() {
     projectId: "autoworks-c9a6a", appId: "1:823085494995:web:3be4bdd40fe0519bc59a26" });
   const auth = getAuth(app), database = getFirestore(app);
   accountState.loadReports = async () => {
+    const currentHistoryGeneration = ++historyGeneration;
     const projectId = projectSelect.value;
     if (!accountState.workspaceId || !projectId) return;
     const workspaceId = accountState.workspaceId, user = accountState.user;
     const snapshot = await getDocs(query(collection(database, "workspaces", workspaceId, "reports"), where("tool", "==", "weekly-ad"), where("projectId", "==", projectId), orderBy("createdAt", "desc"), limit(20)));
-    if (workspaceId !== accountState.workspaceId || user !== accountState.user || projectId !== projectSelect.value) return;
+    if (currentHistoryGeneration !== historyGeneration || workspaceId !== accountState.workspaceId || user !== accountState.user || projectId !== projectSelect.value) return;
     accountState.reports = new Map(snapshot.docs.map(item => [item.id, item.data()]));
     historySelect.replaceChildren(new Option(accountState.reports.size ? "저장된 결과 선택" : "저장된 주간 광고 결과 없음", ""));
     for (const [id, report] of accountState.reports) {
@@ -326,6 +348,7 @@ async function initAccount() {
   let generation = 0;
   onAuthStateChanged(auth, async user => {
     const current = ++generation;
+    analysisGeneration++; historyGeneration++; saveGeneration++;
     accountState.user = user; accountState.workspaceId = null;
     latest = null; viewedStored = false; document.getElementById("results").hidden = true;
     document.getElementById("download").disabled = true;
