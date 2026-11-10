@@ -134,16 +134,16 @@ async function initialize() {
     event.preventDefault();
     const channels = selectedChannels();
     if (!channels.length) return message("제작 채널을 하나 이상 선택해 주세요.", "error");
-    const currentUser = user, currentWorkspace = workspaceId;
+    const currentUser = user, currentWorkspace = workspaceId, selectedProject = el.project.value;
     el.submit.disabled = true; message("채널별 검토용 콘텐츠를 만들고 있습니다."); requestKey ||= crypto.randomUUID().replaceAll("-", "");
     try {
       const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(currentWorkspace)}/content-pack-runs`, {
         method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${await currentUser.getIdToken()}` },
-        body: JSON.stringify({ projectId: el.project.value, campaign: el.campaign.value.trim(), facts: el.facts.value.trim(), sourceDraft: el.sourceDraft.value.trim(), audience: el.audience.value.trim(), callToAction: el.callToAction.value.trim(), channels, topicContext: selectedTopic ? { keyword: selectedTopic.keyword, searchVolume: selectedTopic.searchVolume, searchRecordedAt: selectedTopic.searchRecordedAt, searchStale: selectedTopic.searchStale } : null, idempotencyKey: requestKey })
+        body: JSON.stringify({ projectId: selectedProject, campaign: el.campaign.value.trim(), facts: el.facts.value.trim(), sourceDraft: el.sourceDraft.value.trim(), audience: el.audience.value.trim(), callToAction: el.callToAction.value.trim(), channels, topicContext: selectedTopic ? { keyword: selectedTopic.keyword, searchVolume: selectedTopic.searchVolume, searchRecordedAt: selectedTopic.searchRecordedAt, searchStale: selectedTopic.searchStale } : null, idempotencyKey: requestKey })
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) { if (body.error?.code !== "INTERNAL_ERROR") requestKey = null; throw new Error(body.error?.message || "생성에 실패했습니다."); }
-      if (currentUser !== user || currentWorkspace !== workspaceId) return;
+      if (currentUser !== user || currentWorkspace !== workspaceId || selectedProject !== el.project.value) return;
       show({ ...body, channels }); requestKey = null; message("미게시 상태로 저장했습니다. 사용 전에 검토하세요.", "success");
       await loadHistory();
     } catch (error) { message(error.message, "error"); }

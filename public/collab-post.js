@@ -150,7 +150,7 @@ async function initialize() {
         if (body.error?.code && body.error.code !== "INTERNAL_ERROR") requestKey = null;
         throw new Error(body.error?.message || "조회에 실패했습니다.");
       }
-      if (currentUser !== user || currentWorkspace !== workspaceId || selectedPlatform !== platform.value) return;
+      if (currentUser !== user || currentWorkspace !== workspaceId || selectedProject !== project.value || selectedPlatform !== platform.value) return;
       if (body.post) { showResult(body.post); lookupStatus.textContent = "조회 결과를 내 계정에 저장했습니다."; }
       else lookupStatus.textContent = body.status === "running" ? "같은 요청이 진행 중입니다. 잠시 후 저장된 결과를 확인해 주세요." : "저장된 결과를 다시 확인해 주세요.";
       if (body.status !== "running") requestKey = null;

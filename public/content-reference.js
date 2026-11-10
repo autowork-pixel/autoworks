@@ -158,7 +158,7 @@ async function initialize() {
   });
   el.referenceForm.addEventListener("submit", async event => {
     event.preventDefault();
-    const currentUser = user, currentWorkspace = workspaceId, keywords = values("keywords"), strengths = values("strengths");
+    const currentUser = user, currentWorkspace = workspaceId, selectedProject = el.project.value, keywords = values("keywords"), strengths = values("strengths");
     if (!keywords.length || keywords.length > 5 || strengths.length > 5) return message("키워드와 강점은 각각 최대 5개입니다.", "error");
     el.submit.disabled = true;
     message("YouTube 공개 콘텐츠를 수집하고 있습니다.");
@@ -167,14 +167,14 @@ async function initialize() {
       const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(currentWorkspace)}/content-reference-runs`, {
         method: "POST",
         headers: { "content-type": "application/json", authorization: `Bearer ${await currentUser.getIdToken()}` },
-        body: JSON.stringify({ projectId: el.project.value, brand: el.brand.value.trim(), category: el.category.value.trim(), keywords, target: el.target.value.trim(), strengths, periodDays: Number(el.periodDays.value), collectCount: Number(el.collectCount.value), idempotencyKey: requestKey })
+        body: JSON.stringify({ projectId: selectedProject, brand: el.brand.value.trim(), category: el.category.value.trim(), keywords, target: el.target.value.trim(), strengths, periodDays: Number(el.periodDays.value), collectCount: Number(el.collectCount.value), idempotencyKey: requestKey })
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) {
         if (body.error?.code !== "INTERNAL_ERROR") requestKey = null;
         throw new Error(body.error?.message || "수집에 실패했습니다. 입력을 유지했으니 같은 조건으로 다시 시도해 주세요.");
       }
-      if (currentUser !== user || currentWorkspace !== workspaceId) return;
+      if (currentUser !== user || currentWorkspace !== workspaceId || selectedProject !== el.project.value) return;
       currentTitle = `${el.brand.value.trim()} · ${el.category.value.trim()}`;
       render(body.rows, body.capturedAt);
       requestKey = null;

@@ -36,6 +36,7 @@ jobs:
       - run: npm run test:usage-display
       - run: npm run test:content-topics
       - run: npm run test:project-history
+      - run: npm run test:project-request-state
       - run: npm run test:server-security
       - run: npm run test:api-connection
       - run: npm run test:runtime-config
