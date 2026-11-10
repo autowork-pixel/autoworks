@@ -21,10 +21,12 @@ test("AI 블로그 이력은 선택 프로젝트로 조회하고 전환 중 늦�
 
 test("네이버 노출 이력은 선택 프로젝트로 조회하고 전환 시 이전 결과를 지운다", async () => {
   const source = await readFile(new URL("../public/naver-visibility.js", import.meta.url), "utf8");
-  assert.match(source, /where\("tool","==","naver-visibility"\),where\("projectId","==",projectId\)/);
-  assert.match(source, /projectId!==el\.project\.value/);
-  assert.match(source, /requestKey=null;render\(\);update\(\);if\(firestoreHistory\)loadHistory/);
-  assert.match(source, /exportCsv\.disabled=true/);
+  assert.match(source, /where\("tool", "==", "naver-visibility"\), where\("projectId", "==", projectId\)/);
+  assert.match(source, /projectId !== el\.project\.value/);
+  assert.match(source, /requestGeneration\+\+; requestKey = null; render\(\); update\(\)/);
+  assert.match(source, /if \(firestoreHistory\) loadHistory\(\.\.\.firestoreHistory\)/);
+  assert.match(source, /exportCsv\.disabled = true/);
+  assert.match(source, /currentHistoryGeneration !== historyGeneration/);
 });
 
 test("주간 광고 이력은 선택 프로젝트로 조회하고 전환 중 늦은 응답을 버린다", async () => {
