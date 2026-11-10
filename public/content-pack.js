@@ -146,7 +146,7 @@ async function initialize() {
       if (currentUser !== user || currentWorkspace !== workspaceId || selectedProject !== el.project.value) return;
       show({ ...body, channels }); requestKey = null; message("미게시 상태로 저장했습니다. 사용 전에 검토하세요.", "success");
       await loadHistory();
-    } catch (error) { message(error.message, "error"); }
+    } catch (error) { if (currentUser === user && currentWorkspace === workspaceId && selectedProject === el.project.value) message(error.message, "error"); }
     finally { update(); }
   });
 }

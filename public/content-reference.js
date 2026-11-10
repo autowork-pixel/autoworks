@@ -181,7 +181,7 @@ async function initialize() {
       message(`${body.rows?.length || 0}개 레퍼런스를 저장했습니다.`, "success");
       await reloadHistory();
     } catch (error) {
-      if (currentUser === user && currentWorkspace === workspaceId) message(error.message, "error");
+      if (currentUser === user && currentWorkspace === workspaceId && selectedProject === el.project.value) message(error.message, "error");
     } finally {
       update();
     }

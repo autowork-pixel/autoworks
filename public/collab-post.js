@@ -155,7 +155,7 @@ async function initialize() {
       else lookupStatus.textContent = body.status === "running" ? "같은 요청이 진행 중입니다. 잠시 후 저장된 결과를 확인해 주세요." : "저장된 결과를 다시 확인해 주세요.";
       if (body.status !== "running") requestKey = null;
       await reloadHistory().catch(() => { lookupStatus.textContent += " 목록은 새로고침 후 확인할 수 있습니다."; });
-    } catch (error) { if (currentUser === user && currentWorkspace === workspaceId) lookupStatus.textContent = error.message; }
+    } catch (error) { if (currentUser === user && currentWorkspace === workspaceId && selectedProject === project.value && selectedPlatform === platform.value) lookupStatus.textContent = error.message; }
     finally { updateAvailability(); }
   });
   lookupStatus.textContent = apiBase ? "프로젝트와 YouTube URL을 입력해 주세요." : "서버 연결 전에는 실제 조회할 수 없습니다.";
