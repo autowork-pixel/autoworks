@@ -227,14 +227,14 @@ document.getElementById("analyze").addEventListener("click", async () => {
       render(file.name, sheet, analysis);
       status.textContent = `${integer(analysis.rowCount)}행 분석을 마쳤습니다. 결과는 이 브라우저에서만 볼 수 있습니다.`;
     } else {
-      const user = accountState.user, workspaceId = accountState.workspaceId;
+      const user = accountState.user, workspaceId = accountState.workspaceId, selectedProject = projectSelect.value;
       const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(workspaceId)}/ad-report-runs`, {
         method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${await user.getIdToken()}` },
-        body: JSON.stringify({ projectId: projectSelect.value, provider, since, until, idempotencyKey: crypto.randomUUID().replaceAll("-", "") })
+        body: JSON.stringify({ projectId: selectedProject, provider, since, until, idempotencyKey: crypto.randomUUID().replaceAll("-", "") })
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error?.code || "REQUEST_FAILED");
-      if (user !== accountState.user || workspaceId !== accountState.workspaceId) return;
+      if (user !== accountState.user || workspaceId !== accountState.workspaceId || selectedProject !== projectSelect.value) return;
       const analysis = analyze(apiRows(body.rows || []));
       latest = { generatedAt: new Date().toISOString(), source: providerLabels[provider], sheet: "API", analysis, analysisMode: "규칙 기반", sourceType: "api", provider, since, until };
       viewedStored = true; render(providerLabels[provider], "API", analysis);
@@ -273,19 +273,19 @@ historySelect.addEventListener("change", () => {
 });
 saveButton.addEventListener("click", async () => {
   if (saveButton.disabled || !latest) return;
-  const user = accountState.user, workspaceId = accountState.workspaceId;
+  const user = accountState.user, workspaceId = accountState.workspaceId, selectedProject = projectSelect.value;
   saveButton.disabled = true; saveStatus.textContent = "결과를 계정에 저장하고 있습니다.";
   try {
     const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(workspaceId)}/weekly-ad-reports`, {
       method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${await user.getIdToken()}` },
-      body: JSON.stringify({ projectId: projectSelect.value, sourceName: latest.source, sheet: latest.sheet,
+      body: JSON.stringify({ projectId: selectedProject, sourceName: latest.source, sheet: latest.sheet,
         analysis: latest.analysis, idempotencyKey: crypto.randomUUID().replaceAll("-", "") })
     });
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
       throw new Error(body.error?.code || "REQUEST_FAILED");
     }
-    if (user !== accountState.user || workspaceId !== accountState.workspaceId) return;
+    if (user !== accountState.user || workspaceId !== accountState.workspaceId || selectedProject !== projectSelect.value) return;
     viewedStored = true;
     saveStatus.textContent = "내 계정에 결과를 저장했습니다.";
     try { await accountState.loadReports?.(); }
