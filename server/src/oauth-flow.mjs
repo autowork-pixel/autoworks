@@ -14,11 +14,20 @@ export async function completeOAuth({ provider, code, state, config, stateStore,
   if (!pending || pending.provider !== provider || pending.expiresAt < now()) {
     throw new ApiError("AUTH_REQUIRED", "로그인 요청이 만료되었거나 유효하지 않습니다.", 401);
   }
-  const accessToken = await exchangeAuthorizationCode({ provider, clientId: config.clientId, clientSecret: config.clientSecret, redirectUri: pending.redirectUri, code, state, fetchImpl });
-  const identity = await fetchProviderIdentity({ provider, accessToken, fetchImpl });
-  const uid = `${provider}:${createHash("sha256").update(`${provider}:${identity.subject}`).digest("base64url")}`;
-  if (uid.length > 128) throw new ApiError("AUTH_REQUIRED", "로그인 사용자 식별값이 올바르지 않습니다.", 401);
-  await identityStore.upsert({ uid, ...identity });
-  const customToken = await tokenIssuer.createCustomToken(uid, { authProvider: provider });
-  return { customToken, provider, returnOrigin: pending.returnOrigin };
+  try {
+    const accessToken = await exchangeAuthorizationCode({ provider, clientId: config.clientId, clientSecret: config.clientSecret, redirectUri: pending.redirectUri, code, state, fetchImpl });
+    const identity = await fetchProviderIdentity({ provider, accessToken, fetchImpl });
+    const uid = `${provider}:${createHash("sha256").update(`${provider}:${identity.subject}`).digest("base64url")}`;
+    if (uid.length > 128) throw new ApiError("AUTH_REQUIRED", "로그인 사용자 식별값이 올바르지 않습니다.", 401);
+    await identityStore.upsert({ uid, ...identity });
+    const customToken = await tokenIssuer.createCustomToken(uid, { authProvider: provider });
+    return { customToken, provider, returnOrigin: pending.returnOrigin };
+  } catch (error) {
+    if (error && typeof error === "object") {
+      error.oauthReturnOrigin = pending.returnOrigin;
+      error.oauthProvider = provider;
+    }
+    throw error;
+  }
 }
+

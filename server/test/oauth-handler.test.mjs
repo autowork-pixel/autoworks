@@ -43,4 +43,26 @@ test("콜백은 custom token을 URL이 아닌 허용 출처 postMessage 본문�
   });
 });
 
+test("콜백 실패는 비밀값 없이 부모 창에 안전한 오류 코드를 전달한다", async () => {
+  const warnings = [];
+  const dependencies = {
+    ...base,
+    configs: { kakao: { clientId: "client", clientSecret: "wrong-secret", redirectUri: "https://api.example/v1/auth/kakao/callback" } },
+    logger: { warn: (...values) => warnings.push(values), error: () => {} },
+    fetchImpl: async () => ({ ok: false, json: async () => ({ error: "invalid_client", error_description: "private provider detail" }) }),
+    stateStore: { consume: async () => ({ provider: "kakao", redirectUri: "https://api.example/v1/auth/kakao/callback", returnOrigin: "https://app.example", expiresAt: Date.now() + 10000 }) }
+  };
+  await withServer(dependencies, async url => {
+    const response = await fetch(`${url}/v1/auth/kakao/callback?code=code&state=state`), body = await response.text();
+    assert.equal(response.status, 401);
+    assert.match(body, /autoworks-oauth-error/);
+    assert.match(body, /OAUTH_TOKEN_EXCHANGE_FAILED/);
+    assert.match(body, /https:\/\/app\.example/);
+    assert.equal(body.includes("wrong-secret"), false);
+    assert.equal(body.includes("private provider detail"), false);
+    assert.deepEqual(warnings[0][1], { requestId: warnings[0][1].requestId, provider: "kakao", code: "OAUTH_TOKEN_EXCHANGE_FAILED" });
+  });
+});
+
+
 
