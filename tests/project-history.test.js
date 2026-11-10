@@ -37,7 +37,8 @@ test("콘텐츠 레퍼런스 이력은 선택 프로젝트로 조회하고 전�
   const source = await readFile(new URL("../public/content-reference.js", import.meta.url), "utf8");
   assert.match(source, /where\("tool", "==", "content-reference"\), where\("projectId", "==", projectId\)/);
   assert.match(source, /projectId !== el\.project\.value/);
-  assert.match(source, /requestKey = null; render\(\); reloadHistory\(\)/);
+  assert.match(source, /requestGeneration\+\+; requestKey = null; render\(\)/);
+  assert.match(source, /expectedHistoryGeneration === historyGeneration/);
 });
 
 test("협업 게시물 이력과 비교 목록은 프로젝트를 넘나들지 않는다", async () => {
