@@ -13,7 +13,7 @@ function values(id) {
   return el[id].value.split(",").map(value => value.trim()).filter(Boolean);
 }
 function update() {
-  el.submit.disabled = !apiBase || !user || !workspaceId || !el.project.value;
+  el.submit.disabled = !navigator.onLine || !apiBase || !user || !workspaceId || !el.project.value;
 }
 function formFingerprint() {
   return JSON.stringify([el.brand.value.trim(), el.category.value.trim(), values("keywords"), el.target.value.trim(), values("strengths"), el.periodDays.value, el.collectCount.value]);
@@ -180,6 +180,7 @@ async function initialize() {
   });
   el.referenceForm.addEventListener("submit", async event => {
     event.preventDefault();
+    if (!navigator.onLine) return message("인터넷 연결을 확인한 뒤 같은 조건으로 다시 시도해 주세요.", "error");
     const context = { generation: ++requestGeneration, user, workspaceId, projectId: el.project.value, fingerprint: formFingerprint() };
     const currentUser = context.user, currentWorkspace = context.workspaceId, selectedProject = context.projectId;
     const keywords = values("keywords"), strengths = values("strengths"), brand = el.brand.value.trim(), category = el.category.value.trim();
@@ -212,5 +213,7 @@ async function initialize() {
     }
   });
 }
+window.addEventListener("offline", () => { requestGeneration++; historyGeneration++; update(); message("인터넷 연결이 끊겼습니다. 연결 후 같은 조건으로 다시 시도해 주세요.", "error"); });
+window.addEventListener("online", () => { update(); message("인터넷 연결이 복구되었습니다. 같은 조건으로 다시 실행할 수 있습니다."); });
 initialize().catch(() => message("화면을 준비하지 못했습니다. 새로고침 후 다시 시도해 주세요.", "error"));
 

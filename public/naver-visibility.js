@@ -23,7 +23,7 @@ exportCsv.addEventListener("click", () => {
 });
 function message(value, type = "") { el.status.textContent = value; el.status.className = `status ${type}`.trim(); }
 function list(id) { return el[id].value.split(",").map(value => value.trim()).filter(Boolean); }
-function update() { el.submit.disabled = !apiBase || !user || !workspaceId || !el.project.value; }
+function update() { el.submit.disabled = !navigator.onLine || !apiBase || !user || !workspaceId || !el.project.value; }
 function safeLink(value) {
   try { const url = new URL(value); return url.protocol === "https:" || url.protocol === "http:" ? url.href : null; }
   catch { return null; }
@@ -125,6 +125,7 @@ async function initialize() {
   });
   el.visibilityForm.addEventListener("submit", async event => {
     event.preventDefault();
+    if (!navigator.onLine) return message("인터넷 연결을 확인한 뒤 같은 조건으로 다시 시도해 주세요.", "error");
     const keywordValues = list("keywords"), aliases = list("aliases"), officialDomains = list("domains");
     if (!keywordValues.length || keywordValues.length > 10 || aliases.length > 5 || !officialDomains.length || officialDomains.length > 5)
       return message("키워드 1~10개, 별칭 0~5개, 도메인 1~5개를 확인해 주세요.", "error");
@@ -146,5 +147,7 @@ async function initialize() {
     finally { if (requestCurrent(context)) update(); }
   });
 }
+window.addEventListener("offline", () => { requestGeneration++; historyGeneration++; update(); message("인터넷 연결이 끊겼습니다. 연결 후 같은 조건으로 다시 시도해 주세요.", "error"); });
+window.addEventListener("online", () => { update(); message("인터넷 연결이 복구되었습니다. 같은 조건으로 다시 실행할 수 있습니다."); });
 initialize().catch(() => message("화면을 준비하지 못했습니다.", "error"));
 

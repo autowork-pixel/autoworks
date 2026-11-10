@@ -8,7 +8,7 @@ let reports = new Map(), requestKey = null, firestoreHistory = null;
 function message(text, type = "") { el.status.textContent = text; el.status.className = `status ${type}`.trim(); }
 function keywords() { return el.keywords.value.split(",").map(value => value.trim()).filter(Boolean); }
 function update() {
-  el.submit.disabled = !apiBase || !user || !workspaceId || !el.project.value;
+  el.submit.disabled = !navigator.onLine || !apiBase || !user || !workspaceId || !el.project.value;
   const ready = Boolean(el.draft.value); el.copy.disabled = !ready; el.download.disabled = !ready;
 }
 function show(report) {
@@ -103,6 +103,7 @@ async function initialize() {
   });
   el.blogForm.addEventListener("submit", async event => {
     event.preventDefault();
+    if (!navigator.onLine) return message("인터넷 연결을 확인한 뒤 같은 조건으로 다시 시도해 주세요.", "error");
     const context = { generation: ++requestGeneration, user, workspaceId, projectId: el.project.value, fingerprint: formFingerprint() };
     const currentUser = context.user, currentWorkspace = context.workspaceId, selectedProject = context.projectId;
     const list = keywords(), topic = el.topic.value.trim(), facts = el.facts.value.trim(), contentType = el.contentType.value;
@@ -123,5 +124,7 @@ async function initialize() {
     finally { if (requestCurrent(context)) update(); }
   });
 }
+window.addEventListener("offline", () => { requestGeneration++; historyGeneration++; update(); message("인터넷 연결이 끊겼습니다. 연결 후 같은 조건으로 다시 시도해 주세요.", "error"); });
+window.addEventListener("online", () => { update(); message("인터넷 연결이 복구되었습니다. 같은 조건으로 다시 실행할 수 있습니다."); });
 initialize().catch(() => message("화면을 준비하지 못했습니다.", "error"));
 
