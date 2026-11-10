@@ -37,6 +37,8 @@ if(!validId(workspaceId)||!validId(sessionId)||!validId(customerKey)||typeof aut
  onAuthStateChanged(auth,renderAccount);
  window.addEventListener("pagehide",event=>{if(!event.persisted)return;authGeneration++;requestGeneration++;loginGeneration++;activeRequest=null;if(oauthPopup&&!oauthPopup.closed)oauthPopup.close();oauthPopup=null});
  window.addEventListener("pageshow",event=>{if(event.persisted)renderAccount(auth.currentUser)});
+ window.addEventListener("offline",()=>{requestGeneration++;activeRequest=null;if(completed)return;retry.hidden=!auth.currentUser;state.textContent="인터넷 연결이 끊겼습니다. 추가 결제하지 말고 연결이 돌아오면 같은 결제를 다시 확인해 주세요."});
+ window.addEventListener("online",()=>{if(!completed)confirmPayment(auth.currentUser)});
  signin.addEventListener("click",async event=>{
   const provider=event.target.closest("[data-provider]")?.dataset.provider;
   if(!provider)return;

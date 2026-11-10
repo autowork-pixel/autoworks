@@ -25,6 +25,8 @@ assert.match(success,/const requestCurrent=context=>context\.requestGeneration==
 assert.match(success,/function renderAccount\(user\)\{authGeneration\+\+;requestGeneration\+\+;loginGeneration\+\+;activeRequest=null/,"로그인 전환은 진행 중인 이전 결제 확인·OAuth 요청을 무효화해야 합니다.");
 assert.match(success,/window\.addEventListener\("pagehide",event=>\{if\(!event\.persisted\)return;authGeneration\+\+;requestGeneration\+\+;loginGeneration\+\+;activeRequest=null/,"뒤로가기 캐시 진입 시 이전 결제 확인과 OAuth 시도를 무효화해야 합니다.");
 assert.match(success,/window\.addEventListener\("pageshow",event=>\{if\(event\.persisted\)renderAccount\(auth\.currentUser\)\}/,"뒤로가기 캐시 복원 시 현재 계정으로 같은 세션을 다시 확인해야 합니다.");
+assert.match(success,/window\.addEventListener\("offline",\(\)=>\{requestGeneration\+\+;activeRequest=null;if\(completed\)return;retry\.hidden=!auth\.currentUser/,"오프라인 전환은 진행 중 결제 확인 응답을 폐기하고 현재 계정만 재시도할 수 있게 해야 합니다.");
+assert.match(success,/window\.addEventListener\("online",\(\)=>\{if\(!completed\)confirmPayment\(auth\.currentUser\)\}/,"연결 복구 시 새 결제가 아니라 동일 세션 확인만 재시도해야 합니다.");
 assert.match(success,/if\(!requestCurrent\(context\)\)return;\s*completed=true/,"이전 계정 결제 성공은 현재 화면을 활성 상태로 바꾸면 안 됩니다.");
 assert.doesNotMatch(success,/localStorage|sessionStorage/,"일회용 결제 결과를 브라우저 저장소에 남기면 안 됩니다.");
 assert.doesNotMatch(failure,/fetch\(/,"결제 실패·취소 페이지가 구독 활성화 API를 호출하면 안 됩니다.");
