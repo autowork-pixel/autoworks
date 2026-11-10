@@ -9,7 +9,7 @@ for(const file of ["index.html","admin.html","api-guide.html","brand-search.html
   const source=await readFile(new URL(`../public/${file}`,import.meta.url),"utf8");
   const configIndex=source.indexOf('src="./runtime-config.js"');
   assert.notEqual(configIndex,-1,`${file}: 공통 API 설정을 불러와야 합니다.`);
-  const consumer=file==="brand-search.html"?'src="./brand-search.js"':"AUTOWORKS_API_BASE";
+  const consumer=file==="brand-search.html"?'src="./brand-search.js':"AUTOWORKS_API_BASE";
   const consumerIndex=source.indexOf(consumer);
   assert.notEqual(consumerIndex,-1,`${file}: API 설정 소비 코드를 찾을 수 없습니다.`);
   assert.ok(configIndex<consumerIndex,`${file}: API 설정은 사용 전에 불러와야 합니다.`);

@@ -7,6 +7,7 @@ import { normalizeInfluencerCandidateInput } from "./influencer-candidate.mjs";
 import { normalizeAiBlogInput } from "./ai-blog.mjs";
 import { normalizeNaverVisibilityInput } from "./naver-search-visibility.mjs";
 import { normalizeContentPackInput } from "./content-pack.mjs";
+import { normalizeAdReportInput } from "./ad-report.mjs";
 
 const maximumBodyBytes = 64 * 1024;
 
@@ -67,7 +68,7 @@ function bearer(request) {
   return match[1];
 }
 
-export function createHandler({ verifyIdToken, repository, credentialService, collabYouTubeService, collabInstagramService, contentReferenceService, influencerCandidateService, aiBlogService, naverVisibilityService, contentPackService, taskDispatcher, logger = console }) {
+export function createHandler({ verifyIdToken, repository, credentialService, collabYouTubeService, collabInstagramService, contentReferenceService, influencerCandidateService, aiBlogService, naverVisibilityService, contentPackService, adReportService, taskDispatcher, logger = console }) {
   return async function handler(request, response) {
     const requestId = newRequestId();
     try {
@@ -103,6 +104,18 @@ export function createHandler({ verifyIdToken, repository, credentialService, co
         if (!decoded?.uid) throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401);
         const input = normalizeWeeklyAdReport(await readJson(request));
         const result = await repository.saveWeeklyAdReport({ workspaceId: weeklyMatch[1], uid: decoded.uid, input });
+        return json(response, result.reused ? 200 : 201, { ...result, requestId }, requestId);
+      }
+      const adReportMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/ad-report-runs$/);
+      if (request.method === "POST" && adReportMatch && adReportService) {
+        if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("application/json")) {
+          throw new ApiError("INVALID_INPUT", "Content-Type은 application/json이어야 합니다.", 415);
+        }
+        let decoded;
+        try { decoded = await verifyIdToken(bearer(request)); }
+        catch { throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401); }
+        if (!decoded?.uid) throw new ApiError("AUTH_REQUIRED", "로그인을 다시 확인해주세요.", 401);
+        const result = await adReportService.run({ workspaceId: adReportMatch[1], uid: decoded.uid, input: normalizeAdReportInput(await readJson(request)) });
         return json(response, result.reused ? 200 : 201, { ...result, requestId }, requestId);
       }
       const collabMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/collab-youtube-runs$/);
@@ -167,7 +180,7 @@ export function createHandler({ verifyIdToken, repository, credentialService, co
       const visibilityMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/naver-visibility-runs$/);
       if(request.method==="POST"&&visibilityMatch&&naverVisibilityService){if(!String(request.headers["content-type"]||"").toLowerCase().startsWith("application/json"))throw new ApiError("INVALID_INPUT","Content-Type은 application/json이어야 합니다.",415);let decoded;try{decoded=await verifyIdToken(bearer(request))}catch{throw new ApiError("AUTH_REQUIRED","로그인을 다시 확인해주세요.",401)}if(!decoded?.uid)throw new ApiError("AUTH_REQUIRED","로그인을 다시 확인해주세요.",401);const result=await naverVisibilityService.run({workspaceId:visibilityMatch[1],uid:decoded.uid,input:normalizeNaverVisibilityInput(await readJson(request))});return json(response,result.reused?200:201,{...result,requestId},requestId)}
       const packMatch=request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/content-pack-runs$/);if(request.method==="POST"&&packMatch&&contentPackService){if(!String(request.headers["content-type"]||"").toLowerCase().startsWith("application/json"))throw new ApiError("INVALID_INPUT","Content-Type은 application/json이어야 합니다.",415);let decoded;try{decoded=await verifyIdToken(bearer(request))}catch{throw new ApiError("AUTH_REQUIRED","로그인을 다시 확인해주세요.",401)}if(!decoded?.uid)throw new ApiError("AUTH_REQUIRED","로그인을 다시 확인해주세요.",401);const result=await contentPackService.run({workspaceId:packMatch[1],uid:decoded.uid,input:normalizeContentPackInput(await readJson(request))});return json(response,result.reused?200:201,{...result,requestId},requestId)}
-      const credentialMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/provider-credentials\/(naver-searchad|naver-search|youtube|apify|openai)$/);
+      const credentialMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/provider-credentials\/(naver-searchad|naver-search|youtube|apify|openai|meta-ads|google-ads|kakao-moment)$/);
       if (credentialMatch && credentialService) {
         const token = bearer(request);
         let decoded;

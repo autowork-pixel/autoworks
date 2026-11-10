@@ -9,8 +9,13 @@ const number = value => Number(String(value ?? "").replaceAll(",", "").replaceAl
 const integer = value => Math.round(value).toLocaleString("ko-KR");
 const money = value => `${integer(value)}원`;
 const percent = value => `${value.toFixed(1)}%`;
+const optionalInteger = value => value == null ? "미제공" : integer(value);
+const optionalMoney = value => value == null ? "미제공" : money(value);
+const optionalPercent = value => value == null ? "미제공" : percent(value);
 const apiBase = String(window.AUTOWORKS_API_BASE || "").replace(/\/$/, "");
 const accountState = { user: null, workspaceId: null };
+const providerLabels = { "meta-ads": "Meta Ads", "google-ads": "Google Ads", "kakao-moment": "카카오모먼트" };
+const sourceType = document.getElementById("source-type"), excelSource = document.getElementById("excel-source"), apiPeriod = document.getElementById("api-period");
 const account = document.createElement("div"), loginButton = document.createElement("button"), projectSelect = document.createElement("select"), historySelect = document.createElement("select"), saveButton = document.createElement("button"), saveStatus = document.createElement("p");
 account.className = "card";
 account.innerHTML = "<h2>내 계정에 결과 저장</h2>";
@@ -23,7 +28,7 @@ saveStatus.textContent = apiBase ? "로그인하고 프로젝트를 선택해 �
 account.append(loginButton, projectSelect, saveButton, saveStatus, historySelect);
 document.getElementById("results").after(account);
 let viewedStored = false;
-function enableSave() { saveButton.disabled = !latest || viewedStored || !apiBase || !accountState.user || !accountState.workspaceId || !projectSelect.value; }
+function enableSave() { saveButton.disabled = sourceType.value !== "excel" || !latest || viewedStored || !apiBase || !accountState.user || !accountState.workspaceId || !projectSelect.value; }
 
 async function unzip(buffer) {
   const bytes = new Uint8Array(buffer), view = new DataView(buffer), decoder = new TextDecoder();
@@ -119,18 +124,19 @@ function findTable(sheets) {
     const get = key => row[mapping[key]] ?? "";
     return { campaign: String(get("campaign") || "미분류"), group: String(get("group")), keyword: String(get("keyword")),
       impr: number(get("impr")), click: number(get("click")), cost: number(get("cost")),
-      conv: number(get("conv")), revenue: number(get("revenue")) };
+      conv: "conv" in mapping ? number(get("conv")) : null, revenue: "revenue" in mapping ? number(get("revenue")) : null };
   }).filter(row => row.impr || row.click || row.cost);
   if (!parsed.length) throw new Error("분석할 광고 데이터 행이 없습니다.");
   return { sheet: name, rows: parsed };
 }
 
 function aggregate(rows) {
-  const result = Object.fromEntries(["impr", "click", "cost", "conv", "revenue"].map(key => [key, rows.reduce((sum, row) => sum + row[key], 0)]));
-  result.ctr = result.impr ? result.click / result.impr * 100 : 0;
-  result.cpc = result.click ? result.cost / result.click : 0;
-  result.cvr = result.click ? result.conv / result.click * 100 : 0;
-  result.roas = result.cost ? result.revenue / result.cost * 100 : 0;
+  const sum = key => rows.some(row => row[key] != null) ? rows.reduce((total, row) => total + (row[key] ?? 0), 0) : null;
+  const result = Object.fromEntries(["impr", "click", "cost", "conv", "revenue"].map(key => [key, sum(key)]));
+  result.ctr = result.impr > 0 && result.click != null ? result.click / result.impr * 100 : null;
+  result.cpc = result.click > 0 && result.cost != null ? result.cost / result.click : null;
+  result.cvr = result.click > 0 && result.conv != null ? result.conv / result.click * 100 : null;
+  result.roas = result.cost > 0 && result.revenue != null ? result.revenue / result.cost * 100 : null;
   return result;
 }
 function analyze(rows) {
@@ -138,8 +144,8 @@ function analyze(rows) {
   for (const row of rows) groups.set(row.campaign, [...(groups.get(row.campaign) || []), row]);
   const campaigns = [...groups].map(([name, items]) => ({ name, ...aggregate(items) })).sort((a, b) => b.cost - a.cost).slice(0, 20);
   const enriched = rows.map(row => ({ ...row, ...aggregate([row]) }));
-  const waste = enriched.filter(row => row.cost >= 1000 && (!row.conv || (total.roas && row.roas < total.roas * .5))).sort((a, b) => b.cost - a.cost).slice(0, 30);
-  const winners = enriched.filter(row => row.revenue > 0).sort((a, b) => b.roas - a.roas || b.revenue - a.revenue).slice(0, 20);
+  const waste = enriched.filter(row => row.cost >= 1000 && row.conv != null && (row.conv === 0 || (total.roas != null && row.roas != null && row.roas < total.roas * .5))).sort((a, b) => b.cost - a.cost).slice(0, 30);
+  const winners = enriched.filter(row => row.revenue > 0 && row.roas != null).sort((a, b) => b.roas - a.roas || b.revenue - a.revenue).slice(0, 20);
   return { total, campaigns, waste, winners, rowCount: rows.length };
 }
 
@@ -150,15 +156,15 @@ function addTable(target, rows) {
   }
   for (const item of rows) {
     const row = target.insertRow();
-    for (const value of [item.keyword || item.name || item.campaign, money(item.cost), integer(item.click), item.conv.toFixed(1), percent(item.roas)]) {
+    for (const value of [item.keyword || item.name || item.campaign, optionalMoney(item.cost), optionalInteger(item.click), item.conv == null ? "미제공" : item.conv.toFixed(1), optionalPercent(item.roas)]) {
       row.insertCell().textContent = value;
     }
   }
 }
 function render(source, sheet, result) {
-  document.getElementById("source").textContent = `${source} · ${sheet} 탭 · ${integer(result.rowCount)}행 · 규칙 기반 분석`;
-  const metrics = [["광고비", money(result.total.cost)], ["전환매출", money(result.total.revenue)], ["ROAS", percent(result.total.roas)],
-    ["CTR", percent(result.total.ctr)], ["CPC", money(result.total.cpc)], ["전환수", result.total.conv.toFixed(1)]];
+  document.getElementById("source").textContent = `${source} · ${sheet === "API" ? "API 조회" : `${sheet} 탭`} · ${integer(result.rowCount)}행 · 규칙 기반 분석`;
+  const metrics = [["광고비", optionalMoney(result.total.cost)], ["전환매출", optionalMoney(result.total.revenue)], ["ROAS", optionalPercent(result.total.roas)],
+    ["CTR", optionalPercent(result.total.ctr)], ["CPC", optionalMoney(result.total.cpc)], ["전환수", result.total.conv == null ? "미제공" : result.total.conv.toFixed(1)]];
   const grid = document.getElementById("metrics"); grid.replaceChildren();
   for (const [label, value] of metrics) {
     const box = document.createElement("div"), title = document.createElement("span"), number = document.createElement("b");
@@ -166,8 +172,8 @@ function render(source, sheet, result) {
   }
   const insights = document.getElementById("insights"); insights.replaceChildren();
   for (const value of [
-    `총 광고비 ${money(result.total.cost)}, 전환매출 ${money(result.total.revenue)}, ROAS ${percent(result.total.roas)}입니다.`,
-    `전환이 없거나 평균 ROAS 절반 미만인 고비용 검색어가 ${result.waste.length}개 탐지됐습니다.`,
+    `총 광고비 ${optionalMoney(result.total.cost)}, 전환매출 ${optionalMoney(result.total.revenue)}, ROAS ${optionalPercent(result.total.roas)}입니다.`,
+    result.total.conv == null ? "이 매체 응답에는 전환·매출 지표가 없어 낭비·확대 판단에서 제외했습니다." : `전환이 없거나 평균 ROAS 절반 미만인 고비용 검색어가 ${result.waste.length}개 탐지됐습니다.`,
     "낭비 후보는 검색 의도와 전환 지연을 확인한 뒤 입찰가·소재·랜딩을 순서대로 점검하세요."
   ]) { const item = document.createElement("li"); item.textContent = value; insights.append(item); }
   addTable(document.getElementById("campaigns"), result.campaigns);
@@ -177,20 +183,67 @@ function render(source, sheet, result) {
 }
 
 let latest;
+function apiRows(rows) {
+  return rows.map(row => ({
+    campaign: row.campaignName || row.campaignId || "미분류", group: row.adGroupName || "", keyword: row.adName || "",
+    impr: row.impressions, click: row.clicks, cost: row.cost, conv: row.conversions, revenue: row.revenue
+  }));
+}
+function localDate(date) {
+  const year = date.getFullYear(), month = String(date.getMonth() + 1).padStart(2, "0"), day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+function setDefaultPeriod() {
+  const until = new Date(); until.setDate(until.getDate() - 1);
+  const since = new Date(until); since.setDate(since.getDate() - 6);
+  if (!document.getElementById("since").value) document.getElementById("since").value = localDate(since);
+  if (!document.getElementById("until").value) document.getElementById("until").value = localDate(until);
+}
+sourceType.addEventListener("change", () => {
+  const excel = sourceType.value === "excel";
+  excelSource.hidden = !excel; apiPeriod.hidden = excel;
+  document.getElementById("analyze").textContent = excel ? "분석하기" : `${providerLabels[sourceType.value]} 불러와 분석`;
+  document.getElementById("status").textContent = excel ? "파일을 선택해 주세요." : "로그인·프로젝트 선택·광고 API 연결 후 조회할 수 있습니다.";
+  if (!excel) setDefaultPeriod();
+  latest = null; viewedStored = false; document.getElementById("results").hidden = true; document.getElementById("download").disabled = true; enableSave();
+});
 document.getElementById("analyze").addEventListener("click", async () => {
   const file = document.getElementById("file").files[0], status = document.getElementById("status"), button = document.getElementById("analyze");
   latest = null; viewedStored = false; document.getElementById("results").hidden = true; document.getElementById("download").disabled = true; enableSave();
-  if (!file || !/\.xlsx$/i.test(file.name) || file.size > 5 * 1024 * 1024) { status.textContent = "5MB 이하의 .xlsx 파일을 선택해 주세요."; return; }
-  button.disabled = true; status.textContent = "Excel 파일을 분석하고 있습니다.";
+  const provider = sourceType.value;
+  if (provider === "excel" && (!file || !/\.xlsx$/i.test(file.name) || file.size > 5 * 1024 * 1024)) { status.textContent = "5MB 이하의 .xlsx 파일을 선택해 주세요."; return; }
+  if (provider !== "excel" && (!apiBase || !accountState.user || !accountState.workspaceId || !projectSelect.value)) {
+    status.textContent = "로그인하고 저장할 프로젝트를 선택한 뒤 다시 시도해 주세요."; return;
+  }
+  const since = document.getElementById("since").value, until = document.getElementById("until").value;
+  const days = since && until ? Math.round((new Date(`${until}T00:00:00Z`) - new Date(`${since}T00:00:00Z`)) / 86400000) + 1 : 0;
+  if (provider !== "excel" && (days < 1 || days > 31)) { status.textContent = "조회 기간을 1~31일로 선택해 주세요."; return; }
+  button.disabled = true; status.textContent = provider === "excel" ? "Excel 파일을 분석하고 있습니다." : `${providerLabels[provider]} 성과를 안전하게 불러오고 있습니다.`;
   try {
-    const { sheet, rows } = findTable(workbookSheets(await unzip(await file.arrayBuffer())));
-    const analysis = analyze(rows);
-    latest = { generatedAt: new Date().toISOString(), source: file.name, sheet, analysis, analysisMode: "규칙 기반" };
-    render(file.name, sheet, analysis);
-    status.textContent = `${integer(analysis.rowCount)}행 분석을 마쳤습니다. 결과는 이 브라우저에서만 볼 수 있습니다.`;
+    if (provider === "excel") {
+      const { sheet, rows } = findTable(workbookSheets(await unzip(await file.arrayBuffer())));
+      const analysis = analyze(rows);
+      latest = { generatedAt: new Date().toISOString(), source: file.name, sheet, analysis, analysisMode: "규칙 기반", sourceType: "excel" };
+      render(file.name, sheet, analysis);
+      status.textContent = `${integer(analysis.rowCount)}행 분석을 마쳤습니다. 결과는 이 브라우저에서만 볼 수 있습니다.`;
+    } else {
+      const user = accountState.user, workspaceId = accountState.workspaceId;
+      const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(workspaceId)}/ad-report-runs`, {
+        method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${await user.getIdToken()}` },
+        body: JSON.stringify({ projectId: projectSelect.value, provider, since, until, idempotencyKey: crypto.randomUUID().replaceAll("-", "") })
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.error?.code || "REQUEST_FAILED");
+      if (user !== accountState.user || workspaceId !== accountState.workspaceId) return;
+      const analysis = analyze(apiRows(body.rows || []));
+      latest = { generatedAt: new Date().toISOString(), source: providerLabels[provider], sheet: "API", analysis, analysisMode: "규칙 기반", sourceType: "api", provider, since, until };
+      viewedStored = true; render(providerLabels[provider], "API", analysis);
+      status.textContent = `${providerLabels[provider]}에서 ${integer(analysis.rowCount)}행을 불러와 분석하고 계정에 저장했습니다.`;
+      try { await accountState.loadReports?.(); } catch { saveStatus.textContent = "분석 결과는 저장됐으며 목록은 새로고침 후 확인할 수 있습니다."; }
+    }
     document.getElementById("download").disabled = false;
     enableSave();
-  } catch (error) { status.textContent = error.message || "Excel 파일을 분석하지 못했습니다."; }
+  } catch (error) { status.textContent = `분석하지 못했습니다. (${error.message || "REQUEST_FAILED"})`; }
   finally { button.disabled = false; }
 });
 document.getElementById("download").addEventListener("click", () => {
@@ -204,8 +257,11 @@ historySelect.addEventListener("change", () => {
   const report = accountState.reports?.get(historySelect.value);
   if (!report) return;
   viewedStored = true;
-  latest = { generatedAt: new Date().toISOString(), source: report.sourceName, sheet: report.sheet, analysis: report.analysis, analysisMode: report.analysisMode };
-  render(report.sourceName, report.sheet, report.analysis);
+  const api = report.sourceType === "api";
+  const analysis = api ? analyze(apiRows(report.adPerformance?.rows || [])) : report.analysis;
+  const source = api ? (providerLabels[report.provider] || report.provider || "광고 API") : report.sourceName;
+  latest = { generatedAt: new Date().toISOString(), source, sheet: api ? "API" : report.sheet, analysis, analysisMode: report.analysisMode || "규칙 기반", sourceType: api ? "api" : "excel" };
+  render(source, api ? "API" : report.sheet, analysis);
   document.getElementById("download").disabled = false;
   document.getElementById("status").textContent = "내 계정에 저장된 결과를 불러왔습니다.";
   enableSave();
@@ -251,7 +307,10 @@ async function initAccount() {
     if (workspaceId !== accountState.workspaceId || user !== accountState.user) return;
     accountState.reports = new Map(snapshot.docs.map(item => [item.id, item.data()]));
     historySelect.replaceChildren(new Option(accountState.reports.size ? "저장된 결과 선택" : "저장된 주간 광고 결과 없음", ""));
-    for (const [id, report] of accountState.reports) historySelect.add(new Option(`${report.sourceName} · ${report.summary}`, id));
+    for (const [id, report] of accountState.reports) {
+      const source = report.sourceType === "api" ? (providerLabels[report.provider] || "광고 API") : (report.sourceName || "Excel");
+      historySelect.add(new Option(`${source} · ${report.summary}`, id));
+    }
     historySelect.disabled = accountState.reports.size === 0;
   };
   loginButton.addEventListener("click", async () => {

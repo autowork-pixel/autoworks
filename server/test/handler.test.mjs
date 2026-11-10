@@ -69,6 +69,24 @@ test("주간 광고 결과 저장은 인증·입력 검증 뒤 고객별 저장�
   });
 });
 
+test("광고 API 보고서는 인증과 31일 기간 검증 뒤 실행한다", async () => {
+  let received;
+  await withServer({ verifyIdToken: async () => ({ uid: "user-a" }), repository: {}, adReportService: { run: async value => {
+    received = value; return { runId: "run-ad", status: "succeeded", rows: [{ platform: "meta-ads", cost: 1000 }] };
+  } } }, async base => {
+    const url = `${base}/v1/workspaces/workspace-a/ad-report-runs`;
+    const body = { projectId: "project-a", provider: "meta-ads", since: "2026-10-01", until: "2026-10-31", idempotencyKey: "random-request-key-0001" };
+    assert.equal((await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) })).status, 401);
+    assert.equal((await fetch(url, { method: "POST", headers: { "content-type": "application/json", authorization: "Bearer token" },
+      body: JSON.stringify({ ...body, since: "2026-09-01" }) })).status, 400);
+    const response = await fetch(url, { method: "POST", headers: { "content-type": "application/json", authorization: "Bearer token" }, body: JSON.stringify(body) });
+    assert.equal(response.status, 201);
+    assert.equal((await response.json()).runId, "run-ad");
+    assert.equal(received.uid, "user-a");
+    assert.equal(received.input.provider, "meta-ads");
+  });
+});
+
 test("협업 YouTube 실행은 인증과 URL 검증 뒤에만 호출한다", async () => {
   let received;
   await withServer({ verifyIdToken: async () => ({ uid: "user-a" }), repository: {},
@@ -391,5 +409,19 @@ test("API 연결 해제는 토큰 uid를 검증한 뒤 서비스에 위임한다
     assert.equal(response.status, 200);
     assert.equal(received.uid, "user-a");
   });
+});
+
+test("광고 매체별 자격정보 경로를 허용한다", async () => {
+  const received = [];
+  await withServer({
+    verifyIdToken: async () => ({ uid: "user-a" }), repository: {},
+    credentialService: { status: async value => { received.push(value); return { provider: value.provider, status: "disconnected" }; } }
+  }, async base => {
+    for (const provider of ["meta-ads", "google-ads", "kakao-moment"]) {
+      const response = await fetch(`${base}/v1/workspaces/workspace-a/provider-credentials/${provider}`, { headers: { authorization: "Bearer token" } });
+      assert.equal(response.status, 200);
+    }
+  });
+  assert.deepEqual(received.map(value => value.provider), ["meta-ads", "google-ads", "kakao-moment"]);
 });
 

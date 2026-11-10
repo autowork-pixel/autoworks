@@ -15,6 +15,7 @@ import { createInfluencerCandidateService } from "./influencer-candidate-service
 import { createAiBlogService } from "./ai-blog-service.mjs";
 import { createNaverVisibilityService } from "./naver-search-visibility-service.mjs";
 import { createContentPackService } from "./content-pack-service.mjs";
+import { createAdReportService } from "./ad-report-service.mjs";
 import { createHandler } from "./handler.mjs";
 import { createKmsKeyManager } from "./kms-key-manager.mjs";
 import { createOAuthHandler } from "./oauth-handler.mjs";
@@ -50,6 +51,7 @@ export function createApplication({ config, database, serverTimestamp, verifyIdT
   const aiBlogService = createAiBlogService({ repository, keyManager, model: config.openAiModel });
   const naverVisibilityService = createNaverVisibilityService({ repository, keyManager });
   const contentPackService = createContentPackService({ repository, keyManager, model: config.openAiModel });
+  const adReportService = createAdReportService({ repository, keyManager });
   const taskDispatcher = createTaskDispatcher({
     client: tasksClient, projectId: config.projectId, location: config.location, queue: config.queue,
     workerUrl: config.serviceUrl, serviceAccountEmail: config.serviceAccountEmail, audience: config.workerAudience
@@ -59,7 +61,7 @@ export function createApplication({ config, database, serverTimestamp, verifyIdT
   });
   const publicHandler = createCorsHandler({
     allowedOrigins: config.allowedOrigins,
-    handler: createHandler({ verifyIdToken, repository, credentialService, collabYouTubeService, collabInstagramService, contentReferenceService, influencerCandidateService, aiBlogService, naverVisibilityService, contentPackService, taskDispatcher, logger })
+    handler: createHandler({ verifyIdToken, repository, credentialService, collabYouTubeService, collabInstagramService, contentReferenceService, influencerCandidateService, aiBlogService, naverVisibilityService, contentPackService, adReportService, taskDispatcher, logger })
   });
   const contextLoader = createWorkerContextLoader({
     repository: createWorkerContextRepository({ database }), keyManager
