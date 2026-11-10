@@ -5,7 +5,7 @@ import test from "node:test";
 const cases = [
   ["content-pack.js", /selectedProject !== el\.project\.value/, /projectId: selectedProject/],
   ["content-reference.js", /selectedProject !== el\.project\.value/, /projectId: selectedProject/],
-  ["collab-post.js", /selectedProject !== project\.value/, /projectId: selectedProject/],
+  ["collab-post.js", /if \(!lookupCurrent\(context\)\) return/, /projectId: selectedProject/],
   ["weekly-ad.js", /selectedProject !== projectSelect\.value/, /projectId: selectedProject/],
   ["ai-blog.js", /selectedProject!==el\.project\.value/, /projectId:selectedProject/],
   ["influencer-candidates.js", /selectedProject!==el\.project\.value/, /projectId:selectedProject/],
@@ -21,7 +21,7 @@ for (const [file, guard, request] of cases) test(`${file} 실행 응답은 요�
 const errorCases = [
   ["content-pack.js", /catch \(error\) \{ if \(currentUser === user && currentWorkspace === workspaceId && selectedProject === el\.project\.value\)/],
   ["content-reference.js", /currentUser === user && currentWorkspace === workspaceId && selectedProject === el\.project\.value/],
-  ["collab-post.js", /currentUser === user && currentWorkspace === workspaceId && selectedProject === project\.value && selectedPlatform === platform\.value/],
+  ["collab-post.js", /catch \(error\) \{ if \(lookupCurrent\(context\)\) lookupStatus\.textContent = error\.message; \}/],
   ["weekly-ad.js", /requestUser === accountState\.user && requestWorkspace === accountState\.workspaceId && requestProject === projectSelect\.value/],
   ["ai-blog.js", /catch\(error\)\{if\(currentUser===user&&currentWorkspace===workspaceId&&selectedProject===el\.project\.value\)/],
   ["influencer-candidates.js", /catch\(error\)\{if\(currentUser===user&&currentWorkspace===workspaceId&&selectedProject===el\.project\.value\)/],
@@ -31,6 +31,19 @@ const errorCases = [
 for (const [file, guard] of errorCases) test(`${file} 이전 요청 오류는 바뀐 계정·프로젝트 화면을 덮지 않는다`, async () => {
   const source = await readFile(new URL(`../public/${file}`, import.meta.url), "utf8");
   assert.match(source, guard);
+});
+
+test("collab-post.js 이전 URL·플랫폼·프로젝트 요청은 현재 화면과 버튼 상태를 덮지 않는다", async () => {
+  const source = await readFile(new URL("../public/collab-post.js", import.meta.url), "utf8");
+  assert.match(source, /let user = null, workspaceId = null, database, auth, generation = 0, lookupGeneration = 0, historyGeneration = 0/);
+  assert.match(source, /function lookupCurrent\(context\)/);
+  assert.match(source, /context\.url === postUrl\.value\.trim\(\)/);
+  assert.match(source, /postUrl\.addEventListener\("input", \(\) => \{ lookupGeneration\+\+; requestKey = null; clearResult\(\)/);
+  assert.match(source, /const context = \{ generation: \+\+lookupGeneration, user, workspaceId, projectId: project\.value, platform: platform\.value, url: postUrl\.value\.trim\(\) \}/);
+  assert.match(source, /body: JSON\.stringify\(\{ projectId: selectedProject, url: context\.url, idempotencyKey: requestKey \}\)/);
+  assert.match(source, /finally \{ if \(lookupCurrent\(context\)\) updateAvailability\(\); \}/);
+  assert.match(source, /const requestHistoryGeneration = \+\+historyGeneration/);
+  assert.match(source, /requestHistoryGeneration !== historyGeneration/);
 });
 
 test("brand-search.js 예약·상태 조회는 요청 당시 계정·워크스페이스·프로젝트만 갱신한다", async () => {
