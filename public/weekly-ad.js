@@ -28,7 +28,7 @@ saveStatus.textContent = apiBase ? "로그인하고 프로젝트를 선택해 �
 account.append(loginButton, projectSelect, saveButton, saveStatus, historySelect);
 document.getElementById("results").after(account);
 let viewedStored = false;
-function enableSave() { saveButton.disabled = sourceType.value !== "excel" || !latest || viewedStored || !apiBase || !accountState.user || !accountState.workspaceId || !projectSelect.value; }
+  function enableSave() { saveButton.disabled = !navigator.onLine || sourceType.value !== "excel" || !latest || viewedStored || !apiBase || !accountState.user || !accountState.workspaceId || !projectSelect.value; }
 
 async function unzip(buffer) {
   const bytes = new Uint8Array(buffer), view = new DataView(buffer), decoder = new TextDecoder();
@@ -185,7 +185,7 @@ function render(source, sheet, result) {
 let latest, analysisGeneration = 0, historyGeneration = 0, saveGeneration = 0;
 function resetAnalysis() {
   latest = null; viewedStored = false; document.getElementById("results").hidden = true;
-  document.getElementById("download").disabled = true; document.getElementById("analyze").disabled = false; enableSave();
+  document.getElementById("download").disabled = true; document.getElementById("analyze").disabled = sourceType.value !== "excel" && !navigator.onLine; enableSave();
 }
 function analysisCurrent(context) {
   return context.generation === analysisGeneration && context.provider === sourceType.value
@@ -224,6 +224,7 @@ document.getElementById("analyze").addEventListener("click", async () => {
   const file = document.getElementById("file").files[0], status = document.getElementById("status"), button = document.getElementById("analyze");
   resetAnalysis();
   const provider = sourceType.value;
+  if (provider !== "excel" && !navigator.onLine) { status.textContent = "인터넷 연결을 확인한 뒤 같은 기간으로 다시 시도해 주세요."; return; }
   if (provider === "excel" && (!file || !/\.xlsx$/i.test(file.name) || file.size > 5 * 1024 * 1024)) { status.textContent = "5MB 이하의 .xlsx 파일을 선택해 주세요."; return; }
   if (provider !== "excel" && (!apiBase || !accountState.user || !accountState.workspaceId || !projectSelect.value)) {
     status.textContent = "로그인하고 저장할 프로젝트를 선택한 뒤 다시 시도해 주세요."; return;
@@ -272,6 +273,7 @@ projectSelect.addEventListener("change", () => {
   analysisGeneration++; saveGeneration++; resetAnalysis(); accountState.reports = new Map();
   historySelect.replaceChildren(new Option(projectSelect.value ? "저장된 결과 불러오는 중" : "프로젝트 선택 후 결과 조회", ""));
   historySelect.disabled = true;
+  if (!navigator.onLine) { saveStatus.textContent = "오프라인에서는 저장 결과를 불러올 수 없습니다. Excel 로컬 분석은 계속 사용할 수 있습니다."; return; }
   const expectedHistoryGeneration = historyGeneration + 1, user = accountState.user, workspaceId = accountState.workspaceId, projectId = projectSelect.value;
   accountState.loadReports?.().catch(() => {
     if (expectedHistoryGeneration === historyGeneration && user === accountState.user && workspaceId === accountState.workspaceId && projectId === projectSelect.value)
@@ -329,7 +331,7 @@ async function initAccount() {
   accountState.loadReports = async () => {
     const currentHistoryGeneration = ++historyGeneration;
     const projectId = projectSelect.value;
-    if (!accountState.workspaceId || !projectId) return;
+    if (!navigator.onLine || !accountState.workspaceId || !projectId) return;
     const workspaceId = accountState.workspaceId, user = accountState.user;
     const snapshot = await getDocs(query(collection(database, "workspaces", workspaceId, "reports"), where("tool", "==", "weekly-ad"), where("projectId", "==", projectId), orderBy("createdAt", "desc"), limit(20)));
     if (currentHistoryGeneration !== historyGeneration || workspaceId !== accountState.workspaceId || user !== accountState.user || projectId !== projectSelect.value) return;
@@ -378,6 +380,17 @@ async function initAccount() {
   });
   window.addEventListener("pageshow", event => {
     if (event.persisted) renderAccount(auth.currentUser);
+  });
+  window.addEventListener("offline", () => {
+    analysisGeneration++; historyGeneration++; saveGeneration++;
+    document.getElementById("analyze").disabled = sourceType.value !== "excel";
+    historySelect.disabled = true; enableSave();
+    saveStatus.textContent = "인터넷 연결이 끊겼습니다. Excel 로컬 분석만 계속 사용할 수 있습니다.";
+  });
+  window.addEventListener("online", () => {
+    document.getElementById("analyze").disabled = false; enableSave();
+    saveStatus.textContent = "인터넷 연결이 복구되었습니다. 광고 API 조회와 결과 저장을 다시 사용할 수 있습니다.";
+    if (accountState.user && accountState.workspaceId && projectSelect.value) accountState.loadReports().catch(() => { saveStatus.textContent = "연결은 복구됐지만 저장 결과를 불러오지 못했습니다."; });
   });
 }
 initAccount().catch(() => { saveStatus.textContent = "계정 연결 화면을 준비하지 못했습니다."; });
