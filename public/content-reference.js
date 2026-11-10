@@ -2,7 +2,7 @@ const apiBase = String(window.AUTOWORKS_API_BASE || "").replace(/\/$/, "");
 const hosts = new Set(["localhost", "127.0.0.1", "autoworks-c9a6a.web.app", "autoworks-c9a6a.firebaseapp.com"]);
 const ids = ["referenceForm", "login", "project", "brand", "category", "keywords", "target", "strengths", "periodDays", "collectCount", "submit", "status", "history", "results", "downloadCsv", "downloadJson", "resultMeta"];
 const el = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
-let user = null, workspaceId = null, database, auth, generation = 0, reports = new Map(), requestKey = null;
+let user = null, workspaceId = null, database, auth, generation = 0, reports = new Map(), requestKey = null, reloadHistory = async () => {};
 let currentRows = [], currentTitle = "화제 콘텐츠 레퍼런스";
 
 function message(text, type = "") {
@@ -73,11 +73,13 @@ function render(rows = [], capturedAt) {
     el.results.append(link);
   }
 }
-async function loadHistory(getDocs, collection, query, orderBy, limit) {
-  const currentUser = user, currentWorkspace = workspaceId;
-  const snapshot = await getDocs(query(collection(database, "workspaces", currentWorkspace, "reports"), orderBy("createdAt", "desc"), limit(50)));
-  if (currentUser !== user || currentWorkspace !== workspaceId) return;
-  reports = new Map(snapshot.docs.filter(doc => doc.data().tool === "content-reference" && Array.isArray(doc.data().rows)).map(doc => [doc.id, doc.data()]));
+async function loadHistory(getDocs, collection, query, where, orderBy, limit) {
+  const currentUser = user, currentWorkspace = workspaceId, projectId = el.project.value;
+  reports.clear(); el.history.replaceChildren(new Option(projectId ? "결과 불러오는 중" : "프로젝트 선택 후 불러옵니다.", "")); el.history.disabled = true;
+  if (!currentUser || !currentWorkspace || !projectId) return;
+  const snapshot = await getDocs(query(collection(database, "workspaces", currentWorkspace, "reports"), where("tool", "==", "content-reference"), where("projectId", "==", projectId), orderBy("createdAt", "desc"), limit(50)));
+  if (currentUser !== user || currentWorkspace !== workspaceId || projectId !== el.project.value) return;
+  reports = new Map(snapshot.docs.filter(doc => Array.isArray(doc.data().rows)).map(doc => [doc.id, doc.data()]));
   el.history.replaceChildren(new Option(reports.size ? "저장된 결과 선택" : "저장된 결과 없음", ""));
   for (const [id, report] of reports) el.history.add(new Option(`${report.query || "검색"} · ${report.rows.length}개 · ${date(report.capturedAt || report.createdAt)}`, id));
   el.history.disabled = !reports.size;
@@ -103,7 +105,7 @@ el.downloadJson.addEventListener("click", () => {
   download(JSON.stringify({ title: currentTitle, source: "YouTube public API", exportedAt: new Date().toISOString(), rows: currentRows }, null, 2), "application/json;charset=utf-8", fileName("json"));
 });
 el.project.addEventListener("change", () => {
-  requestKey = null;
+  requestKey = null; render(); reloadHistory().catch(() => message("저장된 결과를 불러오지 못했습니다.", "error"));
   update();
 });
 el.referenceForm.addEventListener("input", event => {
@@ -120,6 +122,7 @@ async function initialize() {
   const app = getApps()[0] || initializeApp({ apiKey: "AIzaSyC4j2aelRB3uEyGmZJbvW0OGNL5-Oi2uvA", authDomain: "autoworks-c9a6a.firebaseapp.com", projectId: "autoworks-c9a6a", appId: "1:823085494995:web:3be4bdd40fe0519bc59a26" });
   auth = getAuth(app);
   database = getFirestore(app);
+  reloadHistory = () => loadHistory(getDocs, collection, query, where, orderBy, limit);
   el.login.addEventListener("click", () => signInWithPopup(auth, new GoogleAuthProvider()).catch(() => message("로그인하지 못했습니다.", "error")));
   onAuthStateChanged(auth, async signedIn => {
     const current = ++generation;
@@ -147,7 +150,7 @@ async function initialize() {
       for (const item of projects.docs) el.project.add(new Option(item.data().name || "프로젝트", item.id));
       el.project.disabled = false;
       update();
-      await loadHistory(getDocs, collection, query, orderBy, limit);
+      await reloadHistory();
       message(apiBase ? "조건을 입력하고 레퍼런스를 찾아보세요." : "서버 배포 전이라 실제 검색은 비활성입니다.");
     } catch {
       if (current === generation) message("계정 정보를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.", "error");
@@ -176,7 +179,7 @@ async function initialize() {
       render(body.rows, body.capturedAt);
       requestKey = null;
       message(`${body.rows?.length || 0}개 레퍼런스를 저장했습니다.`, "success");
-      await loadHistory(getDocs, collection, query, orderBy, limit);
+      await reloadHistory();
     } catch (error) {
       if (currentUser === user && currentWorkspace === workspaceId) message(error.message, "error");
     } finally {

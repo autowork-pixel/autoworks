@@ -252,7 +252,12 @@ document.getElementById("download").addEventListener("click", () => {
   const link = document.createElement("a"); link.href = url; link.download = "weekly-ad-analysis.json"; link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
-projectSelect.addEventListener("change", enableSave);
+projectSelect.addEventListener("change", () => {
+  enableSave(); accountState.reports = new Map(); viewedStored = false;
+  historySelect.replaceChildren(new Option(projectSelect.value ? "저장된 결과 불러오는 중" : "프로젝트 선택 후 결과 조회", ""));
+  historySelect.disabled = true;
+  accountState.loadReports?.().catch(() => { historySelect.replaceChildren(new Option("저장된 결과를 불러오지 못했습니다.", "")); });
+});
 historySelect.addEventListener("change", () => {
   const report = accountState.reports?.get(historySelect.value);
   if (!report) return;
@@ -301,10 +306,11 @@ async function initAccount() {
     projectId: "autoworks-c9a6a", appId: "1:823085494995:web:3be4bdd40fe0519bc59a26" });
   const auth = getAuth(app), database = getFirestore(app);
   accountState.loadReports = async () => {
-    if (!accountState.workspaceId) return;
+    const projectId = projectSelect.value;
+    if (!accountState.workspaceId || !projectId) return;
     const workspaceId = accountState.workspaceId, user = accountState.user;
-    const snapshot = await getDocs(query(collection(database, "workspaces", workspaceId, "reports"), where("tool", "==", "weekly-ad"), orderBy("createdAt", "desc"), limit(20)));
-    if (workspaceId !== accountState.workspaceId || user !== accountState.user) return;
+    const snapshot = await getDocs(query(collection(database, "workspaces", workspaceId, "reports"), where("tool", "==", "weekly-ad"), where("projectId", "==", projectId), orderBy("createdAt", "desc"), limit(20)));
+    if (workspaceId !== accountState.workspaceId || user !== accountState.user || projectId !== projectSelect.value) return;
     accountState.reports = new Map(snapshot.docs.map(item => [item.id, item.data()]));
     historySelect.replaceChildren(new Option(accountState.reports.size ? "저장된 결과 선택" : "저장된 주간 광고 결과 없음", ""));
     for (const [id, report] of accountState.reports) {
