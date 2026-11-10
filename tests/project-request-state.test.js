@@ -145,6 +145,18 @@ test("content-pack.js BFCache 복원은 이전 생성·이력·검색량 응답�
   assert.match(source, /window\.addEventListener\("pageshow", event => \{[\s\S]*renderAccount\(auth\.currentUser\)/);
 });
 
+for (const [file, requestCounter, restore] of [
+  ["content-reference.js", "requestGeneration", "renderAccount\\(auth\\.currentUser\\)"],
+  ["collab-post.js", "lookupGeneration", "renderAccount\\(auth\\.currentUser\\)"],
+  ["influencer-candidates.js", "requestGeneration", "location\\.reload\\(\\)"]
+]) {
+  test(`${file} BFCache 복원은 이전 실행·이력 응답을 폐기한다`, async () => {
+    const source = await readFile(new URL(`../public/${file}`, import.meta.url), "utf8");
+    assert.match(source, new RegExp(`pagehide[\\s\\S]*generation\\+\\+;\\s*${requestCounter}\\+\\+;\\s*historyGeneration\\+\\+;\\s*requestKey\\s*=\\s*null`));
+    assert.match(source, new RegExp(`pageshow[\\s\\S]*${restore}`));
+  });
+}
+
 test("brand-search.js 예약·상태 조회는 요청 당시 계정·워크스페이스·프로젝트만 갱신한다", async () => {
   const source = await readFile(new URL("../public/brand-search.js", import.meta.url), "utf8");
   assert.match(source, /function captureContext\(runId=state\.runId\)/);
