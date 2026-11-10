@@ -164,6 +164,16 @@ for (const [file, requestCounter, restore] of [
   });
 }
 
+for (const file of ["ai-blog.js", "naver-visibility.js", "content-reference.js", "content-pack.js"]) {
+  test(`${file} 오프라인 실행을 막고 연결 변경 전 응답을 폐기한다`, async () => {
+    const source = await readFile(new URL(`../public/${file}`, import.meta.url), "utf8");
+    assert.match(source, /submit\.disabled = !navigator\.onLine \|\|/);
+    assert.match(source, /if \(!navigator\.onLine\) return message\("인터넷 연결을 확인한 뒤 같은 조건으로 다시 시도해 주세요\.", "error"\)/);
+    assert.match(source, /window\.addEventListener\("offline", \(\) => \{ requestGeneration\+\+; historyGeneration\+\+;/);
+    assert.match(source, /window\.addEventListener\("online", \(\) => \{ update\(\); message\("인터넷 연결이 복구되었습니다\./);
+  });
+}
+
 test("brand-search.js 예약·상태 조회는 요청 당시 계정·워크스페이스·프로젝트만 갱신한다", async () => {
   const source = await readFile(new URL("../public/brand-search.js", import.meta.url), "utf8");
   assert.match(source, /function captureContext\(runId=state\.runId\)/);

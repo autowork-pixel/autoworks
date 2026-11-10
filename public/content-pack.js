@@ -16,7 +16,7 @@ function message(value, type = "") { el.status.textContent = value; el.status.cl
 function selectedChannels() { return [...el.channels.querySelectorAll("input:checked")].map(input => input.value); }
 function update() {
   el.makeTopics.disabled = !user || !workspaceId || !el.project.value;
-  el.submit.disabled = !apiBase || !user || !workspaceId || !el.project.value;
+  el.submit.disabled = !navigator.onLine || !apiBase || !user || !workspaceId || !el.project.value;
   el.copy.disabled = el.download.disabled = !el.draft.value;
 }
 function show(report) {
@@ -154,6 +154,7 @@ async function initialize() {
   });
   el.packForm.addEventListener("submit", async event => {
     event.preventDefault();
+    if (!navigator.onLine) return message("인터넷 연결을 확인한 뒤 같은 조건으로 다시 시도해 주세요.", "error");
     const channels = selectedChannels();
     if (!channels.length) return message("제작 채널을 하나 이상 선택해 주세요.", "error");
     const context = { generation: ++requestGeneration, user, workspaceId, projectId: el.project.value, fingerprint: formFingerprint() };
@@ -176,6 +177,8 @@ async function initialize() {
     finally { if (requestCurrent(context)) update(); }
   });
 }
+window.addEventListener("offline", () => { requestGeneration++; historyGeneration++; signalGeneration++; update(); message("인터넷 연결이 끊겼습니다. 연결 후 같은 조건으로 다시 시도해 주세요.", "error"); });
+window.addEventListener("online", () => { update(); message("인터넷 연결이 복구되었습니다. 같은 조건으로 다시 실행할 수 있습니다."); });
 
 initialize().catch(() => message("화면을 준비하지 못했습니다.", "error"));
 
