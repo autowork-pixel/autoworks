@@ -96,9 +96,11 @@ test("콘텐츠 화면은 같은 프로젝트의 저장된 브랜드 검색량�
   assert.match(source, /idea\.searchStale/);
   assert.match(source, /describeTopicReview\(idea\)/);
   assert.match(source, /el\.campaign\.value\.trim\(\) !== selectedTopic\.title/);
-  assert.match(source, /topicContext: selectedTopic \?/);
+  assert.match(source, /topicContext = selectedTopic\s*\?/);
+  assert.match(source, /topicContext, idempotencyKey: requestKey/);
   assert.match(source, /report\?\.topicContext/);
   assert.match(indexes, /"fieldPath": "tool"[\s\S]*"fieldPath": "projectId"[\s\S]*"fieldPath": "createdAt"/);
   assert.match(source, /buildTopicCandidates\(keywords, el\.audience\.value, el\.topicHook\.value, topicSignals\)/);
   assert.equal(/brand-search-runs|provider-credentials/.test(source), false);
 });
+

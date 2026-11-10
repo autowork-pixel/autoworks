@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const cases = [
-  ["content-pack.js", /selectedProject !== el\.project\.value/, /projectId: selectedProject/],
+  ["content-pack.js", /if \(!requestCurrent\(context\)\) return/, /projectId: selectedProject/],
   ["content-reference.js", /if \(!requestCurrent\(context\)\) return/, /projectId: selectedProject/],
   ["collab-post.js", /if \(!lookupCurrent\(context\)\) return/, /projectId: selectedProject/],
   ["weekly-ad.js", /selectedProject !== projectSelect\.value/, /projectId: selectedProject/],
@@ -19,7 +19,7 @@ for (const [file, guard, request] of cases) test(`${file} 실행 응답은 요�
 });
 
 const errorCases = [
-  ["content-pack.js", /catch \(error\) \{ if \(currentUser === user && currentWorkspace === workspaceId && selectedProject === el\.project\.value\)/],
+  ["content-pack.js", /catch \(error\) \{ if \(requestCurrent\(context\)\) message\(error\.message, "error"\); \}/],
   ["content-reference.js", /if \(requestCurrent\(context\)\) message\(error\.message, "error"\)/],
   ["collab-post.js", /catch \(error\) \{ if \(lookupCurrent\(context\)\) lookupStatus\.textContent = error\.message; \}/],
   ["weekly-ad.js", /catch \(error\) \{ if \(analysisCurrent\(context\)\) status\.textContent/],
@@ -113,6 +113,20 @@ test("naver-visibility.js 이전 조건·프로젝트 요청은 현재 노출 �
   assert.match(source, /const projects = await getDocs[\s\S]*if \(current !== generation\) return/);
 });
 
+test("content-pack.js 이전 조건·주제·프로젝트 요청은 현재 콘텐츠와 신호를 덮지 않는다", async () => {
+  const source = await readFile(new URL("../public/content-pack.js", import.meta.url), "utf8");
+  assert.match(source, /requestGeneration = 0, historyGeneration = 0, signalGeneration = 0/);
+  assert.match(source, /function formFingerprint\(\)/);
+  assert.match(source, /function requestCurrent\(context\)/);
+  assert.match(source, /el\.packForm\.addEventListener\("input", \(\) => \{ requestGeneration\+\+; requestKey = null; show\(\); update\(\); \}\)/);
+  assert.match(source, /const context = \{ generation: \+\+requestGeneration, user, workspaceId, projectId: el\.project\.value, fingerprint: formFingerprint\(\) \}/);
+  assert.match(source, /if \(!requestCurrent\(context\)\) return/);
+  assert.match(source, /finally \{ if \(requestCurrent\(context\)\) update\(\); \}/);
+  assert.match(source, /const currentHistoryGeneration = \+\+historyGeneration/);
+  assert.match(source, /const currentSignalGeneration = \+\+signalGeneration/);
+  assert.match(source, /currentSignalGeneration !== signalGeneration/);
+});
+
 test("brand-search.js 예약·상태 조회는 요청 당시 계정·워크스페이스·프로젝트만 갱신한다", async () => {
   const source = await readFile(new URL("../public/brand-search.js", import.meta.url), "utf8");
   assert.match(source, /function captureContext\(runId=state\.runId\)/);
@@ -160,3 +174,4 @@ test("brand-search.js 인증·프로젝트 전환은 진행 중인 이전 상태
   assert.match(source, /function resumeCurrentRun\(\)\{if\(!state\.runId\|\|state\.pollTimer\|\|document\.visibilityState==="hidden"\)return/);
   assert.match(source, /document\.addEventListener\("visibilitychange",\(\)=>\{if\(document\.visibilityState==="hidden"\)\{stopPolling\(\);state\.runGeneration\+\+;return\}resumeCurrentRun\(\)\}\)/);
 });
+
