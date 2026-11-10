@@ -40,6 +40,10 @@ test("brand-search.js 예약·상태 조회는 요청 당시 계정·워크스�
   assert.match(source, /projectId:context\.projectId/);
   assert.match(source, /await poll\(runContext\)/);
   assert.match(source, /state\.pollTimer=setTimeout\(\(\)=>poll\(context\),3000\)/);
+  assert.match(source, /if\(state\.requestFingerprint!==fingerprint\)\{state\.requestKey=crypto\.randomUUID\(\)\.replaceAll\("-",""\);state\.requestFingerprint=fingerprint\}/);
+  assert.match(source, /JSON\.stringify\(\{\.\.\.input,idempotencyKey:requestKey\}\)/);
+  assert.match(source, /if\(terminalRequestErrors\.has\(error\.code\)\)\{state\.requestKey=null;state\.requestFingerprint=null\}/);
+  assert.match(source, /state\.requestKey=null;state\.requestFingerprint=null;state\.runId=result\.runId/);
 });
 
 test("brand-search.js 취소·다운로드·비교의 늦은 응답은 현재 화면을 덮지 않는다", async () => {
@@ -62,4 +66,5 @@ test("brand-search.js 인증·프로젝트 전환은 진행 중인 이전 상태
   assert.match(source, /elements\.cancel\.disabled=false;elements\.download\.disabled=false/);
   assert.match(source, /elements\.submit\.disabled=!option\?\.value\|\|!apiBase/);
   assert.match(source, /elements\.submit\.disabled=!state\.user\|\|!state\.workspaceId\|\|!elements\.project\.value\|\|!apiBase/);
+  assert.match(source, /state\.runs=\[\];state\.requestKey=null;state\.requestFingerprint=null/);
 });
