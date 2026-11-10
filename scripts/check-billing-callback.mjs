@@ -22,7 +22,9 @@ assert.match(success,/review=error\.message==="PAYMENT_REVIEW_REQUIRED"/,"승인
 assert.match(success,/billing-sessions\/\$\{encodeURIComponent\(sessionId\)\}:complete/,"결제 완료는 검증된 세션 완료 API만 호출해야 합니다.");
 assert.match(success,/authorization:`Bearer \$\{await user\.getIdToken\(\)\}`/,"결제 완료 API에 Firebase ID token을 전달해야 합니다.");
 assert.match(success,/const requestCurrent=context=>context\.requestGeneration===requestGeneration&&context\.authGeneration===authGeneration&&context\.user===auth\.currentUser/,"결제 완료 응답은 요청 당시 로그인 세션에서만 반영해야 합니다.");
-assert.match(success,/onAuthStateChanged\(auth,user=>\{authGeneration\+\+;requestGeneration\+\+;loginGeneration\+\+;activeRequest=null/,"로그인 전환은 진행 중인 이전 결제 확인·OAuth 요청을 무효화해야 합니다.");
+assert.match(success,/function renderAccount\(user\)\{authGeneration\+\+;requestGeneration\+\+;loginGeneration\+\+;activeRequest=null/,"로그인 전환은 진행 중인 이전 결제 확인·OAuth 요청을 무효화해야 합니다.");
+assert.match(success,/window\.addEventListener\("pagehide",event=>\{if\(!event\.persisted\)return;authGeneration\+\+;requestGeneration\+\+;loginGeneration\+\+;activeRequest=null/,"뒤로가기 캐시 진입 시 이전 결제 확인과 OAuth 시도를 무효화해야 합니다.");
+assert.match(success,/window\.addEventListener\("pageshow",event=>\{if\(event\.persisted\)renderAccount\(auth\.currentUser\)\}/,"뒤로가기 캐시 복원 시 현재 계정으로 같은 세션을 다시 확인해야 합니다.");
 assert.match(success,/if\(!requestCurrent\(context\)\)return;\s*completed=true/,"이전 계정 결제 성공은 현재 화면을 활성 상태로 바꾸면 안 됩니다.");
 assert.doesNotMatch(success,/localStorage|sessionStorage/,"일회용 결제 결과를 브라우저 저장소에 남기면 안 됩니다.");
 assert.doesNotMatch(failure,/fetch\(/,"결제 실패·취소 페이지가 구독 활성화 API를 호출하면 안 됩니다.");
