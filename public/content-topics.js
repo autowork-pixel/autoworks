@@ -8,6 +8,21 @@ function normalized(value) {
   return String(value || "").trim().toLocaleLowerCase("ko-KR").replace(/\s+/g, "");
 }
 
+function recordedDate(value) {
+  let candidate = value;
+  try {
+    if (typeof candidate?.toDate === "function") candidate = candidate.toDate();
+    else if (Number.isFinite(candidate?.seconds)) candidate = new Date(candidate.seconds * 1000);
+  } catch { return null; }
+  const date = candidate instanceof Date ? candidate : new Date(candidate);
+  if (!Number.isFinite(date.getTime())) return null;
+  const parts = new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit"
+  }).formatToParts(date);
+  const part = type => parts.find(item => item.type === type)?.value;
+  return `${part("year")}-${part("month")}-${part("day")}`;
+}
+
 export function buildTopicCandidates(keywords, audience, hook, searchSignals = []) {
   const target = String(audience || "").trim();
   if (!target || !Object.hasOwn(hooks, hook)) return [];
@@ -18,15 +33,21 @@ export function buildTopicCandidates(keywords, audience, hook, searchSignals = [
   const volumes = new Map();
   for (const item of Array.isArray(searchSignals) ? searchSignals : []) {
     const key = normalized(item?.keyword);
-    if (key && Number.isFinite(item.total) && item.total >= 0 && !volumes.has(key)) volumes.set(key, Math.round(item.total));
+    if (key && Number.isFinite(item.total) && item.total >= 0 && !volumes.has(key)) {
+      volumes.set(key, { volume: Math.round(item.total), date: recordedDate(item.recordedAt) });
+    }
   }
-  const ranked = unique.map((keyword, index) => ({ keyword, index, volume: volumes.get(normalized(keyword)) ?? null }))
+  const ranked = unique.map((keyword, index) => {
+    const signal = volumes.get(normalized(keyword));
+    return { keyword, index, volume: signal?.volume ?? null, date: signal?.date ?? null };
+  })
     .sort((a, b) => Number(b.volume !== null) - Number(a.volume !== null) || (b.volume ?? 0) - (a.volume ?? 0) || a.index - b.index)
     .slice(0, 3);
-  return ranked.map(({ keyword, volume }) => ({
+  return ranked.map(({ keyword, volume, date }) => ({
     keyword,
     title: hooks[hook](keyword),
     searchVolume: volume,
-    note: `${target} 관점에서 다룰 질문입니다.${volume === null ? "" : ` 최근 조회한 월간 검색량 ${volume.toLocaleString("ko-KR")}회를 참고했습니다.`} 주장과 수치는 확인된 사실을 입력한 뒤 검토하세요.`
+    searchRecordedAt: date,
+    note: `${target} 관점에서 다룰 질문입니다.${volume === null ? "" : ` ${date ? `${date} 조회 기준 ` : "조회일 미확인 "}월간 검색량 ${volume.toLocaleString("ko-KR")}회를 참고했습니다.`} 주장과 수치는 확인된 사실을 입력한 뒤 검토하세요.`
   }));
 }
