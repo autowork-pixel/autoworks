@@ -26,6 +26,10 @@ assert.match(success,/onAuthStateChanged\(auth,user=>\{authGeneration\+\+;reques
 assert.match(success,/if\(!requestCurrent\(context\)\)return;\s*completed=true/,"이전 계정 결제 성공은 현재 화면을 활성 상태로 바꾸면 안 됩니다.");
 assert.doesNotMatch(success,/localStorage|sessionStorage/,"일회용 결제 결과를 브라우저 저장소에 남기면 안 됩니다.");
 assert.doesNotMatch(failure,/fetch\(/,"결제 실패·취소 페이지가 구독 활성화 API를 호출하면 안 됩니다.");
+assert.doesNotMatch(failure,/TossPayments|requestBillingAuth|billing-sessions|billing-success\.html/,"결제 실패·취소 페이지에서 결제창 재호출이나 성공 경로 이동을 만들면 안 됩니다.");
+assert.match(failure,/history\.replaceState\(null,"",location\.pathname\)/,"실패 반환의 일회용 세션·오류 정보는 주소창에서 즉시 제거해야 합니다.");
+assert.match(failure,/href="\.\/index\.html#subscriptionCard"/,"실패 뒤에는 고객이 구독 상태를 먼저 확인할 수 있어야 합니다.");
+assert.match(failure,/구독은 활성화되지 않습니다/,"취소·실패를 결제 완료로 오인하지 않도록 명확히 안내해야 합니다.");
 assert.match(failure,/replace\(\/\[\^A-Za-z0-9_-\]\//,"결제사 오류 코드는 화면 표시 전에 제한해야 합니다.");
 console.log("결제 성공·취소 반환 화면의 인증·중복·민감정보 경계를 확인");
 
