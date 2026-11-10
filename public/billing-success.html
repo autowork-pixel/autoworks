@@ -33,7 +33,10 @@ if(!validId(workspaceId)||!validId(sessionId)||!validId(customerKey)||typeof aut
    signin.hidden=review;retry.hidden=review;console.error("결제 완료 확인 실패",error.message);
   }finally{if(activeRequest===context)activeRequest=null}
  }
- onAuthStateChanged(auth,user=>{authGeneration++;requestGeneration++;loginGeneration++;activeRequest=null;if(oauthPopup&&!oauthPopup.closed)oauthPopup.close();oauthPopup=null;if(!user){signin.hidden=false;retry.hidden=true;state.textContent="결제를 시작한 계정으로 이 화면에서 로그인해 주세요.";return}confirmPayment(user)});
+ function renderAccount(user){authGeneration++;requestGeneration++;loginGeneration++;activeRequest=null;if(oauthPopup&&!oauthPopup.closed)oauthPopup.close();oauthPopup=null;if(!user){signin.hidden=false;retry.hidden=true;state.textContent="결제를 시작한 계정으로 이 화면에서 로그인해 주세요.";return}confirmPayment(user)}
+ onAuthStateChanged(auth,renderAccount);
+ window.addEventListener("pagehide",event=>{if(!event.persisted)return;authGeneration++;requestGeneration++;loginGeneration++;activeRequest=null;if(oauthPopup&&!oauthPopup.closed)oauthPopup.close();oauthPopup=null});
+ window.addEventListener("pageshow",event=>{if(event.persisted)renderAccount(auth.currentUser)});
  signin.addEventListener("click",async event=>{
   const provider=event.target.closest("[data-provider]")?.dataset.provider;
   if(!provider)return;
