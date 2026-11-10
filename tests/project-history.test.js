@@ -2,6 +2,14 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+test("브랜드 검색량 이력은 선택 프로젝트로 서버 조회한다", async () => {
+  const source = await readFile(new URL("../public/brand-search.js", import.meta.url), "utf8");
+  const repository = await readFile(new URL("../server/src/run-repository.mjs", import.meta.url), "utf8");
+  assert.match(source, /projectId=\$\{encodeURIComponent\(context\.projectId\)\}/);
+  assert.match(source, /if\(!context\.workspaceId\|\|!context\.projectId\|\|!apiBase\)return/);
+  assert.match(repository, /where\("projectId", "==", projectId\)/);
+});
+
 test("AI 블로그 이력은 선택 프로젝트로 조회하고 전환 중 늦은 응답을 버린다", async () => {
   const source = await readFile(new URL("../public/ai-blog.js", import.meta.url), "utf8");
   assert.match(source, /where\("tool","==","ai-blog"\),where\("projectId","==",projectId\)/);

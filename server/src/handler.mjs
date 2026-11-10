@@ -244,7 +244,9 @@ export function createHandler({ verifyIdToken, repository, credentialService, co
         const rawLimit = listUrl.searchParams.get("limit");
         const limit = rawLimit === null ? 20 : Number(rawLimit);
         if (!Number.isInteger(limit) || limit < 1 || limit > 20) throw new ApiError("INVALID_INPUT", "목록 개수는 1~20이어야 합니다.");
-        return json(response, 200, { runs: await repository.listBrandSearchRuns({ workspaceId: match[1], uid: decoded.uid, limit }), requestId }, requestId);
+        const projectId = listUrl.searchParams.get("projectId");
+        if (projectId !== null && !/^[A-Za-z0-9_-]{1,128}$/.test(projectId)) throw new ApiError("INVALID_INPUT", "projectId 형식이 올바르지 않습니다.");
+        return json(response, 200, { runs: await repository.listBrandSearchRuns({ workspaceId: match[1], uid: decoded.uid, projectId, limit }), requestId }, requestId);
       }
       if (request.method !== "POST" || !match || listUrl.search) throw new ApiError("NOT_FOUND", "요청 경로를 찾을 수 없습니다.", 404);
       if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("application/json")) {
