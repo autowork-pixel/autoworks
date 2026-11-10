@@ -346,7 +346,7 @@ async function initAccount() {
     catch { saveStatus.textContent = "Google 로그인에 실패했습니다."; }
   });
   let generation = 0;
-  onAuthStateChanged(auth, async user => {
+  async function renderAccount(user) {
     const current = ++generation;
     analysisGeneration++; historyGeneration++; saveGeneration++;
     accountState.user = user; accountState.workspaceId = null;
@@ -370,6 +370,15 @@ async function initAccount() {
       await accountState.loadReports();
       saveStatus.textContent = apiBase ? "분석 결과를 프로젝트에 저장할 수 있습니다." : "서버 연결 전에는 결과를 계정에 저장할 수 없습니다.";
     } catch { if (current === generation) saveStatus.textContent = "프로젝트를 불러오지 못했습니다."; }
+  }
+  onAuthStateChanged(auth, renderAccount);
+  window.addEventListener("pagehide", event => {
+    if (!event.persisted) return;
+    generation++; analysisGeneration++; historyGeneration++; saveGeneration++;
+  });
+  window.addEventListener("pageshow", event => {
+    if (event.persisted) renderAccount(auth.currentUser);
   });
 }
 initAccount().catch(() => { saveStatus.textContent = "계정 연결 화면을 준비하지 못했습니다."; });
+
