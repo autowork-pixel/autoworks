@@ -6,7 +6,7 @@ test("브랜드 검색량 이력은 선택 프로젝트로 서버 조회한다",
   const source = await readFile(new URL("../public/brand-search.js", import.meta.url), "utf8");
   const repository = await readFile(new URL("../server/src/run-repository.mjs", import.meta.url), "utf8");
   assert.match(source, /projectId=\$\{encodeURIComponent\(context\.projectId\)\}/);
-  assert.match(source, /if\(!context\.workspaceId\|\|!context\.projectId\|\|!apiBase\)return/);
+  assert.match(source, /if\(!navigator\.onLine\|\|!context\.workspaceId\|\|!context\.projectId\|\|!apiBase\)return/);
   assert.match(repository, /where\("projectId", "==", projectId\)/);
 });
 
@@ -66,3 +66,4 @@ test("프로젝트별 보고서 조회에 필요한 공통 복합 색인이 있�
     index.fields.map(field => `${field.fieldPath}:${field.order}`).join("|") === "tool:ASCENDING|projectId:ASCENDING|createdAt:DESCENDING");
   assert.ok(matching);
 });
+
