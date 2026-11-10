@@ -9,7 +9,8 @@ if (topicHelp?.classList.contains("meta")) topicHelp.textContent = "저장된 �
 const topicReview = document.createElement("p");
 topicReview.className = "notice"; topicReview.hidden = true; topicReview.setAttribute("aria-live", "polite");
 el.topicIdeas.after(topicReview);
-let user = null, workspaceId = null, database, generation = 0, reports = new Map(), requestKey = null, topicSignals = [], selectedTopic = null, loadHistory = async () => {}, loadSignals = async () => {};
+let user = null, workspaceId = null, database, generation = 0, requestGeneration = 0, historyGeneration = 0, signalGeneration = 0;
+let reports = new Map(), requestKey = null, topicSignals = [], selectedTopic = null, loadHistory = async () => {}, loadSignals = async () => {};
 
 function message(value, type = "") { el.status.textContent = value; el.status.className = `status ${type}`.trim(); }
 function selectedChannels() { return [...el.channels.querySelectorAll("input:checked")].map(input => input.value); }
@@ -25,6 +26,14 @@ function show(report) {
   update();
 }
 function clearSelectedTopic() { selectedTopic = null; topicReview.textContent = ""; topicReview.hidden = true; }
+function formFingerprint() {
+  return JSON.stringify([el.campaign.value.trim(), el.facts.value.trim(), el.sourceDraft.value.trim(), el.audience.value.trim(),
+    el.callToAction.value.trim(), selectedChannels(), selectedTopic]);
+}
+function requestCurrent(context) {
+  return context.generation === requestGeneration && context.user === user && context.workspaceId === workspaceId
+    && context.projectId === el.project.value && context.fingerprint === formFingerprint();
+}
 function reviewSelectedTopic(idea) {
   selectedTopic = idea; topicReview.textContent = describeTopicReview(idea); topicReview.hidden = false;
 }
@@ -36,8 +45,8 @@ function renderHistory(snapshot) {
 }
 
 el.history.addEventListener("change", () => show(reports.get(el.history.value)));
-el.project.addEventListener("change", () => { requestKey = null; topicSignals = []; reports.clear(); el.topicIdeas.replaceChildren(); clearSelectedTopic(); update(); loadHistory(); loadSignals(); });
-el.packForm.addEventListener("input", () => { requestKey = null; });
+el.project.addEventListener("change", () => { requestGeneration++; requestKey = null; topicSignals = []; reports.clear(); el.topicIdeas.replaceChildren(); clearSelectedTopic(); show(); update(); loadHistory(); loadSignals(); });
+el.packForm.addEventListener("input", () => { requestGeneration++; requestKey = null; show(); update(); });
 el.campaign.addEventListener("input", () => { if (selectedTopic && el.campaign.value.trim() !== selectedTopic.title) clearSelectedTopic(); });
 el.audience.addEventListener("input", () => { el.topicIdeas.replaceChildren(); clearSelectedTopic(); });
 el.topicHook.addEventListener("change", () => { el.topicIdeas.replaceChildren(); clearSelectedTopic(); });
@@ -49,7 +58,7 @@ el.makeTopics.addEventListener("click", () => {
   for (const idea of ideas) {
     const button = document.createElement("button");
     button.type = "button"; button.className = "secondary"; button.textContent = `${idea.title} · ${idea.note}`;
-    button.addEventListener("click", () => { el.campaign.value = idea.title; requestKey = null; reviewSelectedTopic(idea); message("선택 주제와 검색량 기준을 확인한 뒤 사실을 입력해 주세요."); });
+    button.addEventListener("click", () => { requestGeneration++; el.campaign.value = idea.title; requestKey = null; show(); reviewSelectedTopic(idea); message("선택 주제와 검색량 기준을 확인한 뒤 사실을 입력해 주세요."); });
     el.topicIdeas.append(button);
   }
   const signaled = ideas.filter(idea => idea.searchVolume !== null).length;
@@ -77,23 +86,23 @@ async function initialize() {
   const auth = getAuth(app); database = getFirestore(app);
   el.login.addEventListener("click", () => signInWithPopup(auth, new GoogleAuthProvider()).catch(() => message("로그인하지 못했습니다.", "error")));
   loadHistory = async () => {
-    const currentUser = user, currentWorkspace = workspaceId, projectId = el.project.value;
+    const currentHistoryGeneration = ++historyGeneration, currentUser = user, currentWorkspace = workspaceId, projectId = el.project.value;
     reports.clear(); el.history.replaceChildren(new Option(projectId ? "저장된 콘텐츠 불러오는 중" : "프로젝트 선택 후 불러옵니다.", "")); el.history.disabled = true;
     if (!currentUser || !currentWorkspace || !projectId) return;
     try {
       const snapshot = await getDocs(query(collection(database, "workspaces", currentWorkspace, "reports"), where("tool", "==", "content-pack"), where("projectId", "==", projectId), orderBy("createdAt", "desc"), limit(50)));
-      if (currentUser !== user || currentWorkspace !== workspaceId || projectId !== el.project.value) return;
+      if (currentHistoryGeneration !== historyGeneration || currentUser !== user || currentWorkspace !== workspaceId || projectId !== el.project.value) return;
       renderHistory(snapshot);
     } catch {
-      if (currentUser === user && currentWorkspace === workspaceId && projectId === el.project.value) el.history.replaceChildren(new Option("저장된 콘텐츠를 불러오지 못했습니다.", ""));
+      if (currentHistoryGeneration === historyGeneration && currentUser === user && currentWorkspace === workspaceId && projectId === el.project.value) el.history.replaceChildren(new Option("저장된 콘텐츠를 불러오지 못했습니다.", ""));
     }
   };
   loadSignals = async () => {
-    const currentUser = user, currentWorkspace = workspaceId, projectId = el.project.value;
+    const currentSignalGeneration = ++signalGeneration, currentUser = user, currentWorkspace = workspaceId, projectId = el.project.value;
     if (!currentUser || !currentWorkspace || !projectId) return;
     try {
       const snapshot = await getDocs(query(collection(database, "workspaces", currentWorkspace, "reports"), where("tool", "==", "brand-search"), where("projectId", "==", projectId), orderBy("createdAt", "desc"), limit(50)));
-      if (currentUser !== user || currentWorkspace !== workspaceId || projectId !== el.project.value) return;
+      if (currentSignalGeneration !== signalGeneration || currentUser !== user || currentWorkspace !== workspaceId || projectId !== el.project.value) return;
       const latest = new Map();
       for (const document of snapshot.docs) {
         const report = document.data();
@@ -105,10 +114,15 @@ async function initialize() {
       }
       topicSignals = [...latest].map(([keyword, signal]) => ({ keyword, ...signal }));
       message(topicSignals.length ? `저장된 최근 월간 검색량 ${topicSignals.length}개를 주제 후보에 연결했습니다.` : "이 프로젝트의 저장된 검색량이 없어 키워드 순서를 사용합니다.");
-    } catch { topicSignals = []; message("검색량 신호를 불러오지 못해 프로젝트 키워드 순서를 사용합니다."); }
+    } catch {
+      if (currentSignalGeneration === signalGeneration && currentUser === user && currentWorkspace === workspaceId && projectId === el.project.value) {
+        topicSignals = []; message("검색량 신호를 불러오지 못해 프로젝트 키워드 순서를 사용합니다.");
+      }
+    }
   };
   onAuthStateChanged(auth, async signedIn => {
     const current = ++generation;
+    requestGeneration++; historyGeneration++; signalGeneration++;
     user = signedIn; workspaceId = null; reports.clear(); requestKey = null; topicSignals = []; clearSelectedTopic(); show();
     el.login.hidden = Boolean(user); el.project.replaceChildren(new Option(user ? "프로젝트 불러오는 중" : "로그인 후 선택", "")); el.project.disabled = true; update();
     if (!user) return message("로그인 후 프로젝트를 선택해 주세요.");
@@ -134,21 +148,26 @@ async function initialize() {
     event.preventDefault();
     const channels = selectedChannels();
     if (!channels.length) return message("제작 채널을 하나 이상 선택해 주세요.", "error");
-    const currentUser = user, currentWorkspace = workspaceId, selectedProject = el.project.value;
+    const context = { generation: ++requestGeneration, user, workspaceId, projectId: el.project.value, fingerprint: formFingerprint() };
+    const currentUser = context.user, currentWorkspace = context.workspaceId, selectedProject = context.projectId;
+    const campaign = el.campaign.value.trim(), facts = el.facts.value.trim(), sourceDraft = el.sourceDraft.value.trim();
+    const audience = el.audience.value.trim(), callToAction = el.callToAction.value.trim(), topicContext = selectedTopic
+      ? { keyword: selectedTopic.keyword, searchVolume: selectedTopic.searchVolume, searchRecordedAt: selectedTopic.searchRecordedAt, searchStale: selectedTopic.searchStale } : null;
     el.submit.disabled = true; message("채널별 검토용 콘텐츠를 만들고 있습니다."); requestKey ||= crypto.randomUUID().replaceAll("-", "");
     try {
       const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(currentWorkspace)}/content-pack-runs`, {
         method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${await currentUser.getIdToken()}` },
-        body: JSON.stringify({ projectId: selectedProject, campaign: el.campaign.value.trim(), facts: el.facts.value.trim(), sourceDraft: el.sourceDraft.value.trim(), audience: el.audience.value.trim(), callToAction: el.callToAction.value.trim(), channels, topicContext: selectedTopic ? { keyword: selectedTopic.keyword, searchVolume: selectedTopic.searchVolume, searchRecordedAt: selectedTopic.searchRecordedAt, searchStale: selectedTopic.searchStale } : null, idempotencyKey: requestKey })
+        body: JSON.stringify({ projectId: selectedProject, campaign, facts, sourceDraft, audience, callToAction, channels, topicContext, idempotencyKey: requestKey })
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) { if (body.error?.code !== "INTERNAL_ERROR") requestKey = null; throw new Error(body.error?.message || "생성에 실패했습니다."); }
-      if (currentUser !== user || currentWorkspace !== workspaceId || selectedProject !== el.project.value) return;
+      if (!requestCurrent(context)) return;
       show({ ...body, channels }); requestKey = null; message("미게시 상태로 저장했습니다. 사용 전에 검토하세요.", "success");
       await loadHistory();
-    } catch (error) { if (currentUser === user && currentWorkspace === workspaceId && selectedProject === el.project.value) message(error.message, "error"); }
-    finally { update(); }
+    } catch (error) { if (requestCurrent(context)) message(error.message, "error"); }
+    finally { if (requestCurrent(context)) update(); }
   });
 }
 
 initialize().catch(() => message("화면을 준비하지 못했습니다.", "error"));
+
