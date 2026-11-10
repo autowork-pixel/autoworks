@@ -36,7 +36,7 @@ jobs:
           API_BASE: https://autoworks-api-dev-beh42zoxia-du.a.run.app
         run: |
           printf 'window.AUTOWORKS_API_BASE = "%s";\n' "$API_BASE" > public/runtime-config.js
-          sed -i "s#runtime-config.js#runtime-config.js?v=$GITHUB_SHA#g" public/*.html
+          sed -Ei "s#(\./[^\"]+\.js)(\?v=[^\"]*)?#\1?v=$GITHUB_SHA#g" public/*.html
       - name: Deploy Hosting, Firestore rules, and indexes
         run: npx --yes firebase-tools@15.34.2 deploy --project autoworks-c9a6a --only hosting,firestore:rules,firestore:indexes --non-interactive
       - name: Verify deployed Hosting

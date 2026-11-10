@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { buildTopicCandidates } from "../public/content-topics.js";
 
@@ -14,4 +15,36 @@ test("타깃·후크·키워드가 없으면 주제를 추측하지 않는다", 
   assert.deepEqual(buildTopicCandidates(["오쏘몰"], "", "SCS"), []);
   assert.deepEqual(buildTopicCandidates(["오쏘몰"], "직장인", "unknown"), []);
   assert.deepEqual(buildTopicCandidates([], "직장인", "SCS"), []);
+});
+
+test("저장된 검색량이 있는 프로젝트 키워드를 최근 월간량 순으로 우선한다", () => {
+  const result = buildTopicCandidates(["저검색", "고검색", "신호없음", "중검색"], "마케터", "SCS", [
+    { keyword: "중검색", total: 1200 }, { keyword: " 고검색 ", total: 9800 }, { keyword: "저검색", total: 30 }
+  ]);
+  assert.deepEqual(result.map(item => item.keyword), ["고검색", "중검색", "저검색"]);
+  assert.equal(result[0].searchVolume, 9800);
+  assert.match(result[0].note, /월간 검색량 9,800회/);
+});
+
+test("검색량 신호가 없거나 손상되면 기존 프로젝트 순서를 유지한다", () => {
+  const result = buildTopicCandidates(["첫째", "둘째", "셋째", "넷째"], "고객", "BAD", [
+    { keyword: "첫째", total: -1 }, { keyword: "둘째", total: Number.NaN }
+  ]);
+  assert.deepEqual(result.map(item => item.keyword), ["첫째", "둘째", "셋째"]);
+  assert.equal(result.every(item => item.searchVolume === null), true);
+});
+
+test("같은 키워드의 여러 스냅샷은 최신 입력값 하나만 사용한다", () => {
+  const [result] = buildTopicCandidates(["브랜드"], "고객", "QQA", [
+    { keyword: "브랜드", total: 3000 }, { keyword: " 브랜드 ", total: 9000 }
+  ]);
+  assert.equal(result.searchVolume, 3000);
+});
+
+test("콘텐츠 화면은 같은 프로젝트의 저장된 브랜드 검색량만 읽고 외부 조회를 만들지 않는다", async () => {
+  const source = await readFile(new URL("../public/content-pack.js", import.meta.url), "utf8");
+  assert.match(source, /where\("tool", "==", "brand-search"\)/);
+  assert.match(source, /report\.projectId !== projectId/);
+  assert.match(source, /buildTopicCandidates\(keywords, el\.audience\.value, el\.topicHook\.value, topicSignals\)/);
+  assert.equal(/brand-search-runs|provider-credentials/.test(source), false);
 });
