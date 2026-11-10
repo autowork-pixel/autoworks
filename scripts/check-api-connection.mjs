@@ -19,6 +19,9 @@ assert.match(source,/function requestCurrent\(context\)/,"API 연결 요청은 �
 assert.match(source,/if\(provider!==activeProvider\)\{activeProvider=provider;requestGeneration\+\+\}/,"공급자 전환은 이전 연결 요청을 무효화해야 합니다.");
 assert.match(source,/inputs\.forEach\(input=>input\.value=""\)/,"저장 요청 당시 인증정보 입력만 성공 뒤 지워야 합니다.");
 assert.match(source,/error\.code!=="STALE_CONTEXT"&&requestCurrent\(context\)/,"이전 화면 요청 오류는 현재 공급자 화면에 표시하지 않아야 합니다.");
+assert.match(source,/async function renderConnectionAccount\(user\)/,"API 연결 계정 렌더링은 BFCache 복원에서도 재사용할 수 있어야 합니다.");
+assert.match(source,/window\.addEventListener\("pagehide",event=>\{if\(event\.persisted\)\{authGeneration\+\+;requestGeneration\+\+\}\}/,"BFCache 진입 시 이전 계정·공급자 요청을 무효화해야 합니다.");
+assert.match(source,/window\.addEventListener\("pageshow",event=>\{if\(event\.persisted\)renderConnectionAccount\(auth\.currentUser\)\}/,"BFCache 복원 시 현재 계정의 API 연결 상태를 다시 읽어야 합니다.");
 assert.equal(/localStorage|sessionStorage|indexedDB/.test(source),false,"API 키를 브라우저 저장소에 남기면 안 됩니다.");
 assert.match(weeklyHtml,/id="source-type"[\s\S]*value="meta-ads"[\s\S]*value="google-ads"[\s\S]*value="kakao-moment"/,"주간 광고 분석에서 연결한 광고 계정을 선택할 수 있어야 합니다.");
 assert.match(weeklyScript,/\/ad-report-runs`/,"광고 보고서는 인증된 서버 실행 경로를 사용해야 합니다.");
