@@ -12,5 +12,10 @@ for (const required of ["autoworksWorkspaceId = null", "projectRows", "runList",
   assert.equal(reset.includes(required), true, `로그아웃 초기화에 ${required} 처리가 필요합니다.`);
 }
 assert.match(source, /resetAccountUi\(\);\s*if \(signedIn\)/, "계정 상태가 바뀌면 이전 고객 데이터를 즉시 초기화해야 합니다.");
+assert.match(source, /const accountContext = \(\) => \(\{ generation:authGeneration, user:auth\.currentUser, workspaceId:window\.autoworksWorkspaceId \}\)/, "고객 쓰기 요청은 시작 시점의 계정·워크스페이스 문맥을 고정해야 합니다.");
+assert.match(source, /const accountCurrent = context => context\.generation === authGeneration/, "고객 쓰기 응답은 현재 인증 세대인지 확인해야 합니다.");
+assert.match(source, /loadProjects\(workspaceId, \(\) => accountCurrent\(context\)\)/, "프로젝트 저장 뒤 목록 조회도 현재 계정에서만 반영해야 합니다.");
+assert.match(source, /if \(accountCurrent\(context\)\) \{ submit\.disabled = false; submit\.textContent = "문의 접수"; \}/, "이전 문의 요청은 새 계정 버튼 상태를 복구하지 않아야 합니다.");
 
 console.log("로그아웃 DOM 초기화와 이전 계정 비동기 결과 차단 경계를 확인");
+
