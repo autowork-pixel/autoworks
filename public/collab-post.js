@@ -7,7 +7,7 @@ const platform = document.getElementById("platform"), credentialGuide = document
 const addCompare = document.getElementById("addCompare"), downloadCurrent = document.getElementById("downloadCurrent");
 const downloadCompare = document.getElementById("downloadCompare"), clearCompare = document.getElementById("clearCompare");
 const compareBody = document.getElementById("compareBody"), compareCount = document.getElementById("compareCount");
-let user = null, workspaceId = null, database, auth, generation = 0, reportById = new Map(), requestKey = null;
+let user = null, workspaceId = null, database, auth, generation = 0, reportById = new Map(), requestKey = null, reloadHistory = async () => {};
 let currentPost = null, comparePosts = [];
 const displayCount = value => value == null ? "미제공" : Number(value).toLocaleString("ko-KR");
 function updateAvailability() { lookup.disabled = !apiBase || !user || !workspaceId || !project.value || !postUrl.value.trim(); }
@@ -52,7 +52,7 @@ function renderComparison() {
   }
 }
 postUrl.addEventListener("input", () => { requestKey = null; updateAvailability(); });
-project.addEventListener("change", () => { requestKey = null; updateAvailability(); });
+project.addEventListener("change", () => { requestKey = null; reportById.clear(); comparePosts = []; renderComparison(); clearResult(); updateAvailability(); reloadHistory().catch(() => { history.replaceChildren(new Option("저장된 결과를 불러오지 못했습니다.", "")); }); });
 platform.addEventListener("change", () => {
   requestKey = null; postUrl.value = ""; clearResult();
   const instagram = platform.value === "instagram";
@@ -83,11 +83,13 @@ downloadCompare.addEventListener("click", () => {
 });
 clearCompare.addEventListener("click", () => { comparePosts = []; renderComparison(); });
 
-async function loadHistory(getDocs, collection, query, orderBy, limit) {
-  const currentUser = user, currentWorkspace = workspaceId;
-  const snapshot = await getDocs(query(collection(database, "workspaces", currentWorkspace, "reports"), orderBy("createdAt", "desc"), limit(50)));
-  if (currentUser !== user || currentWorkspace !== workspaceId) return;
-  reportById = new Map(snapshot.docs.filter(doc => doc.data().tool === "collab-post" && ["YouTube", "Instagram"].includes(doc.data().post?.platform))
+async function loadHistory(getDocs, collection, query, where, orderBy, limit) {
+  const currentUser = user, currentWorkspace = workspaceId, projectId = project.value;
+  reportById.clear(); history.replaceChildren(new Option(projectId ? "결과 불러오는 중" : "프로젝트 선택 후 결과 조회", "")); history.disabled = true;
+  if (!currentUser || !currentWorkspace || !projectId) return;
+  const snapshot = await getDocs(query(collection(database, "workspaces", currentWorkspace, "reports"), where("tool", "==", "collab-post"), where("projectId", "==", projectId), orderBy("createdAt", "desc"), limit(50)));
+  if (currentUser !== user || currentWorkspace !== workspaceId || projectId !== project.value) return;
+  reportById = new Map(snapshot.docs.filter(doc => ["YouTube", "Instagram"].includes(doc.data().post?.platform))
     .map(doc => [doc.id, doc.data()]));
   history.replaceChildren(new Option(reportById.size ? "저장된 결과 선택" : "저장된 조회 결과 없음", ""));
   for (const [id, report] of reportById) history.add(new Option(`${report.post.platform} · ${report.post.title || "제목 미제공"} · ${displayCount(report.post.views)}회`, id));
@@ -106,6 +108,7 @@ async function initialize() {
     authDomain: "autoworks-c9a6a.firebaseapp.com", projectId: "autoworks-c9a6a",
     appId: "1:823085494995:web:3be4bdd40fe0519bc59a26" });
   auth = getAuth(app); database = getFirestore(app);
+  reloadHistory = () => loadHistory(getDocs, collection, query, where, orderBy, limit);
   document.getElementById("login").addEventListener("click", () => signInWithPopup(auth, new GoogleAuthProvider())
     .catch(() => { accountStatus.textContent = "로그인하지 못했습니다."; }));
   onAuthStateChanged(auth, async signedIn => {
@@ -128,7 +131,7 @@ async function initialize() {
       for (const item of projects.docs) project.add(new Option(item.data().name || "프로젝트", item.id));
       project.disabled = false; accountStatus.textContent = "프로젝트를 선택해 주세요.";
       updateAvailability();
-      await loadHistory(getDocs, collection, query, orderBy, limit);
+      await reloadHistory();
     } catch { if (current === generation) accountStatus.textContent = "계정 정보를 불러오지 못했습니다."; }
   });
   lookup.addEventListener("click", async () => {
@@ -151,7 +154,7 @@ async function initialize() {
       if (body.post) { showResult(body.post); lookupStatus.textContent = "조회 결과를 내 계정에 저장했습니다."; }
       else lookupStatus.textContent = body.status === "running" ? "같은 요청이 진행 중입니다. 잠시 후 저장된 결과를 확인해 주세요." : "저장된 결과를 다시 확인해 주세요.";
       if (body.status !== "running") requestKey = null;
-      await loadHistory(getDocs, collection, query, orderBy, limit).catch(() => { lookupStatus.textContent += " 목록은 새로고침 후 확인할 수 있습니다."; });
+      await reloadHistory().catch(() => { lookupStatus.textContent += " 목록은 새로고침 후 확인할 수 있습니다."; });
     } catch (error) { if (currentUser === user && currentWorkspace === workspaceId) lookupStatus.textContent = error.message; }
     finally { updateAvailability(); }
   });
