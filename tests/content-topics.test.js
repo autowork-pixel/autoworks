@@ -22,10 +22,11 @@ test("저장된 검색량이 있는 프로젝트 키워드를 최근 월간량 �
     { keyword: "중검색", total: 1200, recordedAt: "2026-11-01T00:00:00Z" },
     { keyword: " 고검색 ", total: 9800, recordedAt: { seconds: 1793750400 } },
     { keyword: "저검색", total: 30, recordedAt: { toDate: () => new Date("2026-11-03T15:00:00Z") } }
-  ]);
+  ], { now: "2026-11-10T00:00:00Z" });
   assert.deepEqual(result.map(item => item.keyword), ["고검색", "중검색", "저검색"]);
   assert.equal(result[0].searchVolume, 9800);
   assert.equal(result[0].searchRecordedAt, "2026-11-04");
+  assert.equal(result[0].searchStale, false);
   assert.match(result[0].note, /2026-11-04 조회 기준 월간 검색량 9,800회/);
 });
 
@@ -55,11 +56,28 @@ test("조회 시각이 손상돼도 검색량은 쓰되 최신 값처럼 표시�
   assert.match(result.note, /조회일 미확인 월간 검색량 3,000회/);
 });
 
+test("30일 이상 지난 검색량은 오래된 참고값으로 경고한다", () => {
+  const [result] = buildTopicCandidates(["브랜드"], "고객", "SCS", [
+    { keyword: "브랜드", total: 3000, recordedAt: "2026-09-30T00:00:00Z" }
+  ], { now: "2026-11-10T00:00:00Z" });
+  assert.equal(result.searchStale, true);
+  assert.match(result.note, /30일 이상 지난 참고값/);
+});
+
+test("오래됨 기준은 운영 검토 뒤 조정할 수 있다", () => {
+  const [result] = buildTopicCandidates(["브랜드"], "고객", "SCS", [
+    { keyword: "브랜드", total: 3000, recordedAt: "2026-10-20T00:00:00Z" }
+  ], { now: "2026-11-10T00:00:00Z", staleAfterDays: 14 });
+  assert.equal(result.searchStale, true);
+  assert.match(result.note, /14일 이상 지난 참고값/);
+});
+
 test("콘텐츠 화면은 같은 프로젝트의 저장된 브랜드 검색량만 읽고 외부 조회를 만들지 않는다", async () => {
   const source = await readFile(new URL("../public/content-pack.js", import.meta.url), "utf8");
   assert.match(source, /where\("tool", "==", "brand-search"\)/);
   assert.match(source, /report\.projectId !== projectId/);
   assert.match(source, /recordedAt: row\.recordedAt/);
+  assert.match(source, /idea\.searchStale/);
   assert.match(source, /buildTopicCandidates\(keywords, el\.audience\.value, el\.topicHook\.value, topicSignals\)/);
   assert.equal(/brand-search-runs|provider-credentials/.test(source), false);
 });
