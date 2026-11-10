@@ -87,7 +87,10 @@ test("선택한 주제의 키워드·검색량·기준일을 생성 전 검토 �
 
 test("콘텐츠 화면은 같은 프로젝트의 저장된 브랜드 검색량만 읽고 외부 조회를 만들지 않는다", async () => {
   const source = await readFile(new URL("../public/content-pack.js", import.meta.url), "utf8");
+  const indexes = await readFile(new URL("../firestore.indexes.json", import.meta.url), "utf8");
   assert.match(source, /where\("tool", "==", "brand-search"\)/);
+  assert.match(source, /where\("tool", "==", "content-pack"\), where\("projectId", "==", projectId\)/);
+  assert.match(source, /where\("tool", "==", "brand-search"\), where\("projectId", "==", projectId\)/);
   assert.match(source, /report\.projectId !== projectId/);
   assert.match(source, /recordedAt: row\.recordedAt/);
   assert.match(source, /idea\.searchStale/);
@@ -95,6 +98,7 @@ test("콘텐츠 화면은 같은 프로젝트의 저장된 브랜드 검색량�
   assert.match(source, /el\.campaign\.value\.trim\(\) !== selectedTopic\.title/);
   assert.match(source, /topicContext: selectedTopic \?/);
   assert.match(source, /report\?\.topicContext/);
+  assert.match(indexes, /"fieldPath": "tool"[\s\S]*"fieldPath": "projectId"[\s\S]*"fieldPath": "createdAt"/);
   assert.match(source, /buildTopicCandidates\(keywords, el\.audience\.value, el\.topicHook\.value, topicSignals\)/);
   assert.equal(/brand-search-runs|provider-credentials/.test(source), false);
 });

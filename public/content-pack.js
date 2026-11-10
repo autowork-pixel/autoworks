@@ -9,7 +9,7 @@ if (topicHelp?.classList.contains("meta")) topicHelp.textContent = "저장된 �
 const topicReview = document.createElement("p");
 topicReview.className = "notice"; topicReview.hidden = true; topicReview.setAttribute("aria-live", "polite");
 el.topicIdeas.after(topicReview);
-let user = null, workspaceId = null, database, generation = 0, reports = new Map(), requestKey = null, topicSignals = [], selectedTopic = null, loadSignals = async () => {};
+let user = null, workspaceId = null, database, generation = 0, reports = new Map(), requestKey = null, topicSignals = [], selectedTopic = null, loadHistory = async () => {}, loadSignals = async () => {};
 
 function message(value, type = "") { el.status.textContent = value; el.status.className = `status ${type}`.trim(); }
 function selectedChannels() { return [...el.channels.querySelectorAll("input:checked")].map(input => input.value); }
@@ -28,10 +28,7 @@ function clearSelectedTopic() { selectedTopic = null; topicReview.textContent = 
 function reviewSelectedTopic(idea) {
   selectedTopic = idea; topicReview.textContent = describeTopicReview(idea); topicReview.hidden = false;
 }
-async function history(getDocs, collection, query, where, orderBy, limit) {
-  const currentUser = user, currentWorkspace = workspaceId;
-  const snapshot = await getDocs(query(collection(database, "workspaces", currentWorkspace, "reports"), where("tool", "==", "content-pack"), orderBy("createdAt", "desc"), limit(50)));
-  if (currentUser !== user || currentWorkspace !== workspaceId) return;
+function renderHistory(snapshot) {
   reports = new Map(snapshot.docs.filter(item => typeof item.data().markdown === "string").map(item => [item.id, item.data()]));
   el.history.replaceChildren(new Option(reports.size ? "저장된 콘텐츠 선택" : "저장된 콘텐츠 없음", ""));
   for (const [id, report] of reports) el.history.add(new Option(report.summary || "콘텐츠 묶음", id));
@@ -39,7 +36,7 @@ async function history(getDocs, collection, query, where, orderBy, limit) {
 }
 
 el.history.addEventListener("change", () => show(reports.get(el.history.value)));
-el.project.addEventListener("change", () => { requestKey = null; topicSignals = []; el.topicIdeas.replaceChildren(); clearSelectedTopic(); update(); loadSignals(); });
+el.project.addEventListener("change", () => { requestKey = null; topicSignals = []; reports.clear(); el.topicIdeas.replaceChildren(); clearSelectedTopic(); update(); loadHistory(); loadSignals(); });
 el.packForm.addEventListener("input", () => { requestKey = null; });
 el.campaign.addEventListener("input", () => { if (selectedTopic && el.campaign.value.trim() !== selectedTopic.title) clearSelectedTopic(); });
 el.audience.addEventListener("input", () => { el.topicIdeas.replaceChildren(); clearSelectedTopic(); });
@@ -79,11 +76,23 @@ async function initialize() {
   const app = getApps()[0] || initializeApp({ apiKey: "AIzaSyC4j2aelRB3uEyGmZJbvW0OGNL5-Oi2uvA", authDomain: "autoworks-c9a6a.firebaseapp.com", projectId: "autoworks-c9a6a", appId: "1:823085494995:web:3be4bdd40fe0519bc59a26" });
   const auth = getAuth(app); database = getFirestore(app);
   el.login.addEventListener("click", () => signInWithPopup(auth, new GoogleAuthProvider()).catch(() => message("로그인하지 못했습니다.", "error")));
+  loadHistory = async () => {
+    const currentUser = user, currentWorkspace = workspaceId, projectId = el.project.value;
+    reports.clear(); el.history.replaceChildren(new Option(projectId ? "저장된 콘텐츠 불러오는 중" : "프로젝트 선택 후 불러옵니다.", "")); el.history.disabled = true;
+    if (!currentUser || !currentWorkspace || !projectId) return;
+    try {
+      const snapshot = await getDocs(query(collection(database, "workspaces", currentWorkspace, "reports"), where("tool", "==", "content-pack"), where("projectId", "==", projectId), orderBy("createdAt", "desc"), limit(50)));
+      if (currentUser !== user || currentWorkspace !== workspaceId || projectId !== el.project.value) return;
+      renderHistory(snapshot);
+    } catch {
+      if (currentUser === user && currentWorkspace === workspaceId && projectId === el.project.value) el.history.replaceChildren(new Option("저장된 콘텐츠를 불러오지 못했습니다.", ""));
+    }
+  };
   loadSignals = async () => {
     const currentUser = user, currentWorkspace = workspaceId, projectId = el.project.value;
     if (!currentUser || !currentWorkspace || !projectId) return;
     try {
-      const snapshot = await getDocs(query(collection(database, "workspaces", currentWorkspace, "reports"), where("tool", "==", "brand-search"), orderBy("createdAt", "desc"), limit(50)));
+      const snapshot = await getDocs(query(collection(database, "workspaces", currentWorkspace, "reports"), where("tool", "==", "brand-search"), where("projectId", "==", projectId), orderBy("createdAt", "desc"), limit(50)));
       if (currentUser !== user || currentWorkspace !== workspaceId || projectId !== el.project.value) return;
       const latest = new Map();
       for (const document of snapshot.docs) {
@@ -117,7 +126,7 @@ async function initialize() {
         el.project.add(option);
       }
       el.project.disabled = false; update();
-      await history(getDocs, collection, query, where, orderBy, limit);
+      await loadHistory();
       message(apiBase ? "사실과 채널을 선택해 콘텐츠 묶음을 만드세요." : "서버 배포 전이라 실제 생성은 비활성입니다.");
     } catch { message("계정 정보를 불러오지 못했습니다.", "error"); }
   });
@@ -136,7 +145,7 @@ async function initialize() {
       if (!response.ok) { if (body.error?.code !== "INTERNAL_ERROR") requestKey = null; throw new Error(body.error?.message || "생성에 실패했습니다."); }
       if (currentUser !== user || currentWorkspace !== workspaceId) return;
       show({ ...body, channels }); requestKey = null; message("미게시 상태로 저장했습니다. 사용 전에 검토하세요.", "success");
-      await history(getDocs, collection, query, where, orderBy, limit);
+      await loadHistory();
     } catch (error) { message(error.message, "error"); }
     finally { update(); }
   });
