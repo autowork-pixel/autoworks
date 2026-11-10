@@ -57,4 +57,6 @@ test("brand-search.js 인증·프로젝트 전환은 진행 중인 이전 상태
   assert.match(source, /const generation=\+\+state\.authGeneration/);
   assert.match(source, /generation!==state\.authGeneration\|\|user!==state\.user/);
   assert.match(source, /elements\.project\.addEventListener\("change",async\(\)=>\{stopPolling\(\);state\.runId=null;state\.runs=\[\]/);
+  assert.match(source, /context=captureContext\(null\)/);
+  assert.match(source, /catch\(error\)\{if\(isCurrent\(context,\{run:false\}\)\)setMessage\(`실행 내역을 불러오지 못했습니다/);
 });
