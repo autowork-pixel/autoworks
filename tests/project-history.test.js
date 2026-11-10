@@ -12,10 +12,11 @@ test("브랜드 검색량 이력은 선택 프로젝트로 서버 조회한다",
 
 test("AI 블로그 이력은 선택 프로젝트로 조회하고 전환 중 늦은 응답을 버린다", async () => {
   const source = await readFile(new URL("../public/ai-blog.js", import.meta.url), "utf8");
-  assert.match(source, /where\("tool","==","ai-blog"\),where\("projectId","==",projectId\)/);
-  assert.match(source, /projectId!==el\.project\.value/);
-  assert.match(source, /if\(firestoreHistory\)loadHistory\(\.\.\.firestoreHistory\)/);
-  assert.match(source, /show\(\);update\(\)/);
+  assert.match(source, /where\("tool", "==", "ai-blog"\), where\("projectId", "==", projectId\)/);
+  assert.match(source, /projectId !== el\.project\.value/);
+  assert.match(source, /if \(firestoreHistory\) loadHistory\(\.\.\.firestoreHistory\)/);
+  assert.match(source, /requestGeneration\+\+; requestKey = null; show\(\); update\(\)/);
+  assert.match(source, /currentHistoryGeneration !== historyGeneration/);
 });
 
 test("네이버 노출 이력은 선택 프로젝트로 조회하고 전환 시 이전 결과를 지운다", async () => {

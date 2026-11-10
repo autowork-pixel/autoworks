@@ -7,7 +7,7 @@ const cases = [
   ["content-reference.js", /if \(!requestCurrent\(context\)\) return/, /projectId: selectedProject/],
   ["collab-post.js", /if \(!lookupCurrent\(context\)\) return/, /projectId: selectedProject/],
   ["weekly-ad.js", /selectedProject !== projectSelect\.value/, /projectId: selectedProject/],
-  ["ai-blog.js", /selectedProject!==el\.project\.value/, /projectId:selectedProject/],
+  ["ai-blog.js", /if \(!requestCurrent\(context\)\) return/, /projectId: selectedProject/],
   ["influencer-candidates.js", /if\(!requestCurrent\(context\)\)return/, /projectId:selectedProject/],
   ["naver-visibility.js", /selectedProject!==el\.project\.value/, /projectId:selectedProject/]
 ];
@@ -23,7 +23,7 @@ const errorCases = [
   ["content-reference.js", /if \(requestCurrent\(context\)\) message\(error\.message, "error"\)/],
   ["collab-post.js", /catch \(error\) \{ if \(lookupCurrent\(context\)\) lookupStatus\.textContent = error\.message; \}/],
   ["weekly-ad.js", /catch \(error\) \{ if \(analysisCurrent\(context\)\) status\.textContent/],
-  ["ai-blog.js", /catch\(error\)\{if\(currentUser===user&&currentWorkspace===workspaceId&&selectedProject===el\.project\.value\)/],
+  ["ai-blog.js", /catch \(error\) \{ if \(requestCurrent\(context\)\) message\(error\.message, "error"\); \}/],
   ["influencer-candidates.js", /catch\(error\)\{if\(requestCurrent\(context\)\)message\(error\.message,"error"\)\}/],
   ["naver-visibility.js", /catch\(error\)\{if\(u===user&&w===workspaceId&&selectedProject===el\.project\.value\)/]
 ];
@@ -82,6 +82,19 @@ test("weekly-ad.js 이전 파일·기간·프로젝트 요청과 저장은 현�
   assert.match(source, /finally \{ if \(analysisCurrent\(context\)\) button\.disabled = false; \}/);
   assert.match(source, /const context = \{ generation: \+\+saveGeneration, user: accountState\.user/);
   assert.match(source, /context\.result !== latest/);
+  assert.match(source, /const currentHistoryGeneration = \+\+historyGeneration/);
+  assert.match(source, /currentHistoryGeneration !== historyGeneration/);
+});
+
+test("ai-blog.js 이전 조건·프로젝트 요청은 현재 초안과 버튼 상태를 덮지 않는다", async () => {
+  const source = await readFile(new URL("../public/ai-blog.js", import.meta.url), "utf8");
+  assert.match(source, /requestGeneration = 0, historyGeneration = 0/);
+  assert.match(source, /function formFingerprint\(\)/);
+  assert.match(source, /function requestCurrent\(context\)/);
+  assert.match(source, /el\.blogForm\.addEventListener\("input", \(\) => \{ requestGeneration\+\+; requestKey = null; show\(\); update\(\); \}\)/);
+  assert.match(source, /const context = \{ generation: \+\+requestGeneration, user, workspaceId, projectId: el\.project\.value, fingerprint: formFingerprint\(\) \}/);
+  assert.match(source, /if \(!requestCurrent\(context\)\) return/);
+  assert.match(source, /finally \{ if \(requestCurrent\(context\)\) update\(\); \}/);
   assert.match(source, /const currentHistoryGeneration = \+\+historyGeneration/);
   assert.match(source, /currentHistoryGeneration !== historyGeneration/);
 });
