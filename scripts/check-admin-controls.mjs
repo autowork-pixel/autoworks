@@ -15,6 +15,11 @@ assert.match(source, /body:JSON\.stringify\(\{blocked,confirmation,reason:reason
 assert.equal(source.includes("updateDoc("), false, "운영 화면에서 Firestore 문서를 직접 변경하면 안 됩니다.");
 assert.equal(source.includes("providerCredentials"), false, "운영 화면에서 고객 API 자격정보를 조회하면 안 됩니다.");
 assert.match(source, /collectionGroup\(db,"paymentSummaries"\)/, "관리자는 결제수단 원문이 아닌 공개 결제 요약만 조회해야 합니다.");
+assert.match(source, /const context=\{generation:\+\+authGeneration,user\}/, "관리자 화면은 로그인 전환마다 조회 세대를 분리해야 합니다.");
+assert.match(source, /function sessionCurrent\(context\)/, "관리자 비동기 조회는 현재 로그인 세션인지 확인해야 합니다.");
+assert.match(source, /loadDashboard\(context\).*loadPaymentSummaries\(context\).*loadAutomationState\(context\).*loadAutomationAudits\(context\)/s, "관리자 조회마다 로그인 세션 문맥을 전달해야 합니다.");
+assert.match(source, /clearDashboard\(\);if\(!user\)/, "로그아웃 시 이전 관리자 데이터를 즉시 비워야 합니다.");
 assert.match(source, /data\.status==="FAILED"/, "결제 실패 상태를 운영자가 구분할 수 있어야 합니다.");
 assert.equal(source.includes("billingCredentials"), false, "운영 화면에서 빌링키 저장소를 조회하면 안 됩니다.");
 console.log("관리자 고객 접근 조치의 API 비활성화·ID token·대상 ID·비밀정보 경계를 확인");
+
