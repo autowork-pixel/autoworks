@@ -86,6 +86,13 @@ test("weekly-ad.js 이전 파일·기간·프로젝트 요청과 저장은 현�
   assert.match(source, /currentHistoryGeneration !== historyGeneration/);
 });
 
+test("weekly-ad.js BFCache 복원은 이전 분석·저장·이력 응답을 버리고 현재 계정을 다시 읽는다", async () => {
+  const source = await readFile(new URL("../public/weekly-ad.js", import.meta.url), "utf8");
+  assert.match(source, /async function renderAccount\(user\)/);
+  assert.match(source, /window\.addEventListener\("pagehide", event => \{[\s\S]*generation\+\+; analysisGeneration\+\+; historyGeneration\+\+; saveGeneration\+\+;/);
+  assert.match(source, /window\.addEventListener\("pageshow", event => \{[\s\S]*renderAccount\(auth\.currentUser\)/);
+});
+
 test("ai-blog.js 이전 조건·프로젝트 요청은 현재 초안과 버튼 상태를 덮지 않는다", async () => {
   const source = await readFile(new URL("../public/ai-blog.js", import.meta.url), "utf8");
   assert.match(source, /requestGeneration = 0, historyGeneration = 0/);
