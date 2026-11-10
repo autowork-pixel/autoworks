@@ -26,11 +26,11 @@ export function authorizationUrl({ provider, clientId, redirectUri, state }) {
   return url.toString();
 }
 
-async function responseJson(response) {
+async function responseJson(response, code) {
   try {
     return await response.json();
   } catch {
-    throw new ApiError("AUTH_REQUIRED", "로그인 제공자 응답을 확인하지 못했습니다.", 502);
+    throw new ApiError(code, "로그인 제공자 응답을 확인하지 못했습니다.", 502);
   }
 }
 
@@ -44,9 +44,9 @@ export async function exchangeAuthorizationCode({ provider, clientId, clientSecr
     body,
     signal: AbortSignal.timeout(10_000)
   });
-  const payload = await responseJson(response);
+  const payload = await responseJson(response, "OAUTH_TOKEN_RESPONSE_INVALID");
   if (!response.ok || typeof payload.access_token !== "string" || !payload.access_token) {
-    throw new ApiError("AUTH_REQUIRED", "로그인 제공자 토큰 발급에 실패했습니다.", 401);
+    throw new ApiError("OAUTH_TOKEN_EXCHANGE_FAILED", "로그인 제공자 토큰 발급에 실패했습니다.", 401);
   }
   return payload.access_token;
 }
@@ -57,8 +57,8 @@ export async function fetchProviderIdentity({ provider, accessToken, fetchImpl =
     headers: { authorization: `Bearer ${accessToken}` },
     signal: AbortSignal.timeout(10_000)
   });
-  const payload = await responseJson(response);
-  if (!response.ok) throw new ApiError("AUTH_REQUIRED", "로그인 사용자 정보를 확인하지 못했습니다.", 401);
+  const payload = await responseJson(response, "OAUTH_PROFILE_RESPONSE_INVALID");
+  if (!response.ok) throw new ApiError("OAUTH_PROFILE_FETCH_FAILED", "로그인 사용자 정보를 확인하지 못했습니다.", 401);
   if (provider === "naver") {
     const profile = payload.response;
     if (payload.resultcode !== "00" || !profile || typeof profile.id !== "string" || !profile.id) {
@@ -72,3 +72,4 @@ export async function fetchProviderIdentity({ provider, accessToken, fetchImpl =
   const account = payload.kakao_account || {};
   return { provider, subject: String(payload.id), email: typeof account.email === "string" ? account.email : null, displayName: account.profile?.nickname || null };
 }
+
