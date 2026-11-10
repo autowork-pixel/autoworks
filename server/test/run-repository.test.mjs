@@ -44,19 +44,20 @@ const runPath = "workspaces/workspace-a/runs/run-a";
 const reservationPath = "workspaces/workspace-a/usageReservations/run-a";
 const usagePath = "workspaces/workspace-a/usage/2026-11";
 
-test("소유자에게 최근 브랜드 검색 실행만 최신순으로 반환한다", async () => {
+test("소유자에게 선택 프로젝트의 최근 브랜드 검색 실행만 최신순으로 반환한다", async () => {
   const fake = fakeDatabase({
     "workspaces/workspace-a": { ownerUid: "user-a" },
-    "workspaces/workspace-a/runs/run-old": { tool: "brand-search", status: "failed", createdAt: 1, inputSummary: { brand: "이전" } },
-    "workspaces/workspace-a/runs/run-new": { tool: "brand-search", status: "succeeded", createdAt: 2, resultReportId: "run-new", inputSummary: { brand: "최근" } },
+    "workspaces/workspace-a/runs/run-old": { tool: "brand-search", projectId: "project-a", status: "failed", createdAt: 1, inputSummary: { brand: "이전" } },
+    "workspaces/workspace-a/runs/run-new": { tool: "brand-search", projectId: "project-a", status: "succeeded", createdAt: 2, resultReportId: "run-new", inputSummary: { brand: "최근" } },
+    "workspaces/workspace-a/runs/run-another-project": { tool: "brand-search", projectId: "project-b", status: "succeeded", createdAt: 3, resultReportId: "run-another-project" },
     "workspaces/workspace-a/runs/run-other": { tool: "other-tool", status: "succeeded", createdAt: 3 }
   });
   const repository = createRunRepository({ database: fake.database, serverTimestamp: () => "server-time" });
-  const runs = await repository.listBrandSearchRuns({ workspaceId: "workspace-a", uid: "user-a", limit: 2 });
+  const runs = await repository.listBrandSearchRuns({ workspaceId: "workspace-a", uid: "user-a", projectId: "project-a", limit: 2 });
   assert.deepEqual(runs.map(run => run.runId), ["run-new", "run-old"]);
   assert.equal(runs[0].resultReady, true);
   assert.equal(JSON.stringify(runs).includes("resultReportId"), false);
-  await assert.rejects(() => repository.listBrandSearchRuns({ workspaceId: "workspace-a", uid: "user-b" }), error => error.code === "AUTH_REQUIRED");
+  await assert.rejects(() => repository.listBrandSearchRuns({ workspaceId: "workspace-a", uid: "user-b", projectId: "project-a" }), error => error.code === "AUTH_REQUIRED");
 });
 
 test("소유자만 실행 상태와 준비된 결과를 조회한다", async () => {

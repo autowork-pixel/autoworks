@@ -46,11 +46,13 @@ export function createRunRepository({ database, serverTimestamp, now = () => new
   }
 
   return {
-    async listBrandSearchRuns({ workspaceId, uid, limit = 20 }) {
+    async listBrandSearchRuns({ workspaceId, uid, projectId = null, limit = 20 }) {
       const root = workspace(workspaceId);
       await assertOwner(root, uid);
       const safeLimit = Math.min(20, Math.max(1, Number.isInteger(limit) ? limit : 20));
-      const snapshot = await root.collection("runs").where("tool", "==", "brand-search").orderBy("createdAt", "desc").limit(safeLimit).get();
+      let runs = root.collection("runs").where("tool", "==", "brand-search");
+      if (projectId) runs = runs.where("projectId", "==", projectId);
+      const snapshot = await runs.orderBy("createdAt", "desc").limit(safeLimit).get();
       return snapshot.docs.map(document => {
         const run = document.data();
         return {

@@ -55,5 +55,5 @@ test("brand-search.js 인증·프로젝트 전환은 진행 중인 이전 상태
   const source = await readFile(new URL("../public/brand-search.js", import.meta.url), "utf8");
   assert.match(source, /const generation=\+\+state\.authGeneration/);
   assert.match(source, /generation!==state\.authGeneration\|\|user!==state\.user/);
-  assert.match(source, /elements\.project\.addEventListener\("change",\(\)=>\{stopPolling\(\);state\.runId=null;state\.runs=\[\]/);
+  assert.match(source, /elements\.project\.addEventListener\("change",async\(\)=>\{stopPolling\(\);state\.runId=null;state\.runs=\[\]/);
 });
