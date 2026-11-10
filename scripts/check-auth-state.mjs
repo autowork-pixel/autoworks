@@ -16,6 +16,9 @@ assert.match(source, /const accountContext = \(\) => \(\{ generation:authGenerat
 assert.match(source, /const accountCurrent = context => context\.generation === authGeneration/, "고객 쓰기 응답은 현재 인증 세대인지 확인해야 합니다.");
 assert.match(source, /loadProjects\(workspaceId, \(\) => accountCurrent\(context\)\)/, "프로젝트 저장 뒤 목록 조회도 현재 계정에서만 반영해야 합니다.");
 assert.match(source, /if \(accountCurrent\(context\)\) \{ submit\.disabled = false; submit\.textContent = "문의 접수"; \}/, "이전 문의 요청은 새 계정 버튼 상태를 복구하지 않아야 합니다.");
+assert.match(source, /async function renderAuthState\(user\)/, "인증 상태 렌더링은 BFCache 복원에서도 재사용할 수 있어야 합니다.");
+assert.match(source, /window\.addEventListener\("pagehide", event => \{\s*if \(!event\.persisted\) return;\s*authGeneration\+\+;\s*billingRequestKey = null;/, "BFCache 진입 시 진행 중 계정 요청과 결제 멱등키 화면 상태를 무효화해야 합니다.");
+assert.match(source, /window\.addEventListener\("pageshow", event => \{\s*if \(!event\.persisted\) return;\s*renderAuthState\(auth\.currentUser\);/, "BFCache 복원 시 현재 Firebase 계정으로 화면 데이터를 다시 불러와야 합니다.");
 
 console.log("로그아웃 DOM 초기화와 이전 계정 비동기 결과 차단 경계를 확인");
 

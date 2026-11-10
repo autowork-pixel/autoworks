@@ -352,7 +352,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
           console.error("계정 탈퇴 상태 조회 실패", error.message);
         }
       }
-      onAuthStateChanged(auth, async user => {
+      async function renderAuthState(user) {
         const generation = ++authGeneration;
         billingRequestKey = null;
         const signedIn = Boolean(user);
@@ -385,6 +385,16 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
             console.error("워크스페이스 준비 실패", error.code);
           }
         }
+      }
+      onAuthStateChanged(auth, renderAuthState);
+      window.addEventListener("pagehide", event => {
+        if (!event.persisted) return;
+        authGeneration++;
+        billingRequestKey = null;
+      });
+      window.addEventListener("pageshow", event => {
+        if (!event.persisted) return;
+        renderAuthState(auth.currentUser);
       });
       document.querySelectorAll("[data-auth-provider]").forEach(button => {
         button.addEventListener("click", async () => {
