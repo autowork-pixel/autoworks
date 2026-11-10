@@ -1,4 +1,4 @@
-import { buildTopicCandidates } from "./content-topics.js";
+import { buildTopicCandidates, describeTopicReview } from "./content-topics.js";
 
 const apiBase = String(window.AUTOWORKS_API_BASE || "").replace(/\/$/, "");
 const hosts = new Set(["localhost", "127.0.0.1", "autoworks-c9a6a.web.app", "autoworks-c9a6a.firebaseapp.com"]);
@@ -6,7 +6,10 @@ const ids = ["packForm", "login", "project", "topicHook", "makeTopics", "topicId
 const el = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
 const topicHelp = el.makeTopics.nextElementSibling;
 if (topicHelp?.classList.contains("meta")) topicHelp.textContent = "저장된 프로젝트 키워드와 최근 브랜드 검색량 결과로 후보 순서를 정합니다. 검색량이 없으면 프로젝트 순서를 유지하며 뉴스 신호는 반영하지 않습니다.";
-let user = null, workspaceId = null, database, generation = 0, reports = new Map(), requestKey = null, topicSignals = [], loadSignals = async () => {};
+const topicReview = document.createElement("p");
+topicReview.className = "notice"; topicReview.hidden = true; topicReview.setAttribute("aria-live", "polite");
+el.topicIdeas.after(topicReview);
+let user = null, workspaceId = null, database, generation = 0, reports = new Map(), requestKey = null, topicSignals = [], selectedTopic = null, loadSignals = async () => {};
 
 function message(value, type = "") { el.status.textContent = value; el.status.className = `status ${type}`.trim(); }
 function selectedChannels() { return [...el.channels.querySelectorAll("input:checked")].map(input => input.value); }
@@ -20,6 +23,10 @@ function show(report) {
   el.meta.textContent = report?.markdown ? `${(report.channels || []).join(" · ")} · ${report.model || "AI 모델"} · 미게시 · 검토 필요` : "미게시 상태로만 저장됩니다.";
   update();
 }
+function clearSelectedTopic() { selectedTopic = null; topicReview.textContent = ""; topicReview.hidden = true; }
+function reviewSelectedTopic(idea) {
+  selectedTopic = idea; topicReview.textContent = describeTopicReview(idea); topicReview.hidden = false;
+}
 async function history(getDocs, collection, query, where, orderBy, limit) {
   const currentUser = user, currentWorkspace = workspaceId;
   const snapshot = await getDocs(query(collection(database, "workspaces", currentWorkspace, "reports"), where("tool", "==", "content-pack"), orderBy("createdAt", "desc"), limit(50)));
@@ -31,10 +38,11 @@ async function history(getDocs, collection, query, where, orderBy, limit) {
 }
 
 el.history.addEventListener("change", () => show(reports.get(el.history.value)));
-el.project.addEventListener("change", () => { requestKey = null; topicSignals = []; el.topicIdeas.replaceChildren(); update(); loadSignals(); });
+el.project.addEventListener("change", () => { requestKey = null; topicSignals = []; el.topicIdeas.replaceChildren(); clearSelectedTopic(); update(); loadSignals(); });
 el.packForm.addEventListener("input", () => { requestKey = null; });
-el.audience.addEventListener("input", () => el.topicIdeas.replaceChildren());
-el.topicHook.addEventListener("change", () => el.topicIdeas.replaceChildren());
+el.campaign.addEventListener("input", () => { if (selectedTopic && el.campaign.value.trim() !== selectedTopic.title) clearSelectedTopic(); });
+el.audience.addEventListener("input", () => { el.topicIdeas.replaceChildren(); clearSelectedTopic(); });
+el.topicHook.addEventListener("change", () => { el.topicIdeas.replaceChildren(); clearSelectedTopic(); });
 el.makeTopics.addEventListener("click", () => {
   const keywords = (el.project.selectedOptions[0]?.dataset.keywords || "").split("\n");
   const ideas = buildTopicCandidates(keywords, el.audience.value, el.topicHook.value, topicSignals);
@@ -43,7 +51,7 @@ el.makeTopics.addEventListener("click", () => {
   for (const idea of ideas) {
     const button = document.createElement("button");
     button.type = "button"; button.className = "secondary"; button.textContent = `${idea.title} · ${idea.note}`;
-    button.addEventListener("click", () => { el.campaign.value = idea.title; requestKey = null; message("주제를 캠페인에 넣었습니다. 확인된 사실을 입력해 주세요."); });
+    button.addEventListener("click", () => { el.campaign.value = idea.title; requestKey = null; reviewSelectedTopic(idea); message("선택 주제와 검색량 기준을 확인한 뒤 사실을 입력해 주세요."); });
     el.topicIdeas.append(button);
   }
   const signaled = ideas.filter(idea => idea.searchVolume !== null).length;
@@ -91,7 +99,7 @@ async function initialize() {
   };
   onAuthStateChanged(auth, async signedIn => {
     const current = ++generation;
-    user = signedIn; workspaceId = null; reports.clear(); requestKey = null; topicSignals = []; show();
+    user = signedIn; workspaceId = null; reports.clear(); requestKey = null; topicSignals = []; clearSelectedTopic(); show();
     el.login.hidden = Boolean(user); el.project.replaceChildren(new Option(user ? "프로젝트 불러오는 중" : "로그인 후 선택", "")); el.project.disabled = true; update();
     if (!user) return message("로그인 후 프로젝트를 선택해 주세요.");
     try {
