@@ -22,6 +22,10 @@ assert.match(source, /clearDashboard\(\);if\(!user\)/, "로그아웃 시 이전 
 assert.match(source, /function actionContext\(\)/, "관리자 쓰기 조치는 요청 시작 시점의 로그인 세션을 고정해야 합니다.");
 assert.doesNotMatch(source, /authorization:`Bearer \$\{await auth\.currentUser\.getIdToken\(\)\}`/, "관리자 쓰기 요청은 대기 중 바뀔 수 있는 현재 계정 토큰을 다시 읽지 않아야 합니다.");
 assert.match(source, /finally\{if\(sessionCurrent\(context\)\)button\.disabled=false\}/, "이전 관리자 요청은 새 세션 버튼 상태를 복구하지 않아야 합니다.");
+assert.match(source, /async function renderAdminState\(user\)/, "관리자 인증 렌더링은 BFCache 복원에서도 재사용할 수 있어야 합니다.");
+assert.match(source, /getIdTokenResult\(true\)/, "관리자 화면 복원 시 최신 custom claim을 서버에서 다시 확인해야 합니다.");
+assert.match(source, /window\.addEventListener\("pagehide",event=>\{if\(event\.persisted\)authGeneration\+\+\}/, "BFCache 진입 시 진행 중 관리자 조회·조치 결과를 무효화해야 합니다.");
+assert.match(source, /window\.addEventListener\("pageshow",event=>\{if\(event\.persisted\)renderAdminState\(auth\.currentUser\)\}/, "BFCache 복원 시 현재 계정과 관리자 claim을 다시 확인해야 합니다.");
 assert.match(source, /data\.status==="FAILED"/, "결제 실패 상태를 운영자가 구분할 수 있어야 합니다.");
 assert.equal(source.includes("billingCredentials"), false, "운영 화면에서 빌링키 저장소를 조회하면 안 됩니다.");
 console.log("관리자 고객 접근 조치의 API 비활성화·ID token·대상 ID·비밀정보 경계를 확인");
