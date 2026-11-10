@@ -20,7 +20,8 @@ function update() {
 }
 function show(report) {
   el.draft.value = report?.markdown || "";
-  el.meta.textContent = report?.markdown ? `${(report.channels || []).join(" · ")} · ${report.model || "AI 모델"} · 미게시 · 검토 필요` : "미게시 상태로만 저장됩니다.";
+  const topic = report?.topicContext ? describeTopicReview({ title: report.summary || "저장된 주제", ...report.topicContext }) : "";
+  el.meta.textContent = report?.markdown ? `${(report.channels || []).join(" · ")} · ${report.model || "AI 모델"} · 미게시 · 검토 필요${topic ? `\n${topic}` : ""}` : "미게시 상태로만 저장됩니다.";
   update();
 }
 function clearSelectedTopic() { selectedTopic = null; topicReview.textContent = ""; topicReview.hidden = true; }
@@ -129,7 +130,7 @@ async function initialize() {
     try {
       const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(currentWorkspace)}/content-pack-runs`, {
         method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${await currentUser.getIdToken()}` },
-        body: JSON.stringify({ projectId: el.project.value, campaign: el.campaign.value.trim(), facts: el.facts.value.trim(), sourceDraft: el.sourceDraft.value.trim(), audience: el.audience.value.trim(), callToAction: el.callToAction.value.trim(), channels, idempotencyKey: requestKey })
+        body: JSON.stringify({ projectId: el.project.value, campaign: el.campaign.value.trim(), facts: el.facts.value.trim(), sourceDraft: el.sourceDraft.value.trim(), audience: el.audience.value.trim(), callToAction: el.callToAction.value.trim(), channels, topicContext: selectedTopic ? { keyword: selectedTopic.keyword, searchVolume: selectedTopic.searchVolume, searchRecordedAt: selectedTopic.searchRecordedAt, searchStale: selectedTopic.searchStale } : null, idempotencyKey: requestKey })
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) { if (body.error?.code !== "INTERNAL_ERROR") requestKey = null; throw new Error(body.error?.message || "생성에 실패했습니다."); }
