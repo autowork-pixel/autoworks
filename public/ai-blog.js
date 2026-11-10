@@ -73,7 +73,7 @@ async function initialize() {
     authDomain: "autoworks-c9a6a.firebaseapp.com", projectId: "autoworks-c9a6a", appId: "1:823085494995:web:3be4bdd40fe0519bc59a26" });
   auth = getAuth(app); database = getFirestore(app);
   el.login.addEventListener("click", () => signInWithPopup(auth, new GoogleAuthProvider()).catch(() => message("로그인하지 못했습니다.", "error")));
-  onAuthStateChanged(auth, async signedIn => {
+  async function renderAccount(signedIn) {
     const current = ++generation; requestGeneration++; historyGeneration++;
     user = signedIn; workspaceId = null; reports.clear(); requestKey = null; show();
     el.login.hidden = Boolean(user); el.project.replaceChildren(new Option(user ? "프로젝트 불러오는 중" : "로그인 후 선택", "")); el.project.disabled = true;
@@ -92,6 +92,14 @@ async function initialize() {
       await loadHistory(getDocs, collection, query, where, orderBy, limit);
       if (current === generation) message(apiBase ? "사실과 조건을 입력하고 검토용 초안을 만들어 보세요." : "서버 배포 전이라 실제 생성은 비활성입니다.");
     } catch { if (current === generation) message("계정 정보를 불러오지 못했습니다.", "error"); }
+  }
+  onAuthStateChanged(auth, renderAccount);
+  window.addEventListener("pagehide", event => {
+    if (!event.persisted) return;
+    generation++; requestGeneration++; historyGeneration++; requestKey = null;
+  });
+  window.addEventListener("pageshow", event => {
+    if (event.persisted) renderAccount(auth.currentUser);
   });
   el.blogForm.addEventListener("submit", async event => {
     event.preventDefault();
@@ -116,3 +124,4 @@ async function initialize() {
   });
 }
 initialize().catch(() => message("화면을 준비하지 못했습니다.", "error"));
+

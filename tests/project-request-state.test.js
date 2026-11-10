@@ -113,6 +113,16 @@ test("naver-visibility.js 이전 조건·프로젝트 요청은 현재 노출 �
   assert.match(source, /const projects = await getDocs[\s\S]*if \(current !== generation\) return/);
 });
 
+for (const file of ["ai-blog.js", "naver-visibility.js"]) {
+  test(`${file} BFCache 복원은 이전 생성·이력 응답을 버리고 현재 계정을 다시 읽는다`, async () => {
+    const source = await readFile(new URL(`../public/${file}`, import.meta.url), "utf8");
+    assert.match(source, /async function renderAccount\(signedIn\)/);
+    assert.match(source, /if \(current === generation\) message\("계정 정보를 불러오지 못했습니다\.", "error"\)/);
+    assert.match(source, /window\.addEventListener\("pagehide", event => \{[\s\S]*generation\+\+; requestGeneration\+\+; historyGeneration\+\+; requestKey = null;/);
+    assert.match(source, /window\.addEventListener\("pageshow", event => \{[\s\S]*renderAccount\(auth\.currentUser\)/);
+  });
+}
+
 test("content-pack.js 이전 조건·주제·프로젝트 요청은 현재 콘텐츠와 신호를 덮지 않는다", async () => {
   const source = await readFile(new URL("../public/content-pack.js", import.meta.url), "utf8");
   assert.match(source, /requestGeneration = 0, historyGeneration = 0, signalGeneration = 0/);
