@@ -93,6 +93,15 @@ test("weekly-ad.js BFCache 복원은 이전 분석·저장·이력 응답을 버
   assert.match(source, /window\.addEventListener\("pageshow", event => \{[\s\S]*renderAccount\(auth\.currentUser\)/);
 });
 
+test("weekly-ad.js 오프라인에서는 Excel 분석만 허용하고 서버 동작을 폐기한다", async () => {
+  const source = await readFile(new URL("../public/weekly-ad.js", import.meta.url), "utf8");
+  assert.match(source, /saveButton\.disabled = !navigator\.onLine \|\| sourceType\.value !== "excel"/);
+  assert.match(source, /if \(provider !== "excel" && !navigator\.onLine\)/);
+  assert.match(source, /if \(!navigator\.onLine \|\| !accountState\.workspaceId \|\| !projectId\) return/);
+  assert.match(source, /window\.addEventListener\("offline", \(\) => \{[\s\S]*analysisGeneration\+\+; historyGeneration\+\+; saveGeneration\+\+;[\s\S]*sourceType\.value !== "excel"/);
+  assert.match(source, /window\.addEventListener\("online", \(\) => \{[\s\S]*accountState\.loadReports\(\)/);
+});
+
 test("ai-blog.js 이전 조건·프로젝트 요청은 현재 초안과 버튼 상태를 덮지 않는다", async () => {
   const source = await readFile(new URL("../public/ai-blog.js", import.meta.url), "utf8");
   assert.match(source, /requestGeneration = 0, historyGeneration = 0/);
