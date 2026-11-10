@@ -219,6 +219,7 @@ document.getElementById("analyze").addEventListener("click", async () => {
   const days = since && until ? Math.round((new Date(`${until}T00:00:00Z`) - new Date(`${since}T00:00:00Z`)) / 86400000) + 1 : 0;
   if (provider !== "excel" && (days < 1 || days > 31)) { status.textContent = "조회 기간을 1~31일로 선택해 주세요."; return; }
   button.disabled = true; status.textContent = provider === "excel" ? "Excel 파일을 분석하고 있습니다." : `${providerLabels[provider]} 성과를 안전하게 불러오고 있습니다.`;
+  const requestUser = accountState.user, requestWorkspace = accountState.workspaceId, requestProject = projectSelect.value;
   try {
     if (provider === "excel") {
       const { sheet, rows } = findTable(workbookSheets(await unzip(await file.arrayBuffer())));
@@ -227,14 +228,13 @@ document.getElementById("analyze").addEventListener("click", async () => {
       render(file.name, sheet, analysis);
       status.textContent = `${integer(analysis.rowCount)}행 분석을 마쳤습니다. 결과는 이 브라우저에서만 볼 수 있습니다.`;
     } else {
-      const user = accountState.user, workspaceId = accountState.workspaceId, selectedProject = projectSelect.value;
-      const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(workspaceId)}/ad-report-runs`, {
-        method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${await user.getIdToken()}` },
-        body: JSON.stringify({ projectId: selectedProject, provider, since, until, idempotencyKey: crypto.randomUUID().replaceAll("-", "") })
+      const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(requestWorkspace)}/ad-report-runs`, {
+        method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${await requestUser.getIdToken()}` },
+        body: JSON.stringify({ projectId: requestProject, provider, since, until, idempotencyKey: crypto.randomUUID().replaceAll("-", "") })
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error?.code || "REQUEST_FAILED");
-      if (user !== accountState.user || workspaceId !== accountState.workspaceId || selectedProject !== projectSelect.value) return;
+      if (requestUser !== accountState.user || requestWorkspace !== accountState.workspaceId || requestProject !== projectSelect.value) return;
       const analysis = analyze(apiRows(body.rows || []));
       latest = { generatedAt: new Date().toISOString(), source: providerLabels[provider], sheet: "API", analysis, analysisMode: "규칙 기반", sourceType: "api", provider, since, until };
       viewedStored = true; render(providerLabels[provider], "API", analysis);
@@ -243,7 +243,7 @@ document.getElementById("analyze").addEventListener("click", async () => {
     }
     document.getElementById("download").disabled = false;
     enableSave();
-  } catch (error) { status.textContent = `분석하지 못했습니다. (${error.message || "REQUEST_FAILED"})`; }
+  } catch (error) { if (provider === "excel" || (requestUser === accountState.user && requestWorkspace === accountState.workspaceId && requestProject === projectSelect.value)) status.textContent = `분석하지 못했습니다. (${error.message || "REQUEST_FAILED"})`; }
   finally { button.disabled = false; }
 });
 document.getElementById("download").addEventListener("click", () => {
@@ -290,7 +290,7 @@ saveButton.addEventListener("click", async () => {
     saveStatus.textContent = "내 계정에 결과를 저장했습니다.";
     try { await accountState.loadReports?.(); }
     catch { saveStatus.textContent = "결과를 저장했습니다. 목록은 새로고침 후 확인해 주세요."; }
-  } catch (error) { if (user === accountState.user && workspaceId === accountState.workspaceId) saveStatus.textContent = `저장하지 못했습니다. (${error.message})`; }
+  } catch (error) { if (user === accountState.user && workspaceId === accountState.workspaceId && selectedProject === projectSelect.value) saveStatus.textContent = `저장하지 못했습니다. (${error.message})`; }
   finally { enableSave(); }
 });
 
