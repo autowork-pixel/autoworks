@@ -22,7 +22,7 @@ const errorCases = [
   ["content-pack.js", /catch \(error\) \{ if \(currentUser === user && currentWorkspace === workspaceId && selectedProject === el\.project\.value\)/],
   ["content-reference.js", /if \(requestCurrent\(context\)\) message\(error\.message, "error"\)/],
   ["collab-post.js", /catch \(error\) \{ if \(lookupCurrent\(context\)\) lookupStatus\.textContent = error\.message; \}/],
-  ["weekly-ad.js", /requestUser === accountState\.user && requestWorkspace === accountState\.workspaceId && requestProject === projectSelect\.value/],
+  ["weekly-ad.js", /catch \(error\) \{ if \(analysisCurrent\(context\)\) status\.textContent/],
   ["ai-blog.js", /catch\(error\)\{if\(currentUser===user&&currentWorkspace===workspaceId&&selectedProject===el\.project\.value\)/],
   ["influencer-candidates.js", /catch\(error\)\{if\(requestCurrent\(context\)\)message\(error\.message,"error"\)\}/],
   ["naver-visibility.js", /catch\(error\)\{if\(u===user&&w===workspaceId&&selectedProject===el\.project\.value\)/]
@@ -70,6 +70,20 @@ test("content-reference.js 이전 조건·프로젝트 요청은 현재 레퍼�
   assert.match(source, /if \(requestCurrent\(context\)\) update\(\)/);
   assert.match(source, /const currentGeneration = \+\+historyGeneration/);
   assert.match(source, /currentGeneration !== historyGeneration/);
+});
+
+test("weekly-ad.js 이전 파일·기간·프로젝트 요청과 저장은 현재 화면을 덮지 않는다", async () => {
+  const source = await readFile(new URL("../public/weekly-ad.js", import.meta.url), "utf8");
+  assert.match(source, /analysisGeneration = 0, historyGeneration = 0, saveGeneration = 0/);
+  assert.match(source, /function analysisCurrent\(context\)/);
+  assert.match(source, /projectSelect\.addEventListener\("change", \(\) => \{[\s\S]*analysisGeneration\+\+; saveGeneration\+\+; resetAnalysis\(\)/);
+  assert.match(source, /const context = \{ generation: \+\+analysisGeneration, provider/);
+  assert.match(source, /if \(!analysisCurrent\(context\)\) return/);
+  assert.match(source, /finally \{ if \(analysisCurrent\(context\)\) button\.disabled = false; \}/);
+  assert.match(source, /const context = \{ generation: \+\+saveGeneration, user: accountState\.user/);
+  assert.match(source, /context\.result !== latest/);
+  assert.match(source, /const currentHistoryGeneration = \+\+historyGeneration/);
+  assert.match(source, /currentHistoryGeneration !== historyGeneration/);
 });
 
 test("brand-search.js 예약·상태 조회는 요청 당시 계정·워크스페이스·프로젝트만 갱신한다", async () => {

@@ -30,7 +30,8 @@ test("주간 광고 이력은 선택 프로젝트로 조회하고 전환 중 늦
   const source = await readFile(new URL("../public/weekly-ad.js", import.meta.url), "utf8");
   assert.match(source, /where\("tool", "==", "weekly-ad"\), where\("projectId", "==", projectId\)/);
   assert.match(source, /projectId !== projectSelect\.value/);
-  assert.match(source, /accountState\.reports = new Map\(\); viewedStored = false/);
+  assert.match(source, /analysisGeneration\+\+; saveGeneration\+\+; resetAnalysis\(\); accountState\.reports = new Map\(\)/);
+  assert.match(source, /currentHistoryGeneration !== historyGeneration/);
 });
 
 test("콘텐츠 레퍼런스 이력은 선택 프로젝트로 조회하고 전환 시 이전 결과를 지운다", async () => {
