@@ -2,7 +2,7 @@ const apiBase = String(window.AUTOWORKS_API_BASE || "").replace(/\/$/, "");
 const hosts = new Set(["localhost", "127.0.0.1", "autoworks-c9a6a.web.app", "autoworks-c9a6a.firebaseapp.com"]);
 const ids = ["referenceForm", "login", "project", "brand", "category", "keywords", "target", "strengths", "periodDays", "collectCount", "submit", "status", "history", "results", "downloadCsv", "downloadJson", "resultMeta"];
 const el = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
-let user = null, workspaceId = null, database, auth, generation = 0, reports = new Map(), requestKey = null, reloadHistory = async () => {};
+let user = null, workspaceId = null, database, auth, generation = 0, requestGeneration = 0, historyGeneration = 0, reports = new Map(), requestKey = null, reloadHistory = async () => {};
 let currentRows = [], currentTitle = "화제 콘텐츠 레퍼런스";
 
 function message(text, type = "") {
@@ -14,6 +14,13 @@ function values(id) {
 }
 function update() {
   el.submit.disabled = !apiBase || !user || !workspaceId || !el.project.value;
+}
+function formFingerprint() {
+  return JSON.stringify([el.brand.value.trim(), el.category.value.trim(), values("keywords"), el.target.value.trim(), values("strengths"), el.periodDays.value, el.collectCount.value]);
+}
+function requestCurrent(context) {
+  return context.generation === requestGeneration && context.user === user && context.workspaceId === workspaceId
+    && context.projectId === el.project.value && context.fingerprint === formFingerprint();
 }
 function date(value) {
   const seconds = value?._seconds ?? value?.seconds;
@@ -74,11 +81,11 @@ function render(rows = [], capturedAt) {
   }
 }
 async function loadHistory(getDocs, collection, query, where, orderBy, limit) {
-  const currentUser = user, currentWorkspace = workspaceId, projectId = el.project.value;
+  const currentGeneration = ++historyGeneration, currentUser = user, currentWorkspace = workspaceId, projectId = el.project.value;
   reports.clear(); el.history.replaceChildren(new Option(projectId ? "결과 불러오는 중" : "프로젝트 선택 후 불러옵니다.", "")); el.history.disabled = true;
   if (!currentUser || !currentWorkspace || !projectId) return;
   const snapshot = await getDocs(query(collection(database, "workspaces", currentWorkspace, "reports"), where("tool", "==", "content-reference"), where("projectId", "==", projectId), orderBy("createdAt", "desc"), limit(50)));
-  if (currentUser !== user || currentWorkspace !== workspaceId || projectId !== el.project.value) return;
+  if (currentGeneration !== historyGeneration || currentUser !== user || currentWorkspace !== workspaceId || projectId !== el.project.value) return;
   reports = new Map(snapshot.docs.filter(doc => Array.isArray(doc.data().rows)).map(doc => [doc.id, doc.data()]));
   el.history.replaceChildren(new Option(reports.size ? "저장된 결과 선택" : "저장된 결과 없음", ""));
   for (const [id, report] of reports) el.history.add(new Option(`${report.query || "검색"} · ${report.rows.length}개 · ${date(report.capturedAt || report.createdAt)}`, id));
@@ -105,11 +112,16 @@ el.downloadJson.addEventListener("click", () => {
   download(JSON.stringify({ title: currentTitle, source: "YouTube public API", exportedAt: new Date().toISOString(), rows: currentRows }, null, 2), "application/json;charset=utf-8", fileName("json"));
 });
 el.project.addEventListener("change", () => {
-  requestKey = null; render(); reloadHistory().catch(() => message("저장된 결과를 불러오지 못했습니다.", "error"));
+  requestGeneration++; requestKey = null; render();
+  const expectedHistoryGeneration = historyGeneration + 1, currentUser = user, currentWorkspace = workspaceId, projectId = el.project.value;
+  reloadHistory().catch(() => {
+    if (expectedHistoryGeneration === historyGeneration && currentUser === user && currentWorkspace === workspaceId && projectId === el.project.value)
+      message("저장된 결과를 불러오지 못했습니다.", "error");
+  });
   update();
 });
 el.referenceForm.addEventListener("input", event => {
-  if (event.target !== el.submit) requestKey = null;
+  if (event.target !== el.submit) { requestGeneration++; requestKey = null; render(); update(); }
 });
 
 async function initialize() {
@@ -126,6 +138,8 @@ async function initialize() {
   el.login.addEventListener("click", () => signInWithPopup(auth, new GoogleAuthProvider()).catch(() => message("로그인하지 못했습니다.", "error")));
   onAuthStateChanged(auth, async signedIn => {
     const current = ++generation;
+    requestGeneration++;
+    historyGeneration++;
     user = signedIn;
     workspaceId = null;
     reports.clear();
@@ -158,7 +172,10 @@ async function initialize() {
   });
   el.referenceForm.addEventListener("submit", async event => {
     event.preventDefault();
-    const currentUser = user, currentWorkspace = workspaceId, selectedProject = el.project.value, keywords = values("keywords"), strengths = values("strengths");
+    const context = { generation: ++requestGeneration, user, workspaceId, projectId: el.project.value, fingerprint: formFingerprint() };
+    const currentUser = context.user, currentWorkspace = context.workspaceId, selectedProject = context.projectId;
+    const keywords = values("keywords"), strengths = values("strengths"), brand = el.brand.value.trim(), category = el.category.value.trim();
+    const target = el.target.value.trim(), periodDays = Number(el.periodDays.value), collectCount = Number(el.collectCount.value);
     if (!keywords.length || keywords.length > 5 || strengths.length > 5) return message("키워드와 강점은 각각 최대 5개입니다.", "error");
     el.submit.disabled = true;
     message("YouTube 공개 콘텐츠를 수집하고 있습니다.");
@@ -167,23 +184,23 @@ async function initialize() {
       const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(currentWorkspace)}/content-reference-runs`, {
         method: "POST",
         headers: { "content-type": "application/json", authorization: `Bearer ${await currentUser.getIdToken()}` },
-        body: JSON.stringify({ projectId: selectedProject, brand: el.brand.value.trim(), category: el.category.value.trim(), keywords, target: el.target.value.trim(), strengths, periodDays: Number(el.periodDays.value), collectCount: Number(el.collectCount.value), idempotencyKey: requestKey })
+        body: JSON.stringify({ projectId: selectedProject, brand, category, keywords, target, strengths, periodDays, collectCount, idempotencyKey: requestKey })
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) {
         if (body.error?.code !== "INTERNAL_ERROR") requestKey = null;
         throw new Error(body.error?.message || "수집에 실패했습니다. 입력을 유지했으니 같은 조건으로 다시 시도해 주세요.");
       }
-      if (currentUser !== user || currentWorkspace !== workspaceId || selectedProject !== el.project.value) return;
-      currentTitle = `${el.brand.value.trim()} · ${el.category.value.trim()}`;
+      if (!requestCurrent(context)) return;
+      currentTitle = `${brand} · ${category}`;
       render(body.rows, body.capturedAt);
       requestKey = null;
       message(`${body.rows?.length || 0}개 레퍼런스를 저장했습니다.`, "success");
-      await reloadHistory();
+      await reloadHistory().catch(() => { if (requestCurrent(context)) message("레퍼런스는 저장했지만 목록을 새로 고치지 못했습니다.", "error"); });
     } catch (error) {
-      if (currentUser === user && currentWorkspace === workspaceId && selectedProject === el.project.value) message(error.message, "error");
+      if (requestCurrent(context)) message(error.message, "error");
     } finally {
-      update();
+      if (requestCurrent(context)) update();
     }
   });
 }
