@@ -130,18 +130,31 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
       const workspaceSetups = new Map();
       let authGeneration = 0;
       let billingRequestKey = null;
+      let oauthPopup = null;
+      let oauthAttempt = 0;
       const accountContext = () => ({ generation:authGeneration, user:auth.currentUser, workspaceId:window.autoworksWorkspaceId });
       const accountCurrent = context => context.generation === authGeneration && context.user === auth.currentUser && context.workspaceId === window.autoworksWorkspaceId;
       const projectCollection = workspaceId => collection(db, "workspaces", workspaceId, "projects");
       const workspaceCollection = (workspaceId, name) => collection(db, "workspaces", workspaceId, name);
       const formatDate = value => value?.toDate?.().toLocaleString("ko-KR", { dateStyle: "short", timeStyle: "short" }) || "시간 확인 중";
       window.addEventListener("message", async event => {
-        if (!apiBase || event.origin !== new URL(apiBase).origin || event.data?.type !== "autoworks-oauth" || typeof event.data.customToken !== "string") return;
+        if (!apiBase || event.origin !== new URL(apiBase).origin || event.source !== oauthPopup) return;
+        const attempt = oauthAttempt;
+        if (event.data?.type === "autoworks-oauth-error") {
+          oauthPopup = null;
+          authMessage.textContent = event.data.code === "OAUTH_TOKEN_EXCHANGE_FAILED"
+            ? "로그인 앱의 키 설정을 확인해 주세요. 토큰을 발급받지 못했습니다."
+            : "외부 로그인을 완료하지 못했습니다. 다시 시도해 주세요.";
+          return;
+        }
+        if (event.data?.type !== "autoworks-oauth" || typeof event.data.customToken !== "string") return;
         try {
           await signInWithCustomToken(auth, event.data.customToken);
         } catch (error) {
           authMessage.textContent = "외부 로그인 정보를 Firebase 계정으로 연결하지 못했습니다.";
           console.error("Firebase custom token 로그인 실패", error.code);
+        } finally {
+          if (attempt === oauthAttempt) oauthPopup = null;
         }
       });
       function renderProjects(snapshot) {
@@ -404,8 +417,10 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
               return;
             }
             const providerName = button.dataset.authProvider;
-            const popup = window.open(`${apiBase}/v1/auth/${encodeURIComponent(providerName)}/start?returnOrigin=${encodeURIComponent(location.origin)}`, "autoworks-oauth", "popup,width=520,height=720");
-            authMessage.textContent = popup ? "로그인 제공자 화면에서 계속해 주세요." : "로그인 팝업이 차단되었습니다. 팝업을 허용해 주세요.";
+            oauthAttempt++;
+            if (oauthPopup && !oauthPopup.closed) oauthPopup.close();
+            oauthPopup = window.open(`${apiBase}/v1/auth/${encodeURIComponent(providerName)}/start?returnOrigin=${encodeURIComponent(location.origin)}`, "autoworks-oauth", "popup,width=520,height=720");
+            authMessage.textContent = oauthPopup ? "로그인 제공자 화면에서 계속해 주세요." : "로그인 팝업이 차단되었습니다. 팝업을 허용해 주세요.";
             return;
           }
           authMessage.textContent = "로그인 연결을 확인하고 있습니다.";
@@ -594,6 +609,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
  </script>
 </body>
 </html>
+
 
 
 
