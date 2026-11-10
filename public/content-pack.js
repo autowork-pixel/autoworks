@@ -120,7 +120,7 @@ async function initialize() {
       }
     }
   };
-  onAuthStateChanged(auth, async signedIn => {
+  async function renderAccount(signedIn) {
     const current = ++generation;
     requestGeneration++; historyGeneration++; signalGeneration++;
     user = signedIn; workspaceId = null; reports.clear(); requestKey = null; topicSignals = []; clearSelectedTopic(); show();
@@ -142,7 +142,15 @@ async function initialize() {
       el.project.disabled = false; update();
       await loadHistory();
       message(apiBase ? "사실과 채널을 선택해 콘텐츠 묶음을 만드세요." : "서버 배포 전이라 실제 생성은 비활성입니다.");
-    } catch { message("계정 정보를 불러오지 못했습니다.", "error"); }
+    } catch { if (current === generation) message("계정 정보를 불러오지 못했습니다.", "error"); }
+  }
+  onAuthStateChanged(auth, renderAccount);
+  window.addEventListener("pagehide", event => {
+    if (!event.persisted) return;
+    generation++; requestGeneration++; historyGeneration++; signalGeneration++; requestKey = null;
+  });
+  window.addEventListener("pageshow", event => {
+    if (event.persisted) renderAccount(auth.currentUser);
   });
   el.packForm.addEventListener("submit", async event => {
     event.preventDefault();
