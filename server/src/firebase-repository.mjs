@@ -15,6 +15,7 @@ import { influencerCandidateDigest } from "./influencer-candidate.mjs";
 import { aiBlogDigest } from "./ai-blog.mjs";
 import { naverVisibilityDigest } from "./naver-search-visibility.mjs";
 import { contentPackDigest } from "./content-pack.mjs";
+import { adReportDigest } from "./ad-report.mjs";
 
 if (!getApps().length) initializeApp();
 export const database = getFirestore();
@@ -115,6 +116,74 @@ export const repository = {
       }, { merge: true });
       transaction.set(idempotency, { runId: run.id, status: "succeeded", requestDigest: digest, createdAt: timestamp });
       return { runId: run.id, reused: false };
+    });
+  },
+
+  async reserveAdReportRun({ workspaceId, uid, input }) {
+    const workspace = database.doc(`workspaces/${workspaceId}`);
+    const project = workspace.collection("projects").doc(input.projectId);
+    const subscription = workspace.collection("subscriptions").doc("current");
+    const access = workspace.collection("serverControls").doc("access");
+    const control = database.doc("systemControls/automation");
+    const credential = workspace.collection("providerCredentials").doc(input.provider);
+    const usage = workspace.collection("usage").doc(usagePeriod());
+    const request = workspace.collection("runRequests").doc(privateIdempotencyId(uid, input.idempotencyKey));
+    const digest = adReportDigest(input);
+    return database.runTransaction(async transaction => {
+      const [owner, projectDoc, planDoc, accessDoc, controlDoc, credentialDoc, usageDoc, requestDoc] =
+        await Promise.all([workspace, project, subscription, access, control, credential, usage, request].map(ref => transaction.get(ref)));
+      assertAutomationAllowed(controlDoc.exists ? controlDoc.data() : null);
+      if (!owner.exists || owner.data().ownerUid !== uid) throw new ApiError("AUTH_REQUIRED", "워크스페이스 권한을 확인할 수 없습니다.", 403);
+      if (!projectDoc.exists) throw new ApiError("INVALID_INPUT", "프로젝트를 찾을 수 없습니다.", 404);
+      if (accessDoc.exists && accessDoc.data().blocked === true) throw new ApiError("AUTH_REQUIRED", "현재 실행할 수 없는 계정입니다.", 403);
+      const active = assertUsableSubscription(planDoc.exists ? planDoc.data() : null), plan = PAID_PLANS[active.planId];
+      if (!plan) throw new ApiError("SUBSCRIPTION_REQUIRED", "광고 API 보고서는 유료 구독에서 사용할 수 있습니다.", 403);
+      if (requestDoc.exists) {
+        const previous = requestDoc.data();
+        if (previous.requestDigest !== digest) throw new ApiError("INVALID_INPUT", "같은 요청 식별자를 다른 조건에 사용할 수 없습니다.", 409);
+        return { runId: previous.runId, status: previous.status, reused: true };
+      }
+      if (!credentialDoc.exists || credentialDoc.data().status !== "active" || !credentialDoc.data().ciphertext) {
+        throw new ApiError("PROVIDER_CREDENTIAL_REQUIRED", "선택한 광고 매체의 API 연결이 필요합니다.", 409);
+      }
+      const capacity = reserveUsageCapacity({ plan, usage: usageDoc.data() || {}, requestedKeywords: 0, allowZeroKeywords: true });
+      const run = workspace.collection("runs").doc(), reservation = workspace.collection("usageReservations").doc(run.id);
+      const timestamp = FieldValue.serverTimestamp();
+      transaction.set(run, { projectId: input.projectId, tool: "weekly-ad-api", toolLabel: "주간 광고 API 분석", status: "running",
+        provider: input.provider, inputSummary: { provider: input.provider, since: input.since, until: input.until }, usagePeriod: usage.id,
+        requestDocumentId: request.id, createdAt: timestamp, startedAt: timestamp });
+      transaction.set(reservation, { runId: run.id, status: "reserved", runs: 1, keywordLookups: 0, usagePeriod: usage.id, createdAt: timestamp });
+      transaction.set(usage, { runsReserved: capacity.nextRunsReserved, updatedAt: timestamp }, { merge: true });
+      transaction.set(request, { runId: run.id, status: "running", requestDigest: digest, createdAt: timestamp });
+      return { runId: run.id, status: "running", reused: false, envelope: credentialDoc.data() };
+    });
+  },
+
+  async finishAdReportRun({ workspaceId, runId, result, errorCode, providerCalled }) {
+    const workspace = database.doc(`workspaces/${workspaceId}`), run = workspace.collection("runs").doc(runId),
+      reservation = workspace.collection("usageReservations").doc(runId);
+    return database.runTransaction(async transaction => {
+      const [runDoc, reservationDoc] = await Promise.all([transaction.get(run), transaction.get(reservation)]);
+      if (!runDoc.exists || !reservationDoc.exists || runDoc.data().tool !== "weekly-ad-api") throw new ApiError("INVALID_INPUT", "실행을 찾을 수 없습니다.", 404);
+      if (runDoc.data().status !== "running" || reservationDoc.data().status !== "reserved") return { status: runDoc.data().status, reused: true };
+      const usage = workspace.collection("usage").doc(reservationDoc.data().usagePeriod), usageDoc = await transaction.get(usage), current = usageDoc.data() || {};
+      const runsReserved = Number(current.runsReserved || 0);
+      if (!Number.isSafeInteger(runsReserved) || runsReserved < 1) throw new ApiError("USAGE_STATE_INVALID", "사용량 상태를 확인할 수 없습니다.", 503);
+      const succeeded = Boolean(result?.rows?.length), timestamp = FieldValue.serverTimestamp();
+      if (succeeded) transaction.set(workspace.collection("reports").doc(runId), {
+        runId, projectId: runDoc.data().projectId, tool: "weekly-ad", sourceType: "api", provider: result.provider,
+        status: "ready", title: "주간 광고 API 분석", summary: `${result.rows.length}개 캠페인·일자 성과`,
+        since: result.since, until: result.until, adPerformance: { rows: result.rows, summary: result.summary }, createdAt: timestamp
+      });
+      transaction.set(usage, { runsReserved: runsReserved - 1, runs: Number(current.runs || 0) + 1,
+        succeeded: Number(current.succeeded || 0) + Number(succeeded), failed: Number(current.failed || 0) + Number(!succeeded),
+        adProviderCalls: Number(current.adProviderCalls || 0) + Number(providerCalled), updatedAt: timestamp }, { merge: true });
+      transaction.set(reservation, { status: "committed", actualRuns: 1, adProviderCalls: Number(providerCalled), updatedAt: timestamp }, { merge: true });
+      transaction.set(run, { status: succeeded ? "succeeded" : "failed", resultReportId: succeeded ? runId : null,
+        succeededItems: succeeded ? result.rows.length : 0, failedItems: succeeded ? 0 : 1,
+        errorCode: succeeded ? null : errorCode || "PROVIDER_UNAVAILABLE", completedAt: timestamp, updatedAt: timestamp }, { merge: true });
+      transaction.set(workspace.collection("runRequests").doc(runDoc.data().requestDocumentId), { status: succeeded ? "succeeded" : "failed", updatedAt: timestamp }, { merge: true });
+      return { status: succeeded ? "succeeded" : "failed", reused: false };
     });
   },
 

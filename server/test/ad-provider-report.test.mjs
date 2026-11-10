@@ -13,7 +13,7 @@ test("Meta Insights 응답을 공통 스키마로 변환한다", () => {
     action_values: [{ action_type: "purchase", value: "36000" }]
   }] });
   assert.deepEqual([row.platform, row.campaignName, row.conversions, row.roas], ["meta-ads", "Meta A", 2, 300]);
-  assert.equal(buildMetaAdsInsightsUrl({ adAccountId: "act_11", since: "2026-11-01", until: "2026-11-06" }).searchParams.get("level"), "ad");
+  assert.equal(buildMetaAdsInsightsUrl({ adAccountId: "act_11", since: "2026-11-01", until: "2026-11-06" }).searchParams.get("level"), "campaign");
 });
 
 test("Google Ads searchStream 응답과 costMicros를 변환한다", () => {
@@ -25,7 +25,7 @@ test("Google Ads searchStream 응답과 costMicros를 변환한다", () => {
   const [row] = mapGoogleAdsSearchStream(response);
   assert.equal(row.cost, 1250);
   assert.equal(row.cvr, 12);
-  assert.match(buildGoogleAdsQuery({ since: "2026-11-01", until: "2026-11-06" }), /segments\.date BETWEEN/);
+  assert.match(buildGoogleAdsQuery({ since: "2026-11-01", until: "2026-11-06" }), /FROM campaign.*LIMIT 500/);
 });
 
 test("카카오모먼트 BASIC 응답은 전환 미제공 상태를 보존한다", () => {

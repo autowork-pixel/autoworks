@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const source=await readFile(new URL("../public/api-guide.html",import.meta.url),"utf8");
+const weeklyHtml=await readFile(new URL("../public/weekly-ad.html",import.meta.url),"utf8");
+const weeklyScript=await readFile(new URL("../public/weekly-ad.js",import.meta.url),"utf8");
 assert.match(source,/data-credential="'\+escapeHtml\(f\[4\]\|\|""\)\+'"/,"인증정보 필드는 허용된 서버 필드명에만 매핑해야 합니다.");
 assert.match(source,/metaAds:"meta-ads"/,"Meta Ads를 고객 자격정보 API에 연결해야 합니다.");
 assert.match(source,/googleAds:"google-ads"/,"Google Ads를 고객 자격정보 API에 연결해야 합니다.");
@@ -14,4 +16,9 @@ assert.match(source,/if\(!confirm\("저장된 연결 정보를 삭제할까요\?
 assert.match(source,/input\.value=""/,"저장 성공 뒤 입력한 비밀정보를 화면에서 지워야 합니다.");
 assert.match(source,/badge\.textContent!==label/,"상태 렌더링이 MutationObserver를 반복 호출하면 안 됩니다.");
 assert.equal(/localStorage|sessionStorage|indexedDB/.test(source),false,"API 키를 브라우저 저장소에 남기면 안 됩니다.");
+assert.match(weeklyHtml,/id="source-type"[\s\S]*value="meta-ads"[\s\S]*value="google-ads"[\s\S]*value="kakao-moment"/,"주간 광고 분석에서 연결한 광고 계정을 선택할 수 있어야 합니다.");
+assert.match(weeklyScript,/\/ad-report-runs`/,"광고 보고서는 인증된 서버 실행 경로를 사용해야 합니다.");
+assert.match(weeklyScript,/authorization: `Bearer \$\{await user\.getIdToken\(\)\}`/,"광고 보고서 실행은 Firebase ID 토큰으로 인증해야 합니다.");
+assert.match(weeklyScript,/sourceType\.value !== "excel"/,"API 결과를 Excel 저장 API로 중복 저장하면 안 됩니다.");
+assert.equal(/accessToken|clientSecret|developerToken|businessAccessToken/.test(weeklyScript),false,"광고 매체 비밀정보를 브라우저 코드에서 취급하면 안 됩니다.");
 console.log("고객별 API 연결의 제공자 제한·인증·활성화·삭제 확인·입력 제거 경계를 확인");

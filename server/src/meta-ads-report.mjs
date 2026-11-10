@@ -36,8 +36,9 @@ export function mapMetaAdsInsights(response, { accountId = null, currency = null
 export function buildMetaAdsInsightsUrl({ graphVersion = "v24.0", adAccountId, since, until }) {
   const account = String(adAccountId || "").replace(/^act_/, "");
   const url = new URL(`https://graph.facebook.com/${graphVersion}/act_${account}/insights`);
-  url.searchParams.set("level", "ad");
-  url.searchParams.set("fields", "account_id,account_currency,campaign_id,campaign_name,adset_id,adset_name,ad_id,ad_name,date_start,impressions,clicks,spend,actions,action_values,attribution_setting");
+  url.searchParams.set("level", "campaign");
+  url.searchParams.set("fields", "account_id,account_currency,campaign_id,campaign_name,date_start,impressions,clicks,spend,actions,action_values,attribution_setting");
   url.searchParams.set("time_range", JSON.stringify({ since, until }));
+  url.searchParams.set("limit", "500");
   return url;
 }

@@ -1,7 +1,7 @@
 import { normalizeAdPerformanceRows } from "./ad-performance.mjs";
 
 export function buildGoogleAdsQuery({ since, until }) {
-  return `SELECT customer.id, customer.currency_code, campaign.id, campaign.name, ad_group.id, ad_group.name, ad_group_ad.ad.id, ad_group_ad.ad.name, segments.date, metrics.impressions, metrics.clicks, metrics.cost_micros, metrics.conversions, metrics.conversions_value FROM ad_group_ad WHERE segments.date BETWEEN '${since}' AND '${until}'`;
+  return `SELECT customer.id, customer.currency_code, campaign.id, campaign.name, segments.date, metrics.impressions, metrics.clicks, metrics.cost_micros, metrics.conversions, metrics.conversions_value FROM campaign WHERE segments.date BETWEEN '${since}' AND '${until}' LIMIT 500`;
 }
 
 export function mapGoogleAdsSearchStream(response) {
