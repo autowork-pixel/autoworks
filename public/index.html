@@ -130,6 +130,8 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
       const workspaceSetups = new Map();
       let authGeneration = 0;
       let billingRequestKey = null;
+      const accountContext = () => ({ generation:authGeneration, user:auth.currentUser, workspaceId:window.autoworksWorkspaceId });
+      const accountCurrent = context => context.generation === authGeneration && context.user === auth.currentUser && context.workspaceId === window.autoworksWorkspaceId;
       const projectCollection = workspaceId => collection(db, "workspaces", workspaceId, "projects");
       const workspaceCollection = (workspaceId, name) => collection(db, "workspaces", workspaceId, name);
       const formatDate = value => value?.toDate?.().toLocaleString("ko-KR", { dateStyle: "short", timeStyle: "short" }) || "시간 확인 중";
@@ -424,7 +426,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
       document.getElementById("accountDeletionState").textContent = apiBase ? "DELETE를 정확히 입력해야 접수됩니다." : "서버가 연결된 환경에서만 요청할 수 있습니다.";
       document.getElementById("accountDeletionForm").addEventListener("submit", async event => {
         event.preventDefault();
-        const user = auth.currentUser, workspaceId = window.autoworksWorkspaceId;
+        const context = accountContext(), user = context.user, workspaceId = context.workspaceId;
         const confirmation = document.getElementById("accountDeletionConfirmation").value.trim();
         const submit = document.getElementById("accountDeletionSubmit"), state = document.getElementById("accountDeletionState");
         if (!apiBase || !user || !workspaceId) { state.textContent = "로그인과 서버 연결을 확인해 주세요."; return; }
@@ -435,8 +437,10 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
           const response = await fetch(`${apiBase}/v1/account-deletion-requests`, { method:"POST", headers:{ authorization:`Bearer ${token}`, "content-type":"application/json" }, body:JSON.stringify({ workspaceId, confirmation }) });
           const result = await response.json().catch(() => ({}));
           if (!response.ok) throw new Error(result.error?.message || "request-failed");
+          if (!accountCurrent(context)) return;
           event.currentTarget.reset(); state.textContent = "탈퇴 요청을 접수했습니다. 새 자동화 실행은 중단되며, 처리 상태는 고객센터를 통해 확인할 수 있습니다."; submit.textContent = "요청 접수됨";
         } catch (error) {
+          if (!accountCurrent(context)) return;
           state.textContent = "탈퇴 요청을 접수하지 못했습니다. 잠시 후 다시 시도하거나 고객센터로 문의해 주세요.";
           submit.disabled = false; submit.textContent = "탈퇴 요청";
           console.error("계정 탈퇴 요청 실패", error.message);
@@ -453,7 +457,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
         });
       }
       document.getElementById("subscriptionStart").addEventListener("click", async event => {
-        const user = auth.currentUser, workspaceId = window.autoworksWorkspaceId, button = event.currentTarget;
+        const context = accountContext(), user = context.user, workspaceId = context.workspaceId, button = event.currentTarget;
         if (!apiBase || !user || !workspaceId) { showToast("로그인과 서버 연결을 확인해 주세요."); return; }
         if (!document.getElementById("subscriptionConsent").checked) { showToast("월 구독과 자동결제 안내에 동의해 주세요."); return; }
         button.disabled = true; button.textContent = "결제창 준비 중";
@@ -464,19 +468,20 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
           if (!response.ok) throw new Error(result.error?.code || "BILLING_SESSION_FAILED");
           const successUrl = new URL(result.successUrl), failUrl = new URL(result.failUrl);
           if (result.status !== "pending" || result.planId !== "starter" || result.amount !== 19900 || !/^(test|live)_ck_/.test(result.clientKey) || !/^[A-Za-z0-9_-]{22,50}$/.test(result.customerKey) || successUrl.origin !== location.origin || failUrl.origin !== location.origin || successUrl.pathname !== "/billing-success.html" || failUrl.pathname !== "/billing-fail.html" || successUrl.searchParams.get("workspaceId") !== workspaceId || failUrl.searchParams.get("workspaceId") !== workspaceId || successUrl.searchParams.get("sessionId") !== result.sessionId || failUrl.searchParams.get("sessionId") !== result.sessionId) throw new Error("BILLING_SESSION_INVALID");
-          if (auth.currentUser?.uid !== user.uid || window.autoworksWorkspaceId !== workspaceId) throw new Error("ACCOUNT_CHANGED");
+          if (!accountCurrent(context)) throw new Error("ACCOUNT_CHANGED");
           await loadTossSdk();
-          if (auth.currentUser?.uid !== user.uid || window.autoworksWorkspaceId !== workspaceId) throw new Error("ACCOUNT_CHANGED");
+          if (!accountCurrent(context)) throw new Error("ACCOUNT_CHANGED");
           button.textContent = "결제창에서 계속";
           await window.TossPayments(result.clientKey).payment({ customerKey:result.customerKey }).requestBillingAuth({ method:"CARD", successUrl:successUrl.href, failUrl:failUrl.href });
         } catch (error) {
+          if (!accountCurrent(context)) return;
           button.disabled = false; button.textContent = "스타터 구독 시작";
           showToast("결제창을 열지 못했습니다. 결제 내역을 확인한 뒤 다시 시도해 주세요.");
           console.error("구독 시작 실패", error.message);
         }
       });
       document.getElementById("subscriptionCancel").addEventListener("click", async event => {
-        const user = auth.currentUser, workspaceId = window.autoworksWorkspaceId, button = event.currentTarget;
+        const context = accountContext(), user = context.user, workspaceId = context.workspaceId, button = event.currentTarget;
         if (!apiBase || !user || !workspaceId) { showToast("로그인과 서버 연결을 확인해 주세요."); return; }
         if (!window.confirm("다음 회차 자동결제를 해지할까요? 이미 결제한 이용 기간은 종료일까지 유지됩니다.")) return;
         button.disabled = true; button.textContent = "해지 처리 중";
@@ -484,9 +489,12 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
           const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(workspaceId)}/subscription:cancel`, { method:"POST", headers:{ authorization:`Bearer ${await user.getIdToken()}`, "content-type":"application/json" }, body:"{}" });
           const result = await response.json().catch(() => ({}));
           if (!response.ok) throw new Error(result.error?.message || "subscription-cancel-failed");
-          await loadWorkspaceData(workspaceId);
+          if (!accountCurrent(context)) return;
+          await loadWorkspaceData(workspaceId, () => accountCurrent(context));
+          if (!accountCurrent(context)) return;
           showToast("다음 회차 자동결제를 해지했습니다. 현재 이용 기간은 유지됩니다.");
         } catch (error) {
+          if (!accountCurrent(context)) return;
           button.disabled = false; button.textContent = "다음 결제 해지";
           showToast("구독을 해지하지 못했습니다. 잠시 후 다시 시도해 주세요.");
           console.error("구독 해지 실패", error.message);
@@ -499,7 +507,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
       });
       document.getElementById("projectForm").addEventListener("submit", async event => {
         event.preventDefault();
-        const workspaceId = window.autoworksWorkspaceId;
+        const context = accountContext(), workspaceId = context.workspaceId;
         const name = document.getElementById("projectName").value.trim();
         const brandName = document.getElementById("projectBrand").value.trim();
         const keywords = [...new Set(document.getElementById("projectKeywords").value.split(",").map(value => value.trim()).filter(Boolean))].slice(0, 20);
@@ -510,7 +518,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
         submit.textContent = "저장 중";
         try {
           if (!apiBase) throw new Error("api-not-configured");
-          const user = auth.currentUser;
+          const user = context.user;
           if (!user) throw new Error("auth-required");
           const response = await fetch(`${apiBase}/v1/workspaces/${encodeURIComponent(workspaceId)}/projects`, {
             method:"POST",
@@ -519,24 +527,26 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
           });
           const result = await response.json().catch(() => ({}));
           if (!response.ok) throw new Error(result.error?.message || "project-create-failed");
+          if (!accountCurrent(context)) return;
           form.reset();
           form.classList.remove("open");
-          await loadProjects(workspaceId);
+          await loadProjects(workspaceId, () => accountCurrent(context));
+          if (!accountCurrent(context)) return;
           showToast("프로젝트를 저장했습니다.");
         } catch (error) {
+          if (!accountCurrent(context)) return;
           document.getElementById("projectState").textContent = error.message === "api-not-configured"
             ? "프로젝트 생성 서버가 아직 연결되지 않았습니다."
             : error.message || "저장하지 못했습니다. 로그인 상태와 연결을 확인해 주세요.";
           document.getElementById("projectState").hidden = false;
           console.error("프로젝트 저장 실패", error.code);
         } finally {
-          submit.disabled = false;
-          submit.textContent = "저장";
+          if (accountCurrent(context)) { submit.disabled = false; submit.textContent = "저장"; }
         }
       });
       document.getElementById("inquiryForm").addEventListener("submit", async event => {
         event.preventDefault();
-        const workspaceId = window.autoworksWorkspaceId;
+        const context = accountContext(), workspaceId = context.workspaceId;
         const subject = document.getElementById("inquirySubject").value.trim();
         const message = document.getElementById("inquiryMessage").value.trim();
         if (!workspaceId || !subject || !message) return;
@@ -550,15 +560,19 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp()
           });
+          if (!accountCurrent(context)) return;
           form.reset();
-          renderInquiries(await getDocs(query(workspaceCollection(workspaceId, "inquiries"), orderBy("createdAt", "desc"), limit(5))));
+          const inquiries = await getDocs(query(workspaceCollection(workspaceId, "inquiries"), orderBy("createdAt", "desc"), limit(5)));
+          if (!accountCurrent(context)) return;
+          renderInquiries(inquiries);
           showToast("문의를 접수했습니다.");
         } catch (error) {
+          if (!accountCurrent(context)) return;
           document.getElementById("inquiryState").hidden = false;
           document.getElementById("inquiryState").textContent = "문의를 접수하지 못했습니다. 로그인 상태와 연결을 확인해 주세요.";
           console.error("문의 접수 실패", error.code);
         } finally {
-          submit.disabled = false; submit.textContent = "문의 접수";
+          if (accountCurrent(context)) { submit.disabled = false; submit.textContent = "문의 접수"; }
         }
       });
     } catch (error) {
@@ -570,6 +584,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
  </script>
 </body>
 </html>
+
 
 
 
