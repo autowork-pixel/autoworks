@@ -271,31 +271,52 @@ test("로그인한 소유자의 실행 취소 요청을 저장소에 전달한�
     verifyIdToken: async () => ({ uid: "user-a" }),
     repository: { cancelBrandSearchRun: async value => { received = value; return { status: "canceled", reused: false }; } }
   }, async base => {
-    const response = await fetch(`${base}/v1/workspaces/workspace-a/brand-search-runs/run-a:cancel`, { method: "POST", headers: { authorization: "Bearer token" } });
+    const response = await fetch(`${base}/v1/workspaces/workspace-a/brand-search-runs/run-a:cancel?projectId=project-a`, { method: "POST", headers: { authorization: "Bearer token" } });
     assert.equal(response.status, 200);
     assert.equal((await response.json()).status, "canceled");
-    assert.deepEqual(received, { workspaceId: "workspace-a", runId: "run-a", uid: "user-a" });
+    assert.deepEqual(received, { workspaceId: "workspace-a", runId: "run-a", projectId: "project-a", uid: "user-a" });
   });
 });
 
 test("실행 상태와 UTF-8 CSV 결과를 인증 후 반환한다", async () => {
+  const received = [];
   await withServer({
     verifyIdToken: async () => ({ uid: "user-a" }),
     repository: {
-      getBrandSearchRun: async () => ({ runId: "run-a", status: "succeeded", resultReady: true }),
-      getBrandSearchReport: async () => ({ rows: [{ keyword: "=위험", pc: 1, mobile: 2, total: 3, recordedAt: { toDate: () => new Date("2026-11-03T00:00:00Z") } }] })
+      getBrandSearchRun: async value => { received.push(value); return { runId: "run-a", status: "succeeded", resultReady: true }; },
+      getBrandSearchReport: async value => { received.push(value); return { rows: [{ keyword: "=위험", pc: 1, mobile: 2, total: 3, recordedAt: { toDate: () => new Date("2026-11-03T00:00:00Z") } }] }; }
     }
   }, async base => {
     const headers = { authorization: "Bearer token" };
-    const statusResponse = await fetch(`${base}/v1/workspaces/workspace-a/brand-search-runs/run-a`, { headers });
+    const statusResponse = await fetch(`${base}/v1/workspaces/workspace-a/brand-search-runs/run-a?projectId=project-a`, { headers });
     assert.equal(statusResponse.status, 200);
     assert.equal((await statusResponse.json()).resultReady, true);
-    const csvResponse = await fetch(`${base}/v1/workspaces/workspace-a/brand-search-runs/run-a/report.csv`, { headers });
+    const csvResponse = await fetch(`${base}/v1/workspaces/workspace-a/brand-search-runs/run-a/report.csv?projectId=project-a`, { headers });
     const body = await csvResponse.text();
     assert.equal(csvResponse.status, 200);
     assert.match(csvResponse.headers.get("content-disposition"), /brand-search-run-a\.csv/);
     assert.equal(body.includes("'=위험"), true);
     assert.equal(body.includes("2026-11-03T00:00:00.000Z"), true);
+    assert.deepEqual(received, [
+      { workspaceId: "workspace-a", runId: "run-a", projectId: "project-a", uid: "user-a" },
+      { workspaceId: "workspace-a", runId: "run-a", projectId: "project-a", uid: "user-a" }
+    ]);
+  });
+});
+
+test("실행 상태·취소·결과 요청은 프로젝트 ID 없이는 저장소를 호출하지 않는다", async () => {
+  let called = false;
+  const repository = {
+    getBrandSearchRun: async () => { called = true; },
+    getBrandSearchReport: async () => { called = true; },
+    cancelBrandSearchRun: async () => { called = true; }
+  };
+  await withServer({ verifyIdToken: async () => ({ uid: "user-a" }), repository }, async base => {
+    const headers = { authorization: "Bearer token" };
+    assert.equal((await fetch(`${base}/v1/workspaces/workspace-a/brand-search-runs/run-a`, { headers })).status, 400);
+    assert.equal((await fetch(`${base}/v1/workspaces/workspace-a/brand-search-runs/run-a/report.csv`, { headers })).status, 400);
+    assert.equal((await fetch(`${base}/v1/workspaces/workspace-a/brand-search-runs/run-a:cancel`, { method: "POST", headers })).status, 400);
+    assert.equal(called, false);
   });
 });
 
