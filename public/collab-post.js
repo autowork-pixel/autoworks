@@ -122,7 +122,7 @@ async function initialize() {
   reloadHistory = () => loadHistory(getDocs, collection, query, where, orderBy, limit);
   document.getElementById("login").addEventListener("click", () => signInWithPopup(auth, new GoogleAuthProvider())
     .catch(() => { accountStatus.textContent = "로그인하지 못했습니다."; }));
-  onAuthStateChanged(auth, async signedIn => {
+  async function renderAccount(signedIn) {
     const current = ++generation;
     lookupGeneration++; historyGeneration++; user = signedIn; workspaceId = null; requestKey = null; reportById.clear(); comparePosts = []; renderComparison(); clearResult();
     document.getElementById("login").hidden = Boolean(user);
@@ -144,6 +144,14 @@ async function initialize() {
       updateAvailability();
       await reloadHistory();
     } catch { if (current === generation) accountStatus.textContent = "계정 정보를 불러오지 못했습니다."; }
+  }
+  onAuthStateChanged(auth, renderAccount);
+  window.addEventListener("pagehide", event => {
+    if (!event.persisted) return;
+    generation++; lookupGeneration++; historyGeneration++; requestKey = null;
+  });
+  window.addEventListener("pageshow", event => {
+    if (event.persisted) renderAccount(auth.currentUser);
   });
   lookup.addEventListener("click", async () => {
     if (lookup.disabled) return;
@@ -174,3 +182,4 @@ async function initialize() {
 }
 renderComparison();
 initialize().catch(() => { accountStatus.textContent = "계정 화면을 준비하지 못했습니다."; });
+

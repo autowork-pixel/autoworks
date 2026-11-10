@@ -136,7 +136,7 @@ async function initialize() {
   database = getFirestore(app);
   reloadHistory = () => loadHistory(getDocs, collection, query, where, orderBy, limit);
   el.login.addEventListener("click", () => signInWithPopup(auth, new GoogleAuthProvider()).catch(() => message("로그인하지 못했습니다.", "error")));
-  onAuthStateChanged(auth, async signedIn => {
+  async function renderAccount(signedIn) {
     const current = ++generation;
     requestGeneration++;
     historyGeneration++;
@@ -169,6 +169,14 @@ async function initialize() {
     } catch {
       if (current === generation) message("계정 정보를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.", "error");
     }
+  }
+  onAuthStateChanged(auth, renderAccount);
+  window.addEventListener("pagehide", event => {
+    if (!event.persisted) return;
+    generation++; requestGeneration++; historyGeneration++; requestKey = null;
+  });
+  window.addEventListener("pageshow", event => {
+    if (event.persisted) renderAccount(auth.currentUser);
   });
   el.referenceForm.addEventListener("submit", async event => {
     event.preventDefault();
@@ -205,3 +213,4 @@ async function initialize() {
   });
 }
 initialize().catch(() => message("화면을 준비하지 못했습니다. 새로고침 후 다시 시도해 주세요.", "error"));
+
