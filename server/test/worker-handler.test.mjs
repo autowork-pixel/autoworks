@@ -30,8 +30,13 @@ test("검증된 작업은 경로 ID만으로 서버 컨텍스트를 불러와 �
   const calls = [];
   await withServer({
     verifyTaskRequest: async () => ({ subject: "cloud-tasks-service" }),
-    contextLoader: { load: async value => { calls.push(["load", value]); return { input: { keywords: ["오토웍스"] }, credentials: { secretKey: "never-return" } }; } },
-    provider: { fetchKeywordVolume: async ({ keyword }) => ({ keyword, pc: 1, mobile: 2, total: 3 }) },
+    contextLoader: { load: async value => { calls.push(["load", value]); return { input: { keywords: ["오토웍스"], displayPeriodDays: 7, roundingUnit: 1 }, credentials: { searchAd: { secretKey: "never-return" }, searchTrend: { clientSecret: "never-return" } } }; } },
+    provider: {
+      fetchKeywordVolume: async ({ keyword }) => ({ keyword, pc: 1, mobile: 2, total: 3 }),
+      trendDateRange: () => ({ startDate: "2026-10-25", endDate: "2026-11-23" }),
+      fetchSearchTrends: async ({ keywords }) => new Map(keywords.map(keyword => [keyword, [{ date: "2026-11-23", ratio: 100 }]])),
+      estimateDailyVolumes: ({ volume }) => [{ date: "2026-11-23", pc: volume.pc, mobile: volume.mobile, total: volume.total, ratio: 100 }]
+    },
     repository: {
       markRunning: async (...args) => calls.push(["running", ...args]),
       completeRun: async (...args) => calls.push(["complete", ...args]),
