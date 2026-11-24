@@ -333,9 +333,9 @@ async function initAccount() {
     const projectId = projectSelect.value;
     if (!navigator.onLine || !accountState.workspaceId || !projectId) return;
     const workspaceId = accountState.workspaceId, user = accountState.user;
-    const snapshot = await getDocs(query(collection(database, "workspaces", workspaceId, "reports"), where("tool", "==", "weekly-ad"), where("projectId", "==", projectId), orderBy("createdAt", "desc"), limit(20)));
+    const snapshot = await getDocs(query(collection(database, "workspaces", workspaceId, "reports"), orderBy("createdAt", "desc"), limit(100)));
     if (currentHistoryGeneration !== historyGeneration || workspaceId !== accountState.workspaceId || user !== accountState.user || projectId !== projectSelect.value) return;
-    accountState.reports = new Map(snapshot.docs.map(item => [item.id, item.data()]));
+    accountState.reports = new Map(snapshot.docs.filter(item => { const report = item.data(); return report.tool === "weekly-ad" && report.projectId === projectId; }).map(item => [item.id, item.data()]));
     historySelect.replaceChildren(new Option(accountState.reports.size ? "저장된 결과 선택" : "저장된 주간 광고 결과 없음", ""));
     for (const [id, report] of accountState.reports) {
       const source = report.sourceType === "api" ? (providerLabels[report.provider] || "광고 API") : (report.sourceName || "Excel");
