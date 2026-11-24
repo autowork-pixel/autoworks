@@ -7,12 +7,14 @@ test("브랜드 검색량 이력은 선택 프로젝트로 서버 조회한다",
   const repository = await readFile(new URL("../server/src/run-repository.mjs", import.meta.url), "utf8");
   assert.match(source, /projectId=\$\{encodeURIComponent\(context\.projectId\)\}/);
   assert.match(source, /if\(!navigator\.onLine\|\|!context\.workspaceId\|\|!context\.projectId\|\|!apiBase\)return/);
-  assert.match(repository, /where\("projectId", "==", projectId\)/);
+  assert.match(repository, /orderBy\("createdAt", "desc"\)\.limit\(Math\.max\(100, safeLimit \* 10\)\)/);
+  assert.match(repository, /run\.tool === "brand-search" && \(!projectId \|\| run\.projectId === projectId\)/);
 });
 
 test("AI 블로그 이력은 선택 프로젝트로 조회하고 전환 중 늦은 응답을 버린다", async () => {
   const source = await readFile(new URL("../public/ai-blog.js", import.meta.url), "utf8");
-  assert.match(source, /where\("tool", "==", "ai-blog"\), where\("projectId", "==", projectId\)/);
+  assert.match(source, /orderBy\("createdAt", "desc"\), limit\(100\)/);
+  assert.match(source, /report\.tool === "ai-blog" && report\.projectId === projectId/);
   assert.match(source, /projectId !== el\.project\.value/);
   assert.match(source, /if \(firestoreHistory\) loadHistory\(\.\.\.firestoreHistory\)/);
   assert.match(source, /requestGeneration\+\+; requestKey = null; show\(\); update\(\)/);
@@ -31,7 +33,8 @@ test("네이버 노출 이력은 선택 프로젝트로 조회하고 전환 시 
 
 test("주간 광고 이력은 선택 프로젝트로 조회하고 전환 중 늦은 응답을 버린다", async () => {
   const source = await readFile(new URL("../public/weekly-ad.js", import.meta.url), "utf8");
-  assert.match(source, /where\("tool", "==", "weekly-ad"\), where\("projectId", "==", projectId\)/);
+  assert.match(source, /orderBy\("createdAt", "desc"\), limit\(100\)/);
+  assert.match(source, /report\.tool === "weekly-ad" && report\.projectId === projectId/);
   assert.match(source, /projectId !== projectSelect\.value/);
   assert.match(source, /analysisGeneration\+\+; saveGeneration\+\+; resetAnalysis\(\); accountState\.reports = new Map\(\)/);
   assert.match(source, /currentHistoryGeneration !== historyGeneration/);
