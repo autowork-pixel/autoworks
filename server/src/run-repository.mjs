@@ -189,13 +189,15 @@ export function createRunRepository({ database, serverTimestamp, now = () => new
         const reportRef = root.collection("reports").doc(runId);
         for (const item of payload.snapshots) {
           transaction.set(root.collection("searchSnapshots").doc(snapshotId(runId, item.keyword)), {
-            runId, projectId: run.projectId, keyword: item.keyword, pc: item.pc, mobile: item.mobile, total: item.total, recordedAt: item.recordedAt, createdAt: timestamp
+            runId, projectId: run.projectId, keyword: item.keyword, pc: item.pc, mobile: item.mobile, total: item.total,
+            displayPeriodDays: item.displayPeriodDays, daily: item.daily, recordedAt: item.recordedAt, createdAt: timestamp
           });
         }
         transaction.set(reportRef, {
-          projectId: run.projectId, runId, title: `${run.inputSummary?.brand || "브랜드"} 검색량 결과`, status: "ready",
+          projectId: run.projectId, runId, tool: "brand-search", title: `${run.inputSummary?.brand || "브랜드"} 데일리 검색량 추정 결과`, status: "ready",
           summary: { succeededKeywords: payload.succeededKeywords, failedKeywords: payload.failedKeywords, failures: payload.failures },
-          rows: payload.snapshots.map(item => ({ keyword: item.keyword, pc: item.pc, mobile: item.mobile, total: item.total, recordedAt: item.recordedAt })),
+          rows: payload.snapshots.map(item => ({ keyword: item.keyword, pc: item.pc, mobile: item.mobile, total: item.total,
+            displayPeriodDays: item.displayPeriodDays, daily: item.daily, recordedAt: item.recordedAt })),
           createdAt: timestamp
         });
         const providerKeywordAttempts = Number(reservation.providerKeywordAttempts || 0) + payload.keywordLookups;

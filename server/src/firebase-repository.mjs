@@ -532,14 +532,15 @@ export const repository = {
     const access = workspace.collection("serverControls").doc("access");
     const subscription = workspace.collection("subscriptions").doc("current");
     const credential = workspace.collection("providerCredentials").doc("naver-searchad");
+    const trendCredential = workspace.collection("providerCredentials").doc("naver-api-hub");
     const period = usagePeriod();
     const usage = workspace.collection("usage").doc(period);
     const idempotency = workspace.collection("runRequests").doc(privateIdempotencyId(uid, input.idempotencyKey));
     const digest = requestDigest(input);
 
     return database.runTransaction(async transaction => {
-      const [automationSnapshot, workspaceSnapshot, projectSnapshot, accessSnapshot, subscriptionSnapshot, credentialSnapshot, usageSnapshot, requestSnapshot] =
-        await Promise.all([automationControl, workspace, project, access, subscription, credential, usage, idempotency].map(ref => transaction.get(ref)));
+      const [automationSnapshot, workspaceSnapshot, projectSnapshot, accessSnapshot, subscriptionSnapshot, credentialSnapshot, trendCredentialSnapshot, usageSnapshot, requestSnapshot] =
+        await Promise.all([automationControl, workspace, project, access, subscription, credential, trendCredential, usage, idempotency].map(ref => transaction.get(ref)));
       assertAutomationAllowed(automationSnapshot.exists ? automationSnapshot.data() : null);
       if (!workspaceSnapshot.exists || workspaceSnapshot.data().ownerUid !== uid) {
         throw new ApiError("AUTH_REQUIRED", "워크스페이스 권한을 확인할 수 없습니다.", 403);
@@ -551,6 +552,9 @@ export const repository = {
       const plan = resolveBrandSearchPlan(subscriptionSnapshot.exists ? subscriptionSnapshot.data() : null);
       if (!credentialSnapshot.exists || credentialSnapshot.data().status !== "active" || !credentialSnapshot.data().ciphertext) {
         throw new ApiError("PROVIDER_CREDENTIAL_REQUIRED", "네이버 검색광고 API 연결이 필요합니다.", 409);
+      }
+      if (!trendCredentialSnapshot.exists || trendCredentialSnapshot.data().status !== "active" || !trendCredentialSnapshot.data().ciphertext) {
+        throw new ApiError("PROVIDER_CREDENTIAL_REQUIRED", "NAVER API HUB 검색어 트렌드 연결이 필요합니다.", 409);
       }
       if (requestSnapshot.exists) {
         const existing = requestSnapshot.data();

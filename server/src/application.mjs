@@ -21,6 +21,7 @@ import { createKmsKeyManager } from "./kms-key-manager.mjs";
 import { createOAuthHandler } from "./oauth-handler.mjs";
 import { createOAuthIdentityStore, createOAuthStateStore } from "./oauth-repository.mjs";
 import { fetchKeywordVolume } from "./naver-searchad.mjs";
+import { estimateDailyVolumes, fetchSearchTrends, trendDateRange } from "./naver-search-trend.mjs";
 import { createFirestoreRecoverySource, createRecoveryScheduler } from "./recovery-scheduler.mjs";
 import { createRecoveryHandler } from "./recovery-handler.mjs";
 import { createRouter } from "./router.mjs";
@@ -67,7 +68,7 @@ export function createApplication({ config, database, serverTimestamp, verifyIdT
     repository: createWorkerContextRepository({ database }), keyManager
   });
   const workerHandler = createWorkerHandler({
-    verifyTaskRequest, contextLoader, provider: { fetchKeywordVolume }, repository: runRepository, logger
+    verifyTaskRequest, contextLoader, provider: { fetchKeywordVolume, fetchSearchTrends, trendDateRange, estimateDailyVolumes }, repository: runRepository, logger
   });
   const scheduler = createRecoveryScheduler({
     source: createFirestoreRecoverySource({ database, serverTimestamp }), taskDispatcher

@@ -1,7 +1,7 @@
 import { ApiError } from "./domain.mjs";
 import { encryptCredentialPayload } from "./credential-crypto.mjs";
 
-const supportedProviders = new Set(["naver-searchad", "naver-search", "youtube", "apify", "openai", "meta-ads", "google-ads", "kakao-moment"]);
+const supportedProviders = new Set(["naver-searchad", "naver-search", "naver-api-hub", "youtube", "apify", "openai", "meta-ads", "google-ads", "kakao-moment"]);
 
 const hintFields = Object.freeze({
   "meta-ads": "adAccountId",
