@@ -50,10 +50,11 @@ export function createRunRepository({ database, serverTimestamp, now = () => new
       const root = workspace(workspaceId);
       await assertOwner(root, uid);
       const safeLimit = Math.min(20, Math.max(1, Number.isInteger(limit) ? limit : 20));
-      let runs = root.collection("runs").where("tool", "==", "brand-search");
-      if (projectId) runs = runs.where("projectId", "==", projectId);
-      const snapshot = await runs.orderBy("createdAt", "desc").limit(safeLimit).get();
-      return snapshot.docs.map(document => {
+      const snapshot = await root.collection("runs").orderBy("createdAt", "desc").limit(Math.max(100, safeLimit * 10)).get();
+      return snapshot.docs.filter(document => {
+        const run = document.data();
+        return run.tool === "brand-search" && (!projectId || run.projectId === projectId);
+      }).slice(0, safeLimit).map(document => {
         const run = document.data();
         return {
           runId: document.id, status: run.status,
