@@ -33,9 +33,9 @@ async function loadHistory(getDocs, collection, query, where, orderBy, limit) {
   if (!currentUser || !currentWorkspace || !projectId) return;
   try {
     const snapshot = await getDocs(query(collection(database, "workspaces", currentWorkspace, "reports"),
-      where("tool", "==", "ai-blog"), where("projectId", "==", projectId), orderBy("createdAt", "desc"), limit(50)));
+      orderBy("createdAt", "desc"), limit(100)));
     if (currentHistoryGeneration !== historyGeneration || currentUser !== user || currentWorkspace !== workspaceId || projectId !== el.project.value) return;
-    reports = new Map(snapshot.docs.filter(doc => typeof doc.data().draft === "string").map(doc => [doc.id, doc.data()]));
+    reports = new Map(snapshot.docs.filter(doc => { const report = doc.data(); return report.tool === "ai-blog" && report.projectId === projectId && typeof report.draft === "string"; }).map(doc => [doc.id, doc.data()]));
     el.history.replaceChildren(new Option(reports.size ? "저장된 초안 선택" : "저장된 초안 없음", ""));
     for (const [id, report] of reports) el.history.add(new Option(report.summary || "AI 블로그 초안", id));
     el.history.disabled = !reports.size;
