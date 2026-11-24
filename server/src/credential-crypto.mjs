@@ -13,6 +13,7 @@ function credentialPayload(value, provider = "naver-searchad") {
   const fields = {
     "naver-searchad": ["apiKey", "secretKey", "customerId"],
     "naver-search": ["clientId", "clientSecret"],
+    "naver-api-hub": ["clientId", "clientSecret"],
     youtube: ["apiKey"], apify: ["token"], openai: ["apiKey"],
     "meta-ads": ["accessToken", "adAccountId"],
     "google-ads": ["developerToken", "clientId", "clientSecret", "refreshToken", "customerId", "loginCustomerId"],
