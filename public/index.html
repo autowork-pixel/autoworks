@@ -137,6 +137,11 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
       const projectCollection = workspaceId => collection(db, "workspaces", workspaceId, "projects");
       const workspaceCollection = (workspaceId, name) => collection(db, "workspaces", workspaceId, name);
       const formatDate = value => value?.toDate?.().toLocaleString("ko-KR", { dateStyle: "short", timeStyle: "short" }) || "시간 확인 중";
+      const formatSummary = value => {
+        if (typeof value === "string" || typeof value === "number") return String(value);
+        if (!value || typeof value !== "object") return "";
+        return [value.brand, value.topic, value.sourceName, value.succeededKeywords != null ? `성공 ${value.succeededKeywords}건` : null, value.failedKeywords ? `실패 ${value.failedKeywords}건` : null].filter(Boolean).join(" · ");
+      };
       window.addEventListener("message", async event => {
         if (!apiBase || event.origin !== new URL(apiBase).origin || event.source !== oauthPopup) return;
         const attempt = oauthAttempt;
@@ -202,7 +207,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
           row.className = "run-item"; title.textContent = run.toolLabel || run.tool || "자동화 실행";
           status.className = "run-status" + (run.status === "failed" ? " failed" : "");
           status.textContent = ({ queued:"대기", validating:"검증 중", running:"실행 중", retrying:"재시도 중", succeeded:"완료", failed:"실패", canceled:"취소" })[run.status] || "상태 확인";
-          detail.textContent = [run.inputSummary || "입력 요약 없음", run.status === "failed" ? (run.errorMessage || run.errorCode || "실행 오류") : null, formatDate(run.createdAt)].filter(Boolean).join(" · ");
+          detail.textContent = [formatSummary(run.inputSummary) || "입력 요약 없음", run.status === "failed" ? (run.errorMessage || run.errorCode || "실행 오류") : null, formatDate(run.createdAt)].filter(Boolean).join(" · ");
           row.append(title, status, detail); list.append(row);
         }
       }
@@ -213,7 +218,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
         for (const item of snapshot.docs) {
           const report = item.data(), row = document.createElement("li"), title = document.createElement("b"), status = document.createElement("span"), detail = document.createElement("p");
           row.className = "report-item"; title.textContent = report.title || "분석 결과"; status.className = "run-status"; status.textContent = report.status === "ready" ? "결과 준비" : "처리 중";
-          detail.textContent = [report.summary || "결과 요약 준비 중", formatDate(report.createdAt)].join(" · ");
+          detail.textContent = [formatSummary(report.summary) || "결과 요약 준비 중", formatDate(report.createdAt)].join(" · ");
           row.append(title, status, detail); list.append(row);
         }
       }
