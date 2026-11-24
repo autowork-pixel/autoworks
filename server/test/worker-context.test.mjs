@@ -21,7 +21,7 @@ test("실행과 입력의 프로젝트가 다르면 자격정보를 반환하지
 test("검색광고와 API HUB 자격정보를 각각 복호화하고 평문 데이터 키를 지운다", async () => {
   const searchAdKey = randomBytes(32), trendKey = randomBytes(32);
   const searchAdEnvelope = encryptCredentialPayload({ credentials: { apiKey: "license", secretKey: "secret", customerId: "123" }, plaintextDataKey: searchAdKey, encryptedDataKey: "wrapped-searchad", keyVersion: "kms-v1" });
-  const trendEnvelope = encryptCredentialPayload({ credentials: { clientId: "hub-id", clientSecret: "hub-secret" }, plaintextDataKey: trendKey, encryptedDataKey: "wrapped-trend", keyVersion: "kms-v1" });
+  const trendEnvelope = encryptCredentialPayload({ credentials: { clientId: "hub-id", clientSecret: "hub-secret" }, plaintextDataKey: trendKey, encryptedDataKey: "wrapped-trend", keyVersion: "kms-v1", provider: "naver-api-hub" });
   const decryptedKeys = [];
   const database = fakeDatabase({ [runPath]: { status: "queued", projectId: "project-a", inputId: "run-a" }, [inputPath]: { projectId: "project-a", keywords: ["키워드"] }, [searchAdPath]: { ...searchAdEnvelope, status: "active" }, [searchTrendPath]: { ...trendEnvelope, status: "active" } });
   const loader = createWorkerContextLoader({ repository: createWorkerContextRepository({ database }), keyManager: { decryptDataKey: async ({ provider }) => { const key = Buffer.from(provider === "naver-searchad" ? searchAdKey : trendKey); decryptedKeys.push(key); return key; } } });
