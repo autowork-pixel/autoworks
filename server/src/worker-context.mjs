@@ -42,7 +42,7 @@ export function createWorkerContextLoader({ repository, keyManager }) {
     });
     if (!Buffer.isBuffer(plaintextDataKey)) throw new Error("Key manager did not return a plaintext data key");
     try {
-      return decryptCredentialPayload({ envelope, plaintextDataKey });
+      return decryptCredentialPayload({ envelope, plaintextDataKey, provider });
     } finally {
       plaintextDataKey.fill(0);
     }
