@@ -49,7 +49,7 @@ test("KMS 응답 무결성 또는 다른 키 계보를 신뢰하지 않고 평�
   await assert.rejects(() => manager.decryptDataKey({ encryptedDataKey: "d3JhcHBlZA==", keyVersion: "projects/other/locations/x/keyRings/y/cryptoKeys/z/cryptoKeyVersions/1", ...ids }), /invalid/);
 });
 
-test("Higgsfield 데이터 키도 워크스페이스와 제공자 컨텍스트로 암호화한다", async () => {
+for (const provider of ["higgsfield", "naver-api-hub"]) test(`${provider} 데이터 키도 워크스페이스와 제공자 컨텍스트로 암호화한다`, async () => {
   const ciphertext = Buffer.from("wrapped-higgsfield");
   let request;
   const manager = createKmsKeyManager({
@@ -59,6 +59,6 @@ test("Higgsfield 데이터 키도 워크스페이스와 제공자 컨텍스트�
       return [{ ciphertext, name: keyVersion, verifiedPlaintextCrc32c: true, verifiedAdditionalAuthenticatedDataCrc32c: true, ciphertextCrc32c: crc(ciphertext) }];
     } }
   });
-  await manager.generateDataKey({ workspaceId: "workspace-a", provider: "higgsfield" });
-  assert.equal(request.additionalAuthenticatedData.toString(), "workspace-a:higgsfield");
+  await manager.generateDataKey({ workspaceId: "workspace-a", provider });
+  assert.equal(request.additionalAuthenticatedData.toString(), `workspace-a:${provider}`);
 });
