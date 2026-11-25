@@ -14,7 +14,7 @@ function credentialPayload(value, provider = "naver-searchad") {
     "naver-searchad": ["apiKey", "secretKey", "customerId"],
     "naver-search": ["clientId", "clientSecret"],
     "naver-api-hub": ["clientId", "clientSecret"],
-    youtube: ["apiKey"], apify: ["token"], openai: ["apiKey"],
+    youtube: ["apiKey"], apify: ["token"], openai: ["apiKey"], higgsfield: ["apiKey"],
     "meta-ads": ["accessToken", "adAccountId"],
     "google-ads": ["developerToken", "clientId", "clientSecret", "refreshToken", "customerId", "loginCustomerId"],
     "kakao-moment": ["businessAccessToken", "adAccountId"],

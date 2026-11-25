@@ -452,11 +452,11 @@ test("광고 매체별 자격정보 경로를 허용한다", async () => {
     verifyIdToken: async () => ({ uid: "user-a" }), repository: {},
     credentialService: { status: async value => { received.push(value); return { provider: value.provider, status: "disconnected" }; } }
   }, async base => {
-    for (const provider of ["meta-ads", "google-ads", "kakao-moment"]) {
+    for (const provider of ["meta-ads", "google-ads", "kakao-moment", "higgsfield"]) {
       const response = await fetch(`${base}/v1/workspaces/workspace-a/provider-credentials/${provider}`, { headers: { authorization: "Bearer token" } });
       assert.equal(response.status, 200);
     }
   });
-  assert.deepEqual(received.map(value => value.provider), ["meta-ads", "google-ads", "kakao-moment"]);
+  assert.deepEqual(received.map(value => value.provider), ["meta-ads", "google-ads", "kakao-moment", "higgsfield"]);
 });
 
