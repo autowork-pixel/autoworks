@@ -318,7 +318,7 @@ saveButton.addEventListener("click", async () => {
 });
 
 async function initAccount() {
-  if (!new Set(["localhost", "127.0.0.1", "autoworks-c9a6a.web.app", "autoworks-c9a6a.firebaseapp.com"]).has(location.hostname)) return;
+  if (!new Set(["localhost", "127.0.0.1", "autoworks-c9a6a.web.app", "autoworks-c9a6a.firebaseapp.com", "autoworks.kr", "www.autoworks.kr"]).has(location.hostname)) return;
   const [{ initializeApp }, { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged },
     { getFirestore, collection, query, where, orderBy, limit, getDocs }] = await Promise.all([
       import("https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js"),

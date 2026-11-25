@@ -1,7 +1,7 @@
 import { buildTopicCandidates, describeTopicReview } from "./content-topics.js";
 
 const apiBase = String(window.AUTOWORKS_API_BASE || "").replace(/\/$/, "");
-const hosts = new Set(["localhost", "127.0.0.1", "autoworks-c9a6a.web.app", "autoworks-c9a6a.firebaseapp.com"]);
+const hosts = new Set(["localhost", "127.0.0.1", "autoworks-c9a6a.web.app", "autoworks-c9a6a.firebaseapp.com", "autoworks.kr", "www.autoworks.kr"]);
 const ids = ["packForm", "login", "project", "topicHook", "makeTopics", "topicIdeas", "campaign", "facts", "sourceDraft", "audience", "callToAction", "channels", "submit", "status", "history", "draft", "meta", "copy", "download"];
 const el = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
 const topicHelp = el.makeTopics.nextElementSibling;

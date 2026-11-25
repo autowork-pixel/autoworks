@@ -110,7 +110,7 @@ document.querySelectorAll("[data-toast]").forEach(b=>b.addEventListener("click",
 document.getElementById("closePromo").addEventListener("click",()=>document.getElementById("promo").remove());
 </script>
  <script type="module">
-  const firebaseHosts = new Set(["localhost", "127.0.0.1", "autoworks-c9a6a.web.app", "autoworks-c9a6a.firebaseapp.com"]);
+  const firebaseHosts = new Set(["localhost", "127.0.0.1", "autoworks-c9a6a.web.app", "autoworks-c9a6a.firebaseapp.com", "autoworks.kr", "www.autoworks.kr"]);
   const apiBase = String(window.AUTOWORKS_API_BASE || "").replace(/\/$/, "");
   if (firebaseHosts.has(location.hostname)) {
     try {

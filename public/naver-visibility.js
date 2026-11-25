@@ -1,5 +1,5 @@
 const apiBase = String(window.AUTOWORKS_API_BASE || "").replace(/\/$/, "");
-const hosts = new Set(["localhost", "127.0.0.1", "autoworks-c9a6a.web.app", "autoworks-c9a6a.firebaseapp.com"]);
+const hosts = new Set(["localhost", "127.0.0.1", "autoworks-c9a6a.web.app", "autoworks-c9a6a.firebaseapp.com", "autoworks.kr", "www.autoworks.kr"]);
 const ids = ["visibilityForm", "login", "project", "brand", "aliases", "domains", "keywords", "resultCount", "submit", "status", "history", "results"];
 const el = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
 let user = null, workspaceId = null, database, generation = 0, requestGeneration = 0, historyGeneration = 0;

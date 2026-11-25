@@ -56,7 +56,7 @@ const content=document.getElementById("content");new MutationObserver(()=>{if(co
 </script>
 <script type="module">
 const apiBase=String(window.AUTOWORKS_API_BASE||"").replace(/\/$/,"");
-const firebaseHosts=new Set(["localhost","127.0.0.1","autoworks-c9a6a.web.app","autoworks-c9a6a.firebaseapp.com"]);
+const firebaseHosts=new Set(["localhost","127.0.0.1","autoworks-c9a6a.web.app","autoworks-c9a6a.firebaseapp.com", "autoworks.kr", "www.autoworks.kr"]);
 let currentUser=null,workspaceId=null,authGeneration=0,requestGeneration=0,activeProvider=null;
 const statuses=new Map(),providers={ads:"naver-searchad",naversearch:"naver-search",hub:"naver-api-hub",youtube:"youtube",apify:"apify",openai:"openai",metaAds:"meta-ads",googleAds:"google-ads",kakaoMoment:"kakao-moment"};
 const actionSelector=".connection-status,.connection-save,.connection-remove";
