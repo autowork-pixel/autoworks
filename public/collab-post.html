@@ -6,7 +6,7 @@
   <style>
     :root{font-family:Inter,"Pretendard","Noto Sans KR",system-ui,sans-serif;color:#282a35;background:#f6f6f9}*{box-sizing:border-box}body{margin:0}.top{height:58px;background:#fff;border-bottom:1px solid #e7e7ed;display:flex;align-items:center;padding:0 max(calc((100vw - 900px)/2),20px)}.top a{color:#2d2e37;text-decoration:none;font-weight:800}.wrap{max-width:900px;margin:auto;padding:34px 20px 70px}h1{font-size:27px;margin:8px 0}.intro,.note,.state{font-size:12px;color:#747783;line-height:1.65}.note{margin:18px 0;padding:13px 15px;background:#fff8df;border:1px solid #ecdfb6;border-radius:9px;color:#6f5b28}.card{background:#fff;border:1px solid #e3e4ea;border-radius:10px;padding:18px;margin:12px 0}.card h2{font-size:14px;margin:0 0 12px}label{display:block;font-size:12px;font-weight:700;margin:14px 0 6px}input,select{display:block;width:100%;padding:11px;border:1px solid #dfe1e7;border-radius:7px;font:inherit;font-size:12px}button{border:0;border-radius:7px;background:#5d49d3;color:#fff;padding:10px 14px;font-weight:700;cursor:pointer;margin-top:12px}button:disabled{opacity:.5;cursor:default}.secondary{background:#fff;border:1px solid #dfe1e7;color:#4e5361}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.metric{background:#f7f7fa;border-radius:7px;padding:13px}.metric span{display:block;color:#858895;font-size:11px}.metric b{display:block;margin-top:5px;font-size:20px}.result-title{font-size:14px;font-weight:700;overflow-wrap:anywhere}.result-link{font-size:12px;color:#5d49d3;overflow-wrap:anywhere}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{margin-top:4px}.compare-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:11px}th,td{padding:9px;border-bottom:1px solid #ececf1;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left;white-space:normal;min-width:180px}@media(max-width:600px){.wrap{padding:24px 14px}.metrics{grid-template-columns:1fr 1fr}}
   </style>
-</head>
+<link rel="stylesheet" href="./report-shell.css"></head>
 <body>
   <header class="top"><a href="./index.html">← 오토웍스</a></header>
   <main class="wrap">
@@ -20,5 +20,5 @@
     <section class="card"><h2>성과 비교함 <span id="compareCount">0/4</span></h2><p class="state">저장된 결과를 차례로 선택해 최대 4개까지 비교할 수 있습니다.</p><div class="compare-wrap"><table><thead><tr><th>게시물</th><th>조회수</th><th>좋아요</th><th>댓글</th><th>조회 시각</th></tr></thead><tbody id="compareBody"><tr><td colspan="5">비교할 결과를 추가해 주세요.</td></tr></tbody></table></div><div class="actions"><button id="downloadCompare" type="button" class="secondary" disabled>비교 CSV</button><button id="clearCompare" type="button" class="secondary" disabled>비교함 비우기</button></div></section>
   </main>
   <script src="./runtime-config.js"></script><script type="module" src="./collab-post.js"></script>
-</body>
+<script defer src="./report-shell.js"></script></body>
 </html>
