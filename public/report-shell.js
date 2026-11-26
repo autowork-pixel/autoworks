@@ -1,5 +1,8 @@
 const main=document.querySelector('main');
 if(main){
+  const prefill=new URLSearchParams(location.hash.slice(1)).get('q');
+  const brand=main.querySelector('#brand');
+  if(prefill&&brand&&!brand.value){brand.value=prefill.slice(0,brand.maxLength>0?brand.maxLength:120);brand.dispatchEvent(new Event('input',{bubbles:true}));history.replaceState(null,'',location.pathname+location.search)}
   const title=document.querySelector('h1')?.textContent?.trim()||document.title;
   const sections=[...main.querySelectorAll('section.card,section[id],div.card[id]')]
     .filter(el=>el.querySelector('h2') && !el.closest('form'))
