@@ -18,7 +18,7 @@
 .account-deletion{display:none;max-width:800px;margin:10px auto 0;background:#fff;border:1px solid #ecdede;border-radius:10px;overflow:hidden}.account-deletion.visible{display:block}.account-deletion-head{padding:14px 16px;border-bottom:1px solid #f0e7e7}.account-deletion h2{font-size:11px;color:#493d3d;margin:0}.account-deletion p{font-size:9px;color:#8b7c7c;line-height:1.6;margin:5px 0 0}.account-deletion-form{display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px 16px;background:#fffafa}.account-deletion-form input{border:1px solid #e4d6d6;border-radius:7px;background:#fff;padding:9px 10px;font-size:10px}.account-deletion-form button{border:0;border-radius:7px;background:#8d4545;color:#fff;padding:9px 14px;font-size:10px;font-weight:700}.account-deletion-form button:disabled{background:#b9aaaa;cursor:not-allowed}.account-deletion-state{grid-column:1/-1;color:#8b7c7c;font-size:9px;line-height:1.5}@media(max-width:620px){.account-deletion-form{grid-template-columns:1fr}.account-deletion-form button{min-height:36px}}
 .subscription-actions{padding:0 16px 14px}.subscription-actions label{display:block;margin-bottom:9px;font-size:10px;line-height:1.6;color:#626370}.subscription-actions a{color:#5946d4}.subscription-start,.subscription-cancel{border:1px solid #e0dce9;border-radius:7px;background:#fff;color:#625b72;padding:8px 11px;font-size:9px}.subscription-start{background:#5d49d3;color:#fff;border-color:#5d49d3;margin-right:7px}.subscription-cancel:hover{border-color:#9c8ed0;color:#4f3da3}.subscription-start:disabled,.subscription-cancel:disabled{opacity:.55;cursor:not-allowed}
 </style>
-<link rel="stylesheet" href="./home-refresh.css?v=20261126-compact"></head>
+<link rel="stylesheet" href="./home-refresh.css?v=20261126-search"></head>
 <body>
 <div class="promo" id="promo"><span><b>오토웍스</b> 매주 반복하는 마케팅 분석, 한 화면에서 시작하세요.</span><button id="closePromo" aria-label="닫기">×</button></div>
 <header class="header">
@@ -33,14 +33,14 @@
  <section class="inquiries" id="inquiries" aria-label="내 문의"><div class="inquiry-head"><h2>내 문의</h2><p>문의에는 API 키·비밀번호·결제정보를 입력하지 마세요. 운영 답변은 이 계정에서 확인할 수 있습니다.</p></div><form class="inquiry-form" id="inquiryForm"><input id="inquirySubject" maxlength="100" placeholder="문의 제목" aria-label="문의 제목" required><small>제목 100자 · 내용 2,000자</small><textarea id="inquiryMessage" maxlength="2000" placeholder="문의 내용을 입력하세요" aria-label="문의 내용" required></textarea><button type="submit">문의 접수</button></form><div class="inquiry-state" id="inquiryState">등록된 문의가 없습니다.</div><ul class="inquiry-list" id="inquiryList" hidden></ul></section>
  <section class="account-deletion" id="accountDeletion" aria-label="계정 탈퇴 요청"><div class="account-deletion-head"><h2>계정 탈퇴 요청</h2><p>요청 즉시 새 자동화 실행이 중단됩니다. 진행 중 작업·구독·법정 보존 거래를 확인한 뒤 계정 자료를 삭제하며, 요청만으로 결제가 자동 환불되지는 않습니다.</p></div><form class="account-deletion-form" id="accountDeletionForm"><input id="accountDeletionConfirmation" autocomplete="off" placeholder="확인을 위해 DELETE 입력" aria-label="탈퇴 확인 문구" required><button type="submit" id="accountDeletionSubmit">탈퇴 요청</button><div class="account-deletion-state" id="accountDeletionState" role="status">서버가 연결된 환경에서만 요청할 수 있습니다.</div></form></section>
  <section class="composer" aria-label="분석 조건 만들기">
-  <div class="topic"><input id="topic" type="text" placeholder="분석할 브랜드나 주제어를 입력하세요" autocomplete="off"></div>
+  <div class="topic"><label for="topic">무엇을 분석할까요?</label><input id="topic" type="search" maxlength="120" placeholder="브랜드나 키워드를 입력하세요" autocomplete="off"></div>
   <div class="compare"><button id="addCompare">＋ 비교 단어 추가</button><span id="compareCount">0 / 1</span><input id="compare" placeholder="비교할 브랜드나 키워드" hidden></div>
   <div class="toolshelf">
    <div class="modes"><button class="active" data-mode="keyword">키워드</button><button data-mode="ai">✦ AI 제안</button></div>
    <button class="filter" id="period">기간 <span>최근 7일 ⌄</span></button>
    <div class="channels" id="channels"><button class="channel selected">블로그</button><button class="channel selected">뉴스</button><button class="channel">YouTube</button><button class="channel">Instagram</button></div>
   </div>
-  <div class="submitrow"><span class="hint" id="hint">주제어를 입력하면 알맞은 분석 도구를 안내합니다.</span><button class="analyze" id="analyze">추천 도구 보기</button></div>
+  <div class="submitrow"><span class="hint" id="hint">주제어를 입력하면 알맞은 분석 도구를 안내합니다.</span><button class="analyze" id="analyze">분석 도구 찾기</button></div>
  </section>
  <section class="home-recommend" id="homeRecommend" aria-live="polite" hidden><div><span class="kicker">NEXT STEP</span><h2>이 주제어로 시작할 분석</h2><p id="recommendTopic"></p></div><div class="recommend-links"><a href="./naver-visibility.html">검색 노출·SEO 점검</a><a href="./content-reference.html">화제 콘텐츠 찾기</a><a href="./influencer-candidates.html">인플루언서 후보 찾기</a></div><p>도구 화면에서 프로젝트와 실제 데이터 원본을 선택해 실행하세요.</p></section>
  <section class="section">
@@ -85,6 +85,8 @@ document.getElementById("addCompare").addEventListener("click",()=>{const f=docu
 document.querySelectorAll("[data-topic]").forEach(b=>b.addEventListener("click",()=>{document.getElementById("topic").value=b.dataset.topic;document.getElementById("topic").focus();window.scrollTo({top:0,behavior:"smooth"})}));
 document.getElementById("period").addEventListener("click",()=>showToast("기간 선택은 분석 기능 연결 후 활성화됩니다."));
 document.getElementById("analyze").addEventListener("click",()=>{const topic=document.getElementById("topic").value.trim();if(!topic){document.getElementById("topic").focus();showToast("분석할 브랜드나 주제어를 입력해 주세요.");return}document.getElementById("recommendTopic").textContent='입력한 주제어: '+topic;const panel=document.getElementById("homeRecommend");panel.hidden=false;panel.scrollIntoView({behavior:"smooth",block:"center"})});
+document.getElementById("topic").addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();document.getElementById("analyze").click()}});
+document.querySelectorAll(".recommend-links a").forEach(link=>link.addEventListener("click",()=>{const term=document.getElementById("topic").value.trim();link.hash='q='+encodeURIComponent(term)}));
 document.getElementById("menu").addEventListener("click",()=>document.getElementById("drawer").classList.add("open"));
 document.getElementById("apiGuide").addEventListener("click",()=>{window.location.href="./api-guide.html"});
 document.getElementById("drawer").addEventListener("click",e=>{if(e.target.id==="drawer")e.currentTarget.classList.remove("open")});
