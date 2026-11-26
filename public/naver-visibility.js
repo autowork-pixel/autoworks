@@ -31,6 +31,14 @@ function safeLink(value) {
 function render(rows = []) {
   el.results.replaceChildren();
   if (!rows.length) { el.results.innerHTML = '<p class="empty">아직 저장된 점검 결과가 없습니다.</p>'; return; }
+  const blogHits = rows.filter(row => row.blog?.rank).length, webHits = rows.filter(row => row.web?.rank).length;
+  const summary = document.createElement("div"); summary.className = "summary-grid";
+  for (const [label, value, note] of [["점검 키워드", rows.length, "공식 API 조회 기준"], ["블로그 노출", `${blogHits} / ${rows.length}`, "설정한 확인 범위 내"], ["웹문서 노출", `${webHits} / ${rows.length}`, "설정한 확인 범위 내"]]) {
+    const card = document.createElement("div"); card.className = "metric";
+    const small = document.createElement("small"), strong = document.createElement("strong"), span = document.createElement("span");
+    small.textContent = label; strong.textContent = value; span.textContent = note; card.append(small, strong, span); summary.append(card);
+  }
+  el.results.append(summary);
   const table = document.createElement("table"); table.className = "table";
   table.innerHTML = "<thead><tr><th>키워드</th><th>블로그 API</th><th>웹문서 API</th></tr></thead>";
   const body = document.createElement("tbody");
@@ -43,12 +51,12 @@ function render(rows = []) {
         const href = safeLink(result.url), link = document.createElement("a"); link.textContent = result.title || "결과 열기";
         if (href) { link.href = href; link.target = "_blank"; link.rel = "noopener noreferrer"; }
         cell.append(link);
-      } else cell.textContent = "확인 범위 내 미노출";
+      } else { const pill = document.createElement("span"); pill.className = "pill muted"; pill.textContent = "확인 범위 내 미노출"; cell.append(pill); }
       tableRow.append(cell);
     }
     body.append(tableRow);
   }
-  table.append(body); el.results.append(table);
+  table.append(body); const wrap = document.createElement("div"); wrap.className = "table-wrap"; wrap.append(table); el.results.append(wrap);
 }
 function formFingerprint() {
   return JSON.stringify([el.brand.value.trim(), list("aliases"), list("domains"), list("keywords"), el.resultCount.value]);

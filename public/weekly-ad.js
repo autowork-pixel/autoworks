@@ -17,8 +17,8 @@ const accountState = { user: null, workspaceId: null };
 const providerLabels = { "meta-ads": "Meta Ads", "google-ads": "Google Ads", "kakao-moment": "카카오모먼트" };
 const sourceType = document.getElementById("source-type"), excelSource = document.getElementById("excel-source"), apiPeriod = document.getElementById("api-period");
 const account = document.createElement("div"), loginButton = document.createElement("button"), projectSelect = document.createElement("select"), historySelect = document.createElement("select"), saveButton = document.createElement("button"), saveStatus = document.createElement("p");
-account.className = "card";
-account.innerHTML = "<h2>내 계정에 결과 저장</h2>";
+account.className = "card account-card";
+account.innerHTML = '<h2>내 계정에 결과 저장</h2><p class="section-note">프로젝트별로 결과를 보관하고 다시 확인합니다.</p>';
 loginButton.type = "button"; loginButton.textContent = "Google로 로그인";
 projectSelect.setAttribute("aria-label", "저장할 프로젝트"); projectSelect.add(new Option("로그인 후 프로젝트 선택", "")); projectSelect.disabled = true;
 historySelect.setAttribute("aria-label", "저장된 주간 광고 결과"); historySelect.add(new Option("로그인 후 결과 조회", "")); historySelect.disabled = true;
@@ -179,6 +179,15 @@ function render(source, sheet, result) {
   addTable(document.getElementById("campaigns"), result.campaigns);
   addTable(document.getElementById("waste"), result.waste);
   addTable(document.getElementById("winners"), result.winners);
+  const chart = document.getElementById("spendChart"); chart.replaceChildren();
+  const top = result.campaigns.slice(0, 6), maximum = Math.max(0, ...top.map(item => item.cost || 0));
+  if (!top.length) chart.textContent = "표시할 캠페인이 없습니다.";
+  for (const campaign of top) {
+    const item = document.createElement("div"), name = document.createElement("span"), track = document.createElement("div"), bar = document.createElement("i"), amount = document.createElement("b");
+    item.className = "spend-item"; name.className = "name"; name.textContent = campaign.name;
+    name.title = campaign.name; track.className = "bar"; bar.style.width = `${maximum ? campaign.cost / maximum * 100 : 0}%`;
+    track.append(bar); amount.textContent = optionalMoney(campaign.cost); item.append(name, track, amount); chart.append(item);
+  }
   document.getElementById("results").hidden = false;
 }
 
@@ -209,6 +218,18 @@ function setDefaultPeriod() {
   if (!document.getElementById("since").value) document.getElementById("since").value = localDate(since);
   if (!document.getElementById("until").value) document.getElementById("until").value = localDate(until);
 }
+for (const button of document.querySelectorAll("[data-period]")) button.addEventListener("click", () => {
+  const days = Number(button.dataset.period), until = new Date(); until.setDate(until.getDate() - 1);
+  const since = new Date(until); since.setDate(since.getDate() - days + 1);
+  document.getElementById("since").value = localDate(since);
+  document.getElementById("until").value = localDate(until);
+  for (const item of document.querySelectorAll("[data-period]")) item.classList.toggle("selected", item === button);
+  analysisGeneration++; resetAnalysis();
+});
+for (const id of ["since", "until"]) document.getElementById(id).addEventListener("change", () => {
+  for (const button of document.querySelectorAll("[data-period]")) button.classList.remove("selected");
+  analysisGeneration++; resetAnalysis();
+});
 sourceType.addEventListener("change", () => {
   analysisGeneration++;
   const excel = sourceType.value === "excel";
