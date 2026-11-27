@@ -4,6 +4,7 @@ import { normalizeCollabYouTubeInput } from "./collab-youtube.mjs";
 import { normalizeCollabInstagramInput } from "./collab-instagram.mjs";
 import { normalizeContentReferenceInput } from "./content-reference.mjs";
 import { normalizeInfluencerCandidateInput } from "./influencer-candidate.mjs";
+import { normalizeAuthenticityInput } from "./account-authenticity.mjs";
 import { normalizeAiBlogInput } from "./ai-blog.mjs";
 import { normalizeNaverVisibilityInput } from "./naver-search-visibility.mjs";
 import { normalizeContentPackInput } from "./content-pack.mjs";
@@ -70,7 +71,7 @@ function bearer(request) {
   return match[1];
 }
 
-export function createHandler({ verifyIdToken, repository, credentialService, collabYouTubeService, collabInstagramService, contentReferenceService, influencerCandidateService, aiBlogService, naverVisibilityService, contentPackService, adReportService, taskDispatcher, logger = console }) {
+export function createHandler({ verifyIdToken, repository, credentialService, collabYouTubeService, collabInstagramService, contentReferenceService, influencerCandidateService, accountAuthenticityService, aiBlogService, naverVisibilityService, contentPackService, adReportService, taskDispatcher, logger = console }) {
   return async function handler(request, response) {
     const requestId = newRequestId();
     try {
@@ -169,6 +170,14 @@ export function createHandler({ verifyIdToken, repository, credentialService, co
         const input = normalizeInfluencerCandidateInput(await readJson(request));
         const result = await influencerCandidateService.run({ workspaceId: influencerMatch[1], uid: decoded.uid, input });
         return json(response, result.reused ? 200 : 201, { ...result, requestId }, requestId);
+      }
+      const authenticityMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/account-authenticity-runs$/);
+      if(request.method==="POST"&&authenticityMatch&&accountAuthenticityService){
+        if(!String(request.headers["content-type"]||"").toLowerCase().startsWith("application/json"))throw new ApiError("INVALID_INPUT","Content-Type은 application/json이어야 합니다.",415);
+        let decoded;try{decoded=await verifyIdToken(bearer(request))}catch{throw new ApiError("AUTH_REQUIRED","로그인을 다시 확인해주세요.",401)}
+        if(!decoded?.uid)throw new ApiError("AUTH_REQUIRED","로그인을 다시 확인해주세요.",401);
+        const result=await accountAuthenticityService.run({workspaceId:authenticityMatch[1],uid:decoded.uid,input:normalizeAuthenticityInput(await readJson(request))});
+        return json(response,result.reused?200:201,{...result,requestId},requestId);
       }
       const aiBlogMatch = request.url?.match(/^\/v1\/workspaces\/([A-Za-z0-9_-]{1,128})\/ai-blog-runs$/);
       if (request.method === "POST" && aiBlogMatch && aiBlogService) {
@@ -290,4 +299,5 @@ export function createHandler({ verifyIdToken, repository, credentialService, co
     }
   };
 }
+
 
