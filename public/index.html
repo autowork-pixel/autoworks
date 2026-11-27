@@ -66,13 +66,14 @@ const tools=[
  ["▥","주간 광고 분석","Meta API·Excel 광고 성과","P5 · 실행 화면"],
  ["⌖","네이버 검색 노출 점검","검색 결과·SEO 점유 현황","P7 · 실행 화면"],
  ["⌕","인플루언서 후보 찾기","YouTube 공개 프로필 후보","P1 · 실행 화면"],
+ ["◎","계정 진성도 분석","Instagram·YouTube 공개 계정 검토","실행 화면"],
  ["◉","화제 콘텐츠 레퍼런스","공개 게시물 수집과 콘텐츠 분석","P2 · 실행 화면"],
  ["▤","협업 게시물 성과 조회","YouTube·Instagram 공개 지표","P3 · 실행 화면"],
  ["↗","브랜드 검색량 추이","브랜드 검색량 스냅샷 확인","P4 · 실행 화면"],
  ["✦","AI 블로그 스튜디오","사실 기반 검토용 원고 작성과 다듬기","P6 · 실행 화면"],
  ["▧","콘텐츠 자동 제작","채널별 검토용 콘텐츠 묶음","P8 · 실행 화면"]
 ];
-document.getElementById("toolGrid").innerHTML=tools.map(t=>'<article class="tool" role="button" tabindex="0" '+(t[1]==="브랜드 검색량 추이"?'data-trend':t[1]==="주간 광고 분석"?'data-weekly':t[1]==="협업 게시물 성과 조회"?'data-collab':t[1]==="화제 콘텐츠 레퍼런스"?'data-reference':t[1]==="인플루언서 후보 찾기"?'data-influencer':t[1]==="AI 블로그 스튜디오"?'data-ai-blog':t[1]==="네이버 검색 노출 점검"?'data-naver-visibility':t[1]==="콘텐츠 자동 제작"?'data-content-pack':'data-toast')+' data-category="'+({"주간 광고 분석":"performance","협업 게시물 성과 조회":"performance","브랜드 검색량 추이":"search","네이버 검색 노출 점검":"search"}[t[1]]||"content")+'"><span class="tool-ico">'+t[0]+'</span><span><b>'+t[1]+'</b><small>'+t[2]+'</small></span><span class="state">'+t[3]+'</span></article>').join("");
+document.getElementById("toolGrid").innerHTML=tools.map(t=>'<article class="tool" role="button" tabindex="0" '+(t[1]==="브랜드 검색량 추이"?'data-trend':t[1]==="주간 광고 분석"?'data-weekly':t[1]==="협업 게시물 성과 조회"?'data-collab':t[1]==="화제 콘텐츠 레퍼런스"?'data-reference':t[1]==="인플루언서 후보 찾기"?'data-influencer':t[1]==="계정 진성도 분석"?'data-authenticity':t[1]==="AI 블로그 스튜디오"?'data-ai-blog':t[1]==="네이버 검색 노출 점검"?'data-naver-visibility':t[1]==="콘텐츠 자동 제작"?'data-content-pack':'data-toast')+' data-category="'+({"주간 광고 분석":"performance","협업 게시물 성과 조회":"performance","브랜드 검색량 추이":"search","네이버 검색 노출 점검":"search"}[t[1]]||"content")+'"><span class="tool-ico">'+t[0]+'</span><span><b>'+t[1]+'</b><small>'+t[2]+'</small></span><span class="state">'+t[3]+'</span></article>').join("");
 document.querySelectorAll("#toolGrid .tool").forEach((tool,index)=>tool.hidden=index>=3);
 const showAllTools=document.getElementById("showAllTools");let allToolsOpen=false;showAllTools.addEventListener("click",()=>{allToolsOpen=!allToolsOpen;showAllTools.textContent=allToolsOpen?"자주 쓰는 도구만 보기":"모든 도구 보기";showAllTools.setAttribute("aria-expanded",String(allToolsOpen));document.querySelector(".tool-filter").hidden=!allToolsOpen;document.querySelectorAll("#toolGrid .tool").forEach((tool,index)=>tool.hidden=!allToolsOpen&&index>=3);if(!allToolsOpen)document.querySelectorAll("[data-tool-filter]").forEach(x=>x.classList.toggle("active",x.dataset.toolFilter==="all"))});document.querySelector(".tool-filter").hidden=true;
 document.querySelectorAll("[data-tool-filter]").forEach(button=>button.addEventListener("click",()=>{const value=button.dataset.toolFilter;document.querySelectorAll("[data-tool-filter]").forEach(x=>x.classList.toggle("active",x===button));document.querySelectorAll("#toolGrid .tool").forEach(x=>x.hidden=value!=="all"&&x.dataset.category!==value)}));
@@ -98,6 +99,7 @@ document.querySelector("[data-weekly]").addEventListener("click",()=>{window.loc
 document.querySelector("[data-collab]").addEventListener("click",()=>{window.location.href="./collab-post.html"});
 document.querySelector("[data-reference]").addEventListener("click",()=>{window.location.href="./content-reference.html"});
 document.querySelector("[data-influencer]").addEventListener("click",()=>{window.location.href="./influencer-candidates.html"});
+document.querySelector("[data-authenticity]").addEventListener("click",()=>{window.location.href="./account-authenticity.html"});
 document.querySelector("[data-ai-blog]").addEventListener("click",()=>{window.location.href="./ai-blog.html"});
 document.querySelector("[data-naver-visibility]").addEventListener("click",()=>{window.location.href="./naver-visibility.html"});
 document.querySelector("[data-content-pack]").addEventListener("click",()=>{window.location.href="./content-pack.html"});
@@ -622,6 +624,7 @@ document.getElementById("closePromo").addEventListener("click",()=>document.getE
  </script>
 </body>
 </html>
+
 
 
 
