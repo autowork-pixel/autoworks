@@ -12,6 +12,8 @@ import { createCollabYouTubeService } from "./collab-youtube-service.mjs";
 import { createCollabInstagramService } from "./collab-instagram-service.mjs";
 import { createContentReferenceService } from "./content-reference-service.mjs";
 import { createInfluencerCandidateService } from "./influencer-candidate-service.mjs";
+import { createAccountAuthenticityRepository } from "./account-authenticity-repository.mjs";
+import { createAccountAuthenticityService } from "./account-authenticity-service.mjs";
 import { createAiBlogService } from "./ai-blog-service.mjs";
 import { createNaverVisibilityService } from "./naver-search-visibility-service.mjs";
 import { createContentPackService } from "./content-pack-service.mjs";
@@ -49,6 +51,7 @@ export function createApplication({ config, database, serverTimestamp, verifyIdT
   const collabInstagramService = createCollabInstagramService({ repository, keyManager });
   const contentReferenceService = createContentReferenceService({ repository, keyManager });
   const influencerCandidateService = createInfluencerCandidateService({ repository, keyManager });
+  const accountAuthenticityService = createAccountAuthenticityService({ repository: createAccountAuthenticityRepository({ database, serverTimestamp }), keyManager });
   const aiBlogService = createAiBlogService({ repository, keyManager, model: config.openAiModel });
   const naverVisibilityService = createNaverVisibilityService({ repository, keyManager });
   const contentPackService = createContentPackService({ repository, keyManager, model: config.openAiModel });
@@ -62,7 +65,7 @@ export function createApplication({ config, database, serverTimestamp, verifyIdT
   });
   const publicHandler = createCorsHandler({
     allowedOrigins: config.allowedOrigins,
-    handler: createHandler({ verifyIdToken, repository, credentialService, collabYouTubeService, collabInstagramService, contentReferenceService, influencerCandidateService, aiBlogService, naverVisibilityService, contentPackService, adReportService, taskDispatcher, logger })
+    handler: createHandler({ verifyIdToken, repository, credentialService, collabYouTubeService, collabInstagramService, contentReferenceService, influencerCandidateService, accountAuthenticityService, aiBlogService, naverVisibilityService, contentPackService, adReportService, taskDispatcher, logger })
   });
   const contextLoader = createWorkerContextLoader({
     repository: createWorkerContextRepository({ database }), keyManager
@@ -93,5 +96,6 @@ export function createApplication({ config, database, serverTimestamp, verifyIdT
   const budgetAlertHandler = config.budgetDisplayName ? createBudgetAlertHandler({ verifyTaskRequest, service: createBudgetAlertService({ repository: createBudgetAlertRepository({ database, serverTimestamp }), expectedBudgetDisplayName: config.budgetDisplayName }), logger }) : null;
   return createRouter({ publicHandler, workerHandler, recoveryHandler, budgetAlertHandler, oauthHandler, adminHandler, accountDeletionHandler, accountDeletionPurgeHandler, billingHandler, billingRenewalHandler });
 }
+
 
 
